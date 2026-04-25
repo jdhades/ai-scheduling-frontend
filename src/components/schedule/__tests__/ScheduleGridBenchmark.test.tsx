@@ -1,59 +1,55 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { waitFor } from '@testing-library/react'
 import { ScheduleGrid } from '../ScheduleGrid'
-import { useScheduleStore } from '../../../store/scheduleStore'
-import { act } from 'react'
-
-// Mock react-i18next
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string, defaultValue?: string) => defaultValue || key,
-    }),
-}))
+import { renderWithProviders } from '../../../test/renderWithProviders'
+import { server } from '../../../test/msw/server'
+import { API_URL } from '../../../config'
 
 describe('ScheduleGrid Performance Benchmark', () => {
-    it('renders 200 employees without crashing and within reasonable time', () => {
-        // Generate 200 mock employees
+    it('renders 200 employees without crashing and within reasonable time', async () => {
         const largeEmployeesList = Array.from({ length: 200 }, (_, i) => ({
             id: `emp-bench-${i}`,
             name: `Load Tester ${i}`,
             role: i % 2 === 0 ? 'Chef' : 'Waiter',
             skills: i % 2 === 0 ? ['chef', 'prep'] : ['waiter', 'host'],
-            maxHoursPerWeek: 40
+            maxHoursPerWeek: 40,
         }))
 
-        // Generate 400 mock shifts (2 per employee)
         const largeShiftsList = Array.from({ length: 400 }, (_, i) => ({
             id: `shift-bench-${i}`,
             employeeId: `emp-bench-${Math.floor(i / 2)}`,
             startTime: '10:00',
             endTime: '14:00',
             roleRequired: i % 2 === 0 ? 'Chef' : 'Waiter',
-            status: 'assigned' as const
+            status: 'assigned' as const,
         }))
 
-        // Load into store directly
-        act(() => {
-            useScheduleStore.setState({
-                employees: largeEmployeesList,
-                shifts: largeShiftsList,
-                loadMockData: () => { } // prevent ScheduleGrid mount from resetting to default mock data
-            })
-        })
+        // ScheduleGrid renderiza `employeesData || []` (no del store).
+        // Para el benchmark devolvemos los 200 empleados desde la API.
+        server.use(
+            http.get(`${API_URL}/employees`, () =>
+                HttpResponse.json(largeEmployeesList),
+            ),
+            http.get(`${API_URL}/schedules`, () =>
+                HttpResponse.json(largeShiftsList),
+            ),
+            // ShiftTemplatesPanel también consulta /shift-templates
+            http.get(`${API_URL}/shift-templates`, () => HttpResponse.json([])),
+        )
 
         const start = performance.now()
+        const { container } = renderWithProviders(<ScheduleGrid />)
 
-        const { container } = render(<ScheduleGrid />)
-
+        await waitFor(() =>
+            expect(container.innerHTML).toContain('Load Tester 199'),
+        )
         const end = performance.now()
         const renderTimeMs = end - start
 
-        // Verify the 200th employee rendered
-        expect(container.innerHTML).toContain('Load Tester 199')
-
-        // Render time should ideally be under 500ms for 200 memoized nodes in JSDOM, 
-        // though JSDOM is slower than real browsers. We just ensure it completes and is measured.
-        console.log(`⏱️ Rendered 200 employees + 400 shifts in ${renderTimeMs.toFixed(2)}ms`)
-        expect(renderTimeMs).toBeLessThan(1500) // generous upper bound for CI/CLI environments
+        console.log(
+            `⏱️ Rendered 200 employees + 400 shifts in ${renderTimeMs.toFixed(2)}ms`,
+        )
+        expect(renderTimeMs).toBeLessThan(3000) // jsdom + esperar useEffect+setState
     })
 })

@@ -1,5 +1,4 @@
 import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
 import { motion } from "motion/react";
 import { cn } from "../../lib/utils.ts";
 import type { DashboardMetric } from "../../types/dashboard.types.ts";
@@ -10,7 +9,7 @@ interface MetricCardWidgetProps {
 }
 
 export const MetricCardWidget = ({ metric, className }: MetricCardWidgetProps) => {
-  const { title, value, subtitle, trend, icon: Icon, progress, statusColor } = metric;
+  const { title, value, subtitle, icon: Icon, progress, statusColor } = metric;
 
   return (
     <Card
