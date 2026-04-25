@@ -1,19 +1,13 @@
-import { useState } from 'react';
-import { Loader2, X, CheckCircle2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { X, CheckCircle2 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   useIncidentsQuery,
   useRejectIncidentMutation,
   useResolveIncidentMutation,
 } from '../../api/incidents.api';
 import { Button } from '../../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
 import type { Incident, IncidentStatus } from '../../types/approvals';
 
@@ -61,6 +55,85 @@ export const IncidentsPage = () => {
     );
   };
 
+  const columns = useMemo<ColumnDef<Incident>[]>(
+    () => [
+      {
+        accessorKey: 'employeeId',
+        header: 'Empleado',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span className="font-medium" title={row.original.employeeId}>
+            {row.original.employeeId.slice(0, 8)}…
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'type',
+        header: 'Tipo',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.type}</span>
+        ),
+      },
+      {
+        accessorKey: 'status',
+        header: 'Estado',
+        // Sort por status string; mostramos label.
+        cell: ({ row }) => <Badge>{STATUS_LABEL[row.original.status]}</Badge>,
+      },
+      {
+        id: 'period',
+        header: 'Período',
+        accessorFn: (i) =>
+          i.startDate ? `${i.startDate}${i.endDate ? ` → ${i.endDate}` : ''}` : '',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.startDate
+              ? `${row.original.startDate}${row.original.endDate ? ` → ${row.original.endDate}` : ''}`
+              : '—'}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Acciones</span>,
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const i = row.original;
+          return (
+            <div className="flex justify-end gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Rechazar"
+                data-testid={`reject-${i.id}`}
+                disabled={isClosed(i.status) || actingOn === i.id}
+                onClick={() => handleReject(i)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Resolver"
+                data-testid={`resolve-${i.id}`}
+                disabled={isClosed(i.status) || actingOn === i.id}
+                onClick={() => handleResolve(i)}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          );
+        },
+        meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
+      },
+    ],
+    // actingOn debe re-disparar el render del disabled. rejectMut/resolveMut
+    // son estables.
+    [actingOn],
+  );
+
   return (
     <div className="space-y-4">
       <header>
@@ -72,81 +145,17 @@ export const IncidentsPage = () => {
         </p>
       </header>
 
-      {list.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando incidentes.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empleado</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Período</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {list.isLoading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!list.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No hay incidentes.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((i) => (
-              <TableRow key={i.id}>
-                <TableCell className="font-medium" title={i.employeeId}>
-                  {i.employeeId.slice(0, 8)}…
-                </TableCell>
-                <TableCell className="text-muted-foreground">{i.type}</TableCell>
-                <TableCell>
-                  <Badge>{STATUS_LABEL[i.status]}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {i.startDate
-                    ? `${i.startDate}${i.endDate ? ` → ${i.endDate}` : ''}`
-                    : '—'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Rechazar"
-                      data-testid={`reject-${i.id}`}
-                      disabled={isClosed(i.status) || actingOn === i.id}
-                      onClick={() => handleReject(i)}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Resolver"
-                      data-testid={`resolve-${i.id}`}
-                      disabled={isClosed(i.status) || actingOn === i.id}
-                      onClick={() => handleResolve(i)}
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(i) => i.id}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar por empleado o tipo…"
+        isLoading={list.isLoading}
+        errorMessage={list.isError ? 'Error cargando incidentes.' : undefined}
+        emptyMessage="No hay incidentes."
+      />
     </div>
   );
 };

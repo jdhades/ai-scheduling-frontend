@@ -1,17 +1,10 @@
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { useFairnessHistoryQuery } from '../../api/fairness-history.api';
 import { useEmployeesQuery } from '../../api/employees.api';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 
 const upcomingMondayISO = (): string => {
   const d = new Date();
@@ -20,6 +13,15 @@ const upcomingMondayISO = (): string => {
   d.setUTCDate(d.getUTCDate() + daysUntilMonday);
   return d.toISOString().slice(0, 10);
 };
+
+interface FairnessRow {
+  employeeId: string;
+  hoursWorked: number;
+  undesirableCount: number;
+  nightShiftCount: number;
+  weekendCount: number;
+  voluntaryExtraShifts: number;
+}
 
 /**
  * FairnessPage — vista por semana de los contadores acumulados.
@@ -34,10 +36,66 @@ export const FairnessPage = () => {
   const employees = useEmployeesQuery();
   const fairness = useFairnessHistoryQuery(weekStart);
 
-  const empById = new Map(
-    (employees.data ?? []).map((e) => [e.id, e.name] as const),
+  const empById = useMemo(
+    () => new Map((employees.data ?? []).map((e) => [e.id, e.name] as const)),
+    [employees.data],
   );
-  const rows = fairness.data ?? [];
+  const rows = (fairness.data ?? []) as FairnessRow[];
+
+  const columns = useMemo<ColumnDef<FairnessRow>[]>(
+    () => [
+      {
+        id: 'employee',
+        header: 'Empleado',
+        accessorFn: (r) => empById.get(r.employeeId) ?? r.employeeId.slice(0, 8) + '…',
+        enableGlobalFilter: true,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'hoursWorked',
+        header: 'Horas',
+        cell: ({ row }) => (
+          <span className="block text-right">{row.original.hoursWorked}</span>
+        ),
+        meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
+      },
+      {
+        accessorKey: 'undesirableCount',
+        header: 'Undesirable',
+        cell: ({ row }) => (
+          <span className="block text-right">{row.original.undesirableCount}</span>
+        ),
+        meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
+      },
+      {
+        accessorKey: 'nightShiftCount',
+        header: 'Nocturnos',
+        cell: ({ row }) => (
+          <span className="block text-right">{row.original.nightShiftCount}</span>
+        ),
+        meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
+      },
+      {
+        accessorKey: 'weekendCount',
+        header: 'Weekend',
+        cell: ({ row }) => (
+          <span className="block text-right">{row.original.weekendCount}</span>
+        ),
+        meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
+      },
+      {
+        accessorKey: 'voluntaryExtraShifts',
+        header: 'Voluntary extra',
+        cell: ({ row }) => (
+          <span className="block text-right">{row.original.voluntaryExtraShifts}</span>
+        ),
+        meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
+      },
+    ],
+    [empById],
+  );
 
   return (
     <div className="space-y-4">
@@ -61,54 +119,17 @@ export const FairnessPage = () => {
         </div>
       </header>
 
-      {fairness.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando fairness.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empleado</TableHead>
-              <TableHead className="text-right">Horas</TableHead>
-              <TableHead className="text-right">Undesirable</TableHead>
-              <TableHead className="text-right">Nocturnos</TableHead>
-              <TableHead className="text-right">Weekend</TableHead>
-              <TableHead className="text-right">Voluntary extra</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fairness.isLoading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!fairness.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  No hay datos para esa semana.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((r) => (
-              <TableRow key={r.employeeId}>
-                <TableCell className="font-medium">
-                  {empById.get(r.employeeId) ?? r.employeeId.slice(0, 8) + '…'}
-                </TableCell>
-                <TableCell className="text-right">{r.hoursWorked}</TableCell>
-                <TableCell className="text-right">{r.undesirableCount}</TableCell>
-                <TableCell className="text-right">{r.nightShiftCount}</TableCell>
-                <TableCell className="text-right">{r.weekendCount}</TableCell>
-                <TableCell className="text-right">{r.voluntaryExtraShifts}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(r) => r.employeeId}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar empleado…"
+        isLoading={fairness.isLoading}
+        errorMessage={fairness.isError ? 'Error cargando fairness.' : undefined}
+        emptyMessage="No hay datos para esa semana."
+      />
     </div>
   );
 };

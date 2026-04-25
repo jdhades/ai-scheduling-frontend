@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   useShiftTemplatesQuery,
   useCreateTemplateMutation,
@@ -10,14 +11,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -77,6 +71,77 @@ export const TemplatesPage = () => {
     }
   };
 
+  const columns = useMemo<ColumnDef<ShiftTemplate>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Nombre',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.name}</span>
+        ),
+      },
+      {
+        accessorKey: 'dayOfWeek',
+        header: 'Día',
+        // Sort numérico por dayOfWeek (null va al final por TanStack default).
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {dayLabel(row.original.dayOfWeek)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'startTime',
+        header: 'Horario',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {fmtTime(row.original.startTime)}–{fmtTime(row.original.endTime)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'requiredEmployees',
+        header: 'required_employees',
+        cell: ({ row }) =>
+          row.original.requiredEmployees === null ? (
+            <span className="text-secondary">elastic</span>
+          ) : (
+            <span className="text-muted-foreground">
+              {row.original.requiredEmployees}
+            </span>
+          ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Acciones</span>,
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const t = row.original;
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Eliminar"
+              data-testid={`delete-${t.id}`}
+              disabled={deleteMut.isPending}
+              onClick={() => {
+                if (window.confirm(`¿Eliminar el template "${t.name}"?`)) {
+                  deleteMut.mutate(t.id);
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          );
+        },
+        meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
+      },
+    ],
+    [deleteMut],
+  );
+
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
@@ -89,79 +154,23 @@ export const TemplatesPage = () => {
           </p>
         </div>
         <Button onClick={() => setOpen(true)} data-testid="new-template-btn">
-          <Plus className="w-4 h-4" /> Nuevo
+          <Plus className="h-4 w-4" /> Nuevo
         </Button>
       </header>
 
-      {templates.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando templates.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Día</TableHead>
-              <TableHead>Horario</TableHead>
-              <TableHead>required_employees</TableHead>
-              <TableHead className="w-20 text-right">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {templates.isLoading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!templates.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No hay templates todavía.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((t: ShiftTemplate) => (
-              <TableRow key={t.id}>
-                <TableCell className="font-medium">{t.name}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {dayLabel(t.dayOfWeek)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {fmtTime(t.startTime)}–{fmtTime(t.endTime)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {t.requiredEmployees === null ? (
-                    <span className="text-secondary">elastic</span>
-                  ) : (
-                    t.requiredEmployees
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Eliminar"
-                    data-testid={`delete-${t.id}`}
-                    disabled={deleteMut.isPending}
-                    onClick={() => {
-                      if (window.confirm(`¿Eliminar el template "${t.name}"?`)) {
-                        deleteMut.mutate(t.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(t) => t.id}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar template…"
+        isLoading={templates.isLoading}
+        errorMessage={
+          templates.isError ? 'Error cargando templates.' : undefined
+        }
+        emptyMessage="No hay templates todavía."
+      />
 
       <Dialog
         open={open}
