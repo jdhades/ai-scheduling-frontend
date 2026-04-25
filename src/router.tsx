@@ -3,6 +3,7 @@ import { AppLayout } from './layouts/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { Placeholder } from './pages/Placeholder';
 import { EmployeesPage } from './pages/workforce/EmployeesPage';
+import { MembershipsPage } from './pages/workforce/MembershipsPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,12 +27,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'memberships',
-            element: (
-              <Placeholder
-                title="Shift Memberships"
-                description="Vínculo empleado ↔ template con effective_from/until."
-              />
-            ),
+            element: <MembershipsPage />,
           },
           {
             path: 'skills',
