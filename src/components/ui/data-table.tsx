@@ -47,8 +47,10 @@ interface DataTableProps<T> {
   toolbar?: React.ReactNode;
   /** Extrae el id estable de cada fila (se usa en data-testid de la fila). */
   getRowId?: (row: T) => string;
-  /** Si llega, activa paginación cliente con ese tamaño de página. */
+  /** Si llega, activa paginación cliente con ese tamaño de página inicial. */
   pageSize?: number;
+  /** Si llega, renderiza un select para que el usuario cambie el page size. */
+  pageSizeOptions?: number[];
   isLoading?: boolean;
   errorMessage?: string;
   emptyMessage?: string;
@@ -61,6 +63,7 @@ export function DataTable<T>({
   toolbar,
   getRowId,
   pageSize,
+  pageSizeOptions,
   isLoading,
   errorMessage,
   emptyMessage = 'No hay datos.',
@@ -201,12 +204,32 @@ export function DataTable<T>({
       </div>
 
       {paginated && totalRows > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span data-testid="datatable-page-summary">
-            {rows.length === totalRows
-              ? `${totalRows} resultado${totalRows === 1 ? '' : 's'}`
-              : `Mostrando ${rows.length} de ${totalRows}`}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            {pageSizeOptions && pageSizeOptions.length > 0 && (
+              <label className="flex items-center gap-2">
+                <span>Filas:</span>
+                <select
+                  data-testid="datatable-page-size"
+                  aria-label="Filas por página"
+                  value={table.getState().pagination.pageSize}
+                  onChange={(e) => table.setPageSize(Number(e.target.value))}
+                  className="flex h-8 rounded-md border border-white/10 bg-surface-low px-2 text-sm text-foreground"
+                >
+                  {pageSizeOptions.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <span data-testid="datatable-page-summary">
+              {rows.length === totalRows
+                ? `${totalRows} resultado${totalRows === 1 ? '' : 's'}`
+                : `Mostrando ${rows.length} de ${totalRows}`}
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"

@@ -174,7 +174,8 @@ export const EmployeesPage = () => {
         data={filteredData}
         columns={columns}
         getRowId={(e) => e.id}
-        pageSize={20}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
         searchPlaceholder="Buscar por nombre, ID o teléfono…"
         toolbar={
           roleOptions.length > 0 ? (

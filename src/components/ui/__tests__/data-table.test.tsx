@@ -114,6 +114,46 @@ describe('DataTable', () => {
     expect(screen.getByTestId('datatable-next')).toBeDisabled();
   });
 
+  it('cambiar el page size re-pagina las filas', async () => {
+    const user = userEvent.setup();
+    const many: Row[] = Array.from({ length: 12 }, (_, i) => ({
+      id: `r${i}`,
+      name: `E ${i}`,
+      role: 'employee',
+      experienceMonths: i,
+    }));
+
+    render(
+      <DataTable
+        data={many}
+        columns={columns}
+        getRowId={(r) => r.id}
+        pageSize={5}
+        pageSizeOptions={[5, 10, 15]}
+      />,
+    );
+
+    expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(5);
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 1 de 3');
+
+    await user.selectOptions(screen.getByTestId('datatable-page-size'), '10');
+
+    expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(10);
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 1 de 2');
+  });
+
+  it('sin pageSizeOptions, no renderiza el selector', () => {
+    render(
+      <DataTable
+        data={[data[0]]}
+        columns={columns}
+        getRowId={(r) => r.id}
+        pageSize={10}
+      />,
+    );
+    expect(screen.queryByTestId('datatable-page-size')).not.toBeInTheDocument();
+  });
+
   it('sin pageSize no renderiza el footer de paginación', () => {
     renderTable();
     expect(screen.queryByTestId('datatable-page-info')).not.toBeInTheDocument();
