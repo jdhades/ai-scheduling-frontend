@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import {
   useEmployeesQuery,
   useCreateEmployeeMutation,
+  useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
 } from '../../api/employees.api';
 import type { Employee } from '../../types/employee';
@@ -16,7 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
-import { EmployeeFormDialog } from './EmployeeFormDialog';
+import {
+  EmployeeFormDialog,
+  type EmployeeFormValues,
+} from './EmployeeFormDialog';
 
 /**
  * EmployeesPage — listado del tenant con acciones inline.
@@ -24,17 +28,38 @@ import { EmployeeFormDialog } from './EmployeeFormDialog';
  * Soporta:
  *   - listar (`useEmployeesQuery`)
  *   - crear (dialog → `useCreateEmployeeMutation`)
- *   - editar (dialog navegando al detalle — TODO en F.2.1bis)
+ *   - editar (mismo dialog en modo edit → `useUpdateEmployeeMutation`)
  *   - eliminar (confirm inline → `useDeleteEmployeeMutation`)
  */
 export const EmployeesPage = () => {
   const { data, isLoading, isError } = useEmployeesQuery();
   const createMut = useCreateEmployeeMutation();
+  const updateMut = useUpdateEmployeeMutation();
   const deleteMut = useDeleteEmployeeMutation();
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOf, setEditOf] = useState<Employee | null>(null);
 
   const employees = data ?? [];
+
+  const handleCreate = async (values: EmployeeFormValues) => {
+    await createMut.mutateAsync(values);
+    setCreateOpen(false);
+  };
+
+  const handleEdit = async (values: EmployeeFormValues) => {
+    if (!editOf) return;
+    await updateMut.mutateAsync({
+      id: editOf.id,
+      patch: {
+        name: values.name,
+        phoneNumber: values.phone,
+        experienceMonths: values.experienceMonths,
+        externalId: values.externalId ?? null,
+      },
+    });
+    setEditOf(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -58,43 +83,51 @@ export const EmployeesPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-white/5 bg-surface-low">
+      <div className="rounded-lg border border-white/5 bg-surface-low overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
+              <TableHead className="hidden md:table-cell">ID externo</TableHead>
               <TableHead>Rol</TableHead>
-              <TableHead>Teléfono</TableHead>
+              <TableHead className="hidden sm:table-cell">Teléfono</TableHead>
               <TableHead className="w-32 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && employees.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   No hay empleados todavía.
                 </TableCell>
               </TableRow>
             )}
             {employees.map((emp: Employee) => (
               <TableRow key={emp.id}>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium max-w-[16rem]">
                   <Link
                     to={`/workforce/employees/${emp.id}`}
-                    className="hover:text-primary transition-colors"
+                    className="hover:text-primary transition-colors block truncate"
+                    title={emp.name}
                   >
                     {emp.name}
                   </Link>
                 </TableCell>
+                <TableCell
+                  className="hidden md:table-cell text-muted-foreground max-w-[10rem] truncate"
+                  title={emp.externalId ?? undefined}
+                >
+                  {emp.externalId ?? '—'}
+                </TableCell>
                 <TableCell className="text-muted-foreground">{emp.role}</TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden sm:table-cell text-muted-foreground">
                   {emp.phone ?? '—'}
                 </TableCell>
                 <TableCell className="text-right">
@@ -104,7 +137,7 @@ export const EmployeesPage = () => {
                       size="icon"
                       title="Editar"
                       data-testid={`edit-${emp.id}`}
-                      disabled
+                      onClick={() => setEditOf(emp)}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -137,10 +170,15 @@ export const EmployeesPage = () => {
       <EmployeeFormDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSubmit={(payload) =>
-          createMut.mutateAsync(payload).then(() => setCreateOpen(false))
-        }
+        onSubmit={handleCreate}
         submitting={createMut.isPending}
+      />
+      <EmployeeFormDialog
+        open={!!editOf}
+        onOpenChange={(o) => !o && setEditOf(null)}
+        initial={editOf}
+        onSubmit={handleEdit}
+        submitting={updateMut.isPending}
       />
     </div>
   );

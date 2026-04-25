@@ -12,6 +12,8 @@ export interface Employee {
   role: string;
   /** Algunos endpoints exponen `phone`, otros `phone_number`. */
   phone?: string;
+  /** Identificador de la empresa en su sistema de nómina/asistencia. */
+  externalId?: string | null;
   experienceMonths?: number;
   locale?: string;
   departmentId?: string | null;
@@ -20,12 +22,15 @@ export interface Employee {
   isActive?: boolean;
 }
 
-/** Body de POST /employees. */
+/**
+ * Body de POST /employees. El UUID interno lo genera el backend; aquí
+ * sólo enviamos los datos visibles al manager.
+ */
 export interface CreateEmployeePayload {
-  /** El backend espera un id externo (ej. legajo). */
-  employeeId: string;
+  name: string;
   phone: string;
   experienceMonths: number;
+  externalId?: string;
 }
 
 /** Body de PATCH /employees/:id (todos opcionales — partial update). */
@@ -40,4 +45,5 @@ export interface UpdateEmployeePayload {
   maxHoursPerDay?: number | null;
   maxHoursPerWeek?: number | null;
   isActive?: boolean;
+  externalId?: string | null;
 }

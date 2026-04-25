@@ -63,17 +63,19 @@ describe('EmployeesPage', () => {
     );
 
     await user.click(screen.getByTestId('new-employee-btn'));
-    await user.type(screen.getByTestId('employee-id-input'), 'leg-1');
+    await user.type(screen.getByTestId('employee-name-input'), 'Sofía López');
     await user.type(screen.getByTestId('employee-phone-input'), '+5491100');
     await user.clear(screen.getByTestId('employee-exp-input'));
     await user.type(screen.getByTestId('employee-exp-input'), '12');
+    await user.type(screen.getByTestId('employee-external-id-input'), 'leg-1');
     await user.click(screen.getByTestId('employee-submit'));
 
     await waitFor(() =>
       expect(createBody).toEqual({
-        employeeId: 'leg-1',
+        name: 'Sofía López',
         phone: '+5491100',
         experienceMonths: 12,
+        externalId: 'leg-1',
       }),
     );
     // Tras invalidar la query, la lista vuelve a fetch y muestra el nuevo.
@@ -103,6 +105,53 @@ describe('EmployeesPage', () => {
 
     await waitFor(() => expect(deleteCalled).toBe(true));
     confirmSpy.mockRestore();
+  });
+
+  it('edita un empleado vía PATCH y refresca la lista', async () => {
+    let listCalls = 0;
+    let patchBody: unknown;
+    server.use(
+      http.get(`${API_URL}/employees`, () => {
+        listCalls += 1;
+        return HttpResponse.json([
+          {
+            id: 'e1',
+            name: listCalls === 1 ? 'Original' : 'Renombrado',
+            role: 'employee',
+            phone: '+111',
+            externalId: 'leg-9',
+            experienceMonths: 24,
+          },
+        ]);
+      }),
+      http.patch(`${API_URL}/employees/e1`, async ({ request }) => {
+        patchBody = await request.json();
+        return HttpResponse.text('', { status: 204 });
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<EmployeesPage />);
+
+    await waitFor(() => expect(screen.getByText('Original')).toBeInTheDocument());
+    await user.click(screen.getByTestId('edit-e1'));
+
+    const nameInput = screen.getByTestId('employee-name-input');
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Renombrado');
+    await user.click(screen.getByTestId('employee-submit'));
+
+    await waitFor(() =>
+      expect(patchBody).toMatchObject({
+        name: 'Renombrado',
+        phoneNumber: '+111',
+        experienceMonths: 24,
+        externalId: 'leg-9',
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText('Renombrado')).toBeInTheDocument(),
+    );
   });
 
   it('no elimina si el usuario cancela el confirm', async () => {

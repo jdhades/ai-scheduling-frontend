@@ -116,16 +116,18 @@ describe('employees.api', () => {
         wrapper,
       });
       result.current.mutate({
-        employeeId: 'new-1',
+        name: 'Sofía López',
         phone: '+1000',
         experienceMonths: 6,
+        externalId: 'new-1',
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(postBody).toEqual({
-        employeeId: 'new-1',
+        name: 'Sofía López',
         phone: '+1000',
         experienceMonths: 6,
+        externalId: 'new-1',
       });
       // Esperamos el re-fetch tras invalidate.
       await waitFor(() => expect(listCallsAfterCreate).toBeGreaterThanOrEqual(2));
