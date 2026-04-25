@@ -17,8 +17,14 @@ export interface Employee {
   experienceMonths?: number;
   locale?: string;
   departmentId?: string | null;
-  /** Skills cargadas via join (puede no venir en list endpoints). */
-  skills?: string[];
+  /**
+   * Skills cargadas via join (puede no venir en list endpoints). El backend
+   * devuelve cada skill resuelta — id, nombre y nivel — no solo el id.
+   * (La grilla de horarios usa un tipo paralelo en `store/scheduleStore.ts`
+   * con shape mock; ese sigue siendo `string[]` hasta que se conecte a
+   * datos reales.)
+   */
+  skills?: Array<{ id: string; name: string; level: string }>;
   isActive?: boolean;
 }
 

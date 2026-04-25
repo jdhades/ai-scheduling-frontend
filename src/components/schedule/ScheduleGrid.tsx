@@ -16,16 +16,29 @@ export function ScheduleGrid() {
 
     // REST API Integration
     const { data: employeesData } = useEmployeesQuery()
-    const employeesToRender = employeesData || []
     const { data: remoteShifts, isLoading, isError } = useScheduleQuery()
     const generateDeterministic = useGenerateScheduleMutation()
     const generateHybrid = useGenerateHybridMutation()
 
+    // El store usa un Employee con `skills: string[]` (IDs), mientras que el
+    // API devuelve `skills: { id, name, level }[]`. Bridgeamos al ID para
+    // que el matcher de EmployeeRow (`includes(roleRequired)`) compare
+    // contra el mismo dominio (skillId vs requiredSkillId).
+    const bridgedEmployees = (employeesData ?? []).map((e) => ({
+        id: e.id,
+        name: e.name,
+        role: e.role,
+        skills: e.skills?.map((s) => s.id) ?? [],
+    }))
+
     useEffect(() => {
-        // Sync REST employees into the store
-        if (employeesData && employeesData.length > 0) {
-            setEmployees(employeesData)
+        if (bridgedEmployees.length > 0) {
+            setEmployees(bridgedEmployees)
         }
+        // Dep array intencionalmente sobre employeesData; bridgedEmployees
+        // se recalcula en cada render pero solo refresca el store cuando
+        // cambia la fuente.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [employeesData, setEmployees])
 
     useEffect(() => {
@@ -82,12 +95,12 @@ export function ScheduleGrid() {
 
                     {/* Employee Rows */}
                     <div className="relative">
-                        {employeesToRender.length === 0 && (
+                        {bridgedEmployees.length === 0 && (
                             <div className="p-8 text-center text-muted-foreground w-full">
                                 Cargando empleados de Supabase...
                             </div>
                         )}
-                        {employeesToRender.map(emp => (
+                        {bridgedEmployees.map(emp => (
                             <EmployeeRow
                                 key={emp.id}
                                 employee={emp}

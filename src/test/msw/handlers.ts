@@ -12,4 +12,7 @@ import { API_URL } from '../../config';
 export const defaultHandlers = [
   // Lista de empleados — vacía por default.
   http.get(`${API_URL}/employees`, () => HttpResponse.json([])),
+  // Catálogo de skills del tenant — vacío por default. Lo consumen forms
+  // que necesitan elegir una skill (ej. TemplateFormDialog).
+  http.get(`${API_URL}/company-skills`, () => HttpResponse.json([])),
 ];
