@@ -154,6 +154,57 @@ describe('EmployeesPage', () => {
     );
   });
 
+  it('search global filtra por nombre / externalId / phone', async () => {
+    server.use(
+      http.get(`${API_URL}/employees`, () =>
+        HttpResponse.json([
+          { id: 'e1', name: 'Ana López', role: 'employee', phone: '+1', externalId: 'leg-1' },
+          { id: 'e2', name: 'Bruno Pérez', role: 'employee', phone: '+2', externalId: 'leg-2' },
+        ]),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<EmployeesPage />);
+
+    await waitFor(() => expect(screen.getByText('Ana López')).toBeInTheDocument());
+    await user.type(screen.getByTestId('datatable-search'), 'leg-2');
+
+    expect(screen.queryByText('Ana López')).not.toBeInTheDocument();
+    expect(screen.getByText('Bruno Pérez')).toBeInTheDocument();
+  });
+
+  it('filtro por rol restringe la lista a un rol y deriva las opciones de los datos', async () => {
+    server.use(
+      http.get(`${API_URL}/employees`, () =>
+        HttpResponse.json([
+          { id: 'e1', name: 'Ana', role: 'enfermera' },
+          { id: 'e2', name: 'Bruno', role: 'mozo' },
+          { id: 'e3', name: 'Carla', role: 'enfermera' },
+        ]),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<EmployeesPage />);
+
+    await waitFor(() => expect(screen.getByText('Ana')).toBeInTheDocument());
+
+    const select = screen.getByTestId('role-filter') as HTMLSelectElement;
+    // Las opciones se derivan de los datos — sin "manager" hardcodeado.
+    expect(Array.from(select.options).map((o) => o.value)).toEqual([
+      '',
+      'enfermera',
+      'mozo',
+    ]);
+
+    await user.selectOptions(select, 'mozo');
+
+    expect(screen.queryByText('Ana')).not.toBeInTheDocument();
+    expect(screen.queryByText('Carla')).not.toBeInTheDocument();
+    expect(screen.getByText('Bruno')).toBeInTheDocument();
+  });
+
   it('no elimina si el usuario cancela el confirm', async () => {
     let deleteCalled = false;
     server.use(
