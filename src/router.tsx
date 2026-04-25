@@ -10,6 +10,10 @@ import { TemplatesPage } from './pages/scheduling/TemplatesPage';
 import { SchedulePage } from './pages/scheduling/SchedulePage';
 import { GeneratePage } from './pages/scheduling/GeneratePage';
 import { RulesPage } from './pages/rules/RulesPage';
+import { IncidentsPage } from './pages/approvals/IncidentsPage';
+import { SwapsPage } from './pages/approvals/SwapsPage';
+import { AbsencesPage } from './pages/approvals/AbsencesPage';
+import { DayOffsPage } from './pages/approvals/DayOffsPage';
 
 export const router = createBrowserRouter([
   {
@@ -70,42 +74,10 @@ export const router = createBrowserRouter([
         path: 'approvals',
         children: [
           { index: true, element: <Navigate to="incidents" replace /> },
-          {
-            path: 'incidents',
-            element: (
-              <Placeholder
-                title="Incidents"
-                description="Bandeja de entrada de incidentes. Reject / resolve."
-              />
-            ),
-          },
-          {
-            path: 'swaps',
-            element: (
-              <Placeholder
-                title="Shift swap requests"
-                description="Pedidos de intercambio. Approve / reject."
-              />
-            ),
-          },
-          {
-            path: 'absences',
-            element: (
-              <Placeholder
-                title="Reportes de ausencia"
-                description="Histórico inmutable."
-              />
-            ),
-          },
-          {
-            path: 'day-offs',
-            element: (
-              <Placeholder
-                title="Solicitudes de día libre"
-                description="Approve / reject."
-              />
-            ),
-          },
+          { path: 'incidents', element: <IncidentsPage /> },
+          { path: 'swaps', element: <SwapsPage /> },
+          { path: 'absences', element: <AbsencesPage /> },
+          { path: 'day-offs', element: <DayOffsPage /> },
         ],
       },
 
