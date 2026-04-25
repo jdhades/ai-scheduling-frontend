@@ -1,21 +1,16 @@
-import { useState, type FormEvent } from 'react';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   useCompanySkillsQuery,
   useCreateCompanySkillMutation,
   useDeleteCompanySkillMutation,
 } from '../../api/company-skills.api';
+import type { CompanySkill } from '../../types/company-skill';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +51,46 @@ export const SkillsPage = () => {
     }
   };
 
+  const columns = useMemo<ColumnDef<CompanySkill>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Nombre',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.name}</span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Acciones</span>,
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const s = row.original;
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Eliminar"
+              data-testid={`delete-${s.id}`}
+              disabled={deleteMut.isPending}
+              onClick={() => {
+                if (window.confirm(`¿Eliminar la skill "${s.name}"?`)) {
+                  deleteMut.mutate(s.id);
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          );
+        },
+        meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
+      },
+    ],
+    [deleteMut],
+  );
+
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
@@ -68,63 +103,21 @@ export const SkillsPage = () => {
           </p>
         </div>
         <Button onClick={() => setOpen(true)} data-testid="new-skill-btn">
-          <Plus className="w-4 h-4" /> Nueva
+          <Plus className="h-4 w-4" /> Nueva
         </Button>
       </header>
 
-      {skills.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando skills.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="w-20 text-right">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {skills.isLoading && (
-              <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!skills.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground py-8">
-                  No hay skills todavía.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((s) => (
-              <TableRow key={s.id}>
-                <TableCell className="font-medium">{s.name}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Eliminar"
-                    data-testid={`delete-${s.id}`}
-                    disabled={deleteMut.isPending}
-                    onClick={() => {
-                      if (window.confirm(`¿Eliminar la skill "${s.name}"?`)) {
-                        deleteMut.mutate(s.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(s) => s.id}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar skill…"
+        isLoading={skills.isLoading}
+        errorMessage={skills.isError ? 'Error cargando skills.' : undefined}
+        emptyMessage="No hay skills todavía."
+      />
 
       <Dialog
         open={open}

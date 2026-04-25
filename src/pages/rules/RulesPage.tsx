@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Trash2, Loader2, Pencil, FileEdit } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Plus, Trash2, Pencil, FileEdit } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   useSemanticRulesQuery,
   useCreateSemanticRuleMutation,
@@ -12,14 +13,7 @@ import type {
   RulePriority,
 } from '../../types/semantic-rule';
 import { Button } from '../../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
 import { CreateRuleDialog } from './CreateRuleDialog';
 import { EditRuleMetadataDialog } from './EditRuleMetadataDialog';
@@ -52,6 +46,105 @@ export const RulesPage = () => {
 
   const rows = list.data ?? [];
 
+  const columns = useMemo<ColumnDef<SemanticRuleListItem>[]>(
+    () => [
+      {
+        accessorKey: 'ruleText',
+        header: 'Texto',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span
+            className="block max-w-md truncate font-medium"
+            title={row.original.ruleText}
+          >
+            {row.original.ruleText}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'priorityLevel',
+        header: 'Prioridad',
+        // Sort numérico (1/2/3); mostramos label.
+        cell: ({ row }) => (
+          <Badge>{PRIORITY_LABEL[row.original.priorityLevel]}</Badge>
+        ),
+      },
+      {
+        accessorKey: 'ruleType',
+        header: 'Tipo',
+        enableGlobalFilter: true,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.ruleType}</span>
+        ),
+      },
+      {
+        accessorKey: 'isActive',
+        header: 'Activa',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.isActive ? 'sí' : 'no'}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'expiresAt',
+        header: 'Vence',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.expiresAt ? row.original.expiresAt.slice(0, 10) : '—'}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Acciones</span>,
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <div className="flex justify-end gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Editar metadata"
+                data-testid={`edit-meta-${r.id}`}
+                onClick={() => setEditMetaOf(r)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Editar texto (re-procesa con IA)"
+                data-testid={`edit-text-${r.id}`}
+                onClick={() => setEditTextOf(r)}
+              >
+                <FileEdit className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Eliminar"
+                data-testid={`delete-${r.id}`}
+                disabled={deleteMut.isPending}
+                onClick={() => {
+                  if (window.confirm('¿Eliminar esta regla?')) {
+                    deleteMut.mutate(r.id);
+                  }
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          );
+        },
+        meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
+      },
+    ],
+    [deleteMut],
+  );
+
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
@@ -64,99 +157,21 @@ export const RulesPage = () => {
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="new-rule-btn">
-          <Plus className="w-4 h-4" /> Nueva
+          <Plus className="h-4 w-4" /> Nueva
         </Button>
       </header>
 
-      {list.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando reglas.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Texto</TableHead>
-              <TableHead>Prioridad</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Activa</TableHead>
-              <TableHead>Vence</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {list.isLoading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!list.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  No hay reglas todavía.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell className="font-medium max-w-md truncate" title={r.ruleText}>
-                  {r.ruleText}
-                </TableCell>
-                <TableCell>
-                  <Badge>{PRIORITY_LABEL[r.priorityLevel]}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{r.ruleType}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {r.isActive ? 'sí' : 'no'}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {r.expiresAt ? r.expiresAt.slice(0, 10) : '—'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Editar metadata"
-                      data-testid={`edit-meta-${r.id}`}
-                      onClick={() => setEditMetaOf(r)}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Editar texto (re-procesa con IA)"
-                      data-testid={`edit-text-${r.id}`}
-                      onClick={() => setEditTextOf(r)}
-                    >
-                      <FileEdit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Eliminar"
-                      data-testid={`delete-${r.id}`}
-                      disabled={deleteMut.isPending}
-                      onClick={() => {
-                        if (window.confirm('¿Eliminar esta regla?')) {
-                          deleteMut.mutate(r.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(r) => r.id}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar por texto o tipo…"
+        isLoading={list.isLoading}
+        errorMessage={list.isError ? 'Error cargando reglas.' : undefined}
+        emptyMessage="No hay reglas todavía."
+      />
 
       <CreateRuleDialog
         open={createOpen}

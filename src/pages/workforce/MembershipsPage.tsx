@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   useShiftMembershipsQuery,
   useCreateShiftMembershipMutation,
@@ -7,15 +8,9 @@ import {
 } from '../../api/shift-memberships.api';
 import { useEmployeesQuery } from '../../api/employees.api';
 import { useShiftTemplatesQuery } from '../../api/shift-templates.api';
+import type { ShiftMembership } from '../../types/shift-membership';
 import { Button } from '../../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import { DataTable } from '../../components/ui/data-table';
 import { MembershipFormDialog } from './MembershipFormDialog';
 
 /**
@@ -33,14 +28,83 @@ export const MembershipsPage = () => {
 
   const [createOpen, setCreateOpen] = useState(false);
 
-  const empById = new Map(
-    (employees.data ?? []).map((e) => [e.id, e.name] as const),
+  const empById = useMemo(
+    () =>
+      new Map((employees.data ?? []).map((e) => [e.id, e.name] as const)),
+    [employees.data],
   );
-  const tplById = new Map(
-    (templates.data ?? []).map((t) => [t.id, t.name] as const),
+  const tplById = useMemo(
+    () =>
+      new Map((templates.data ?? []).map((t) => [t.id, t.name] as const)),
+    [templates.data],
   );
 
   const rows = memberships.data ?? [];
+
+  const columns = useMemo<ColumnDef<ShiftMembership>[]>(
+    () => [
+      {
+        id: 'employee',
+        header: 'Empleado',
+        // accessorFn → search/sort opera sobre el nombre resuelto, no el UUID.
+        accessorFn: (m) => empById.get(m.employeeId) ?? m.employeeId,
+        enableGlobalFilter: true,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        id: 'template',
+        header: 'Template',
+        accessorFn: (m) => tplById.get(m.templateId) ?? m.templateId,
+        enableGlobalFilter: true,
+        cell: ({ getValue }) => getValue() as string,
+      },
+      {
+        accessorKey: 'effectiveFrom',
+        header: 'Desde',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.effectiveFrom}</span>
+        ),
+      },
+      {
+        accessorKey: 'effectiveUntil',
+        header: 'Hasta',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.effectiveUntil ?? 'abierto'}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Acciones</span>,
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => {
+          const m = row.original;
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Eliminar"
+              data-testid={`delete-${m.id}`}
+              disabled={deleteMut.isPending}
+              onClick={() => {
+                if (window.confirm('¿Eliminar este membership?')) {
+                  deleteMut.mutate(m.id);
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          );
+        },
+        meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
+      },
+    ],
+    [empById, tplById, deleteMut],
+  );
 
   return (
     <div className="space-y-4">
@@ -58,73 +122,23 @@ export const MembershipsPage = () => {
           data-testid="new-membership-btn"
           disabled={employees.isLoading || templates.isLoading}
         >
-          <Plus className="w-4 h-4" /> Nuevo
+          <Plus className="h-4 w-4" /> Nuevo
         </Button>
       </header>
 
-      {memberships.isError && (
-        <div className="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
-          Error cargando memberships.
-        </div>
-      )}
-
-      <div className="rounded-lg border border-white/5 bg-surface-low">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empleado</TableHead>
-              <TableHead>Template</TableHead>
-              <TableHead>Desde</TableHead>
-              <TableHead>Hasta</TableHead>
-              <TableHead className="w-20 text-right">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {memberships.isLoading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> Cargando…
-                </TableCell>
-              </TableRow>
-            )}
-            {!memberships.isLoading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No hay memberships todavía.
-                </TableCell>
-              </TableRow>
-            )}
-            {rows.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell className="font-medium">
-                  {empById.get(m.employeeId) ?? m.employeeId}
-                </TableCell>
-                <TableCell>{tplById.get(m.templateId) ?? m.templateId}</TableCell>
-                <TableCell className="text-muted-foreground">{m.effectiveFrom}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {m.effectiveUntil ?? 'abierto'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Eliminar"
-                    data-testid={`delete-${m.id}`}
-                    disabled={deleteMut.isPending}
-                    onClick={() => {
-                      if (window.confirm('¿Eliminar este membership?')) {
-                        deleteMut.mutate(m.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(m) => m.id}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 15, 20]}
+        searchPlaceholder="Buscar por empleado o template…"
+        isLoading={memberships.isLoading}
+        errorMessage={
+          memberships.isError ? 'Error cargando memberships.' : undefined
+        }
+        emptyMessage="No hay memberships todavía."
+      />
 
       <MembershipFormDialog
         open={createOpen}
