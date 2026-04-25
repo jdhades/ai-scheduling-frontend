@@ -5,6 +5,7 @@ import { Placeholder } from './pages/Placeholder';
 import { EmployeesPage } from './pages/workforce/EmployeesPage';
 import { MembershipsPage } from './pages/workforce/MembershipsPage';
 import { SkillsPage } from './pages/workforce/SkillsPage';
+import { EmployeeDetailPage } from './pages/workforce/EmployeeDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +25,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'employees/:id',
-            element: <Placeholder title="Detalle de empleado" />,
+            element: <EmployeeDetailPage />,
           },
           {
             path: 'memberships',

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import {
   useEmployeesQuery,
@@ -84,7 +85,14 @@ export const EmployeesPage = () => {
             )}
             {employees.map((emp: Employee) => (
               <TableRow key={emp.id}>
-                <TableCell className="font-medium">{emp.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link
+                    to={`/workforce/employees/${emp.id}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {emp.name}
+                  </Link>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{emp.role}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {emp.phone ?? '—'}
