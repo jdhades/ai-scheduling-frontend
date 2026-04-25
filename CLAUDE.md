@@ -18,3 +18,11 @@ Antes de hardcodear algo:
 3. Si el usuario lo aprueba, crear un `TODO(hardcode): <qué se hardcodea> — <por qué se hizo así> — <cómo sacarlo después>` en el lugar exacto del código.
 
 Los TODOs con ese prefijo son buscables (`grep -r "TODO(hardcode)"`) y marcan deuda técnica conocida.
+
+## UI/UX
+
+Antes de tocar código frontend, leé [docs/design-system.md](docs/design-system.md): tokens, layout, estados obligatorios (loading/empty/error), touch targets, accesibilidad, anti-patterns.
+
+Antes de declarar una tarea de UI terminada, corré [/preflight-ui](.claude/commands/preflight-ui.md) y reportá el resultado. Si hay TODOs en el checklist, la tarea no está cerrada.
+
+Si una regla del design-system se queda corta para un caso real, actualizá el doc en el mismo PR — no improvises en silencio.

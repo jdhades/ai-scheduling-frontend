@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Antigravity tooling artifacts
+antigravity_test_manifest.json
