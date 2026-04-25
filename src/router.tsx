@@ -4,6 +4,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { Placeholder } from './pages/Placeholder';
 import { EmployeesPage } from './pages/workforce/EmployeesPage';
 import { MembershipsPage } from './pages/workforce/MembershipsPage';
+import { SkillsPage } from './pages/workforce/SkillsPage';
 
 export const router = createBrowserRouter([
   {
@@ -31,12 +32,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'skills',
-            element: (
-              <Placeholder
-                title="Catálogo de skills"
-                description="Skills disponibles en el tenant. Crear / desactivar."
-              />
-            ),
+            element: <SkillsPage />,
           },
         ],
       },
