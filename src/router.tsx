@@ -9,6 +9,7 @@ import { EmployeeDetailPage } from './pages/workforce/EmployeeDetailPage';
 import { TemplatesPage } from './pages/scheduling/TemplatesPage';
 import { SchedulePage } from './pages/scheduling/SchedulePage';
 import { GeneratePage } from './pages/scheduling/GeneratePage';
+import { RulesPage } from './pages/rules/RulesPage';
 
 export const router = createBrowserRouter([
   {
@@ -62,15 +63,7 @@ export const router = createBrowserRouter([
       },
 
       // Rules --------------------------------------------------------------
-      {
-        path: 'rules',
-        element: (
-          <Placeholder
-            title="Reglas semánticas"
-            description="Lista, crear (texto natural), editar metadata, editar texto (regenera embedding)."
-          />
-        ),
-      },
+      { path: 'rules', element: <RulesPage /> },
 
       // Approvals ----------------------------------------------------------
       {
