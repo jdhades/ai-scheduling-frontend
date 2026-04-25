@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import type { Shift } from '../store/scheduleStore'
+import { api } from '../lib/api'
 
 // In a real app, this API_URL would be inside an env variable like import.meta.env.VITE_API_URL
 const API_URL = 'http://localhost:3000'
@@ -95,5 +96,44 @@ export const useGenerateHybridMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['schedules', COMPANY_ID, WEEK_START] })
         }
+    })
+}
+
+// ─── Generación con weekStart parametrizable (post-Phase 13) ──────────────────
+
+export interface GenerateScheduleResult {
+    assignmentsCount: number
+    unfilledShiftsCount: number
+    llmAccepted: number
+    algorithmCorrected: number
+    explanation: string
+    warnings: string[]
+}
+
+/**
+ * Variante moderna que acepta `weekStart` desde el caller. Usa la
+ * instancia `api` compartida (header X-Company-Id + query companyId
+ * vía interceptor). Reemplaza a `useGenerateHybridMutation` cuando el
+ * caller necesita controlar la semana objetivo.
+ */
+export const useGenerateHybridForWeekMutation = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: async (params: { weekStart: string; maxFairnessDeviation?: number }) => {
+            const { data } = await api.post<GenerateScheduleResult>(
+                '/schedules/generate/hybrid',
+                {
+                    weekStart: params.weekStart,
+                    maxFairnessDeviation: params.maxFairnessDeviation,
+                },
+            )
+            return { result: data, weekStart: params.weekStart }
+        },
+        onSuccess: ({ weekStart }) => {
+            // Invalida cualquier query de schedules — no sabemos qué keys
+            // estarán activas en el grid.
+            queryClient.invalidateQueries({ queryKey: ['schedules'] })
+            queryClient.invalidateQueries({ queryKey: ['schedules', COMPANY_ID, weekStart] })
+        },
     })
 }

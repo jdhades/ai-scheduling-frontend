@@ -6,6 +6,9 @@ import { EmployeesPage } from './pages/workforce/EmployeesPage';
 import { MembershipsPage } from './pages/workforce/MembershipsPage';
 import { SkillsPage } from './pages/workforce/SkillsPage';
 import { EmployeeDetailPage } from './pages/workforce/EmployeeDetailPage';
+import { TemplatesPage } from './pages/scheduling/TemplatesPage';
+import { SchedulePage } from './pages/scheduling/SchedulePage';
+import { GeneratePage } from './pages/scheduling/GeneratePage';
 
 export const router = createBrowserRouter([
   {
@@ -45,30 +48,15 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="grid" replace /> },
           {
             path: 'templates',
-            element: (
-              <Placeholder
-                title="Shift Templates"
-                description="Definiciones recurrentes de turno. CRUD."
-              />
-            ),
+            element: <TemplatesPage />,
           },
           {
             path: 'grid',
-            element: (
-              <Placeholder
-                title="Horario semanal"
-                description="ScheduleGrid existente — pendiente de mover acá."
-              />
-            ),
+            element: <SchedulePage />,
           },
           {
             path: 'generate',
-            element: (
-              <Placeholder
-                title="Generar horario"
-                description="Trigger manual de POST /schedules/generate/hybrid."
-              />
-            ),
+            element: <GeneratePage />,
           },
         ],
       },

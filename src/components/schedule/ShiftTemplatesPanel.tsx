@@ -3,12 +3,10 @@ import {
     useShiftTemplatesQuery,
     useCreateTemplateMutation,
     useDeleteTemplateMutation,
-    useInstantiateWeekMutation,
     type CreateShiftTemplatePayload,
 } from '../../api/shift-templates.api'
 
 const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const WEEK_START = '2024-03-04' // Matches the seed data Monday
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
 const EMPTY_FORM: CreateShiftTemplatePayload = {
@@ -24,23 +22,15 @@ export function ShiftTemplatesPanel() {
     const { data: templates = [], isLoading } = useShiftTemplatesQuery()
     const createMutation = useCreateTemplateMutation()
     const deleteMutation = useDeleteTemplateMutation()
-    const instantiateMutation = useInstantiateWeekMutation()
 
     const [form, setForm] = useState<CreateShiftTemplatePayload>(EMPTY_FORM)
     const [showForm, setShowForm] = useState(false)
-    const [instantiateResult, setInstantiateResult] = useState<{ generated: number } | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         await createMutation.mutateAsync(form)
         setForm(EMPTY_FORM)
         setShowForm(false)
-    }
-
-    const handleInstantiate = async () => {
-        const result = await instantiateMutation.mutateAsync(WEEK_START)
-        setInstantiateResult(result)
-        setTimeout(() => setInstantiateResult(null), 5000)
     }
 
     return (
@@ -63,24 +53,6 @@ export function ShiftTemplatesPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                        onClick={handleInstantiate}
-                        disabled={instantiateMutation.isPending || templates.length === 0}
-                        style={{
-                            padding: '8px 16px',
-                            background: instantiateMutation.isPending ? '#334155' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            cursor: instantiateMutation.isPending || templates.length === 0 ? 'not-allowed' : 'pointer',
-                            opacity: templates.length === 0 ? 0.5 : 1,
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        {instantiateMutation.isPending ? '⏳ Generando…' : '⚡ Generar Semana'}
-                    </button>
-                    <button
                         onClick={() => setShowForm(v => !v)}
                         style={{
                             padding: '8px 14px',
@@ -96,21 +68,6 @@ export function ShiftTemplatesPanel() {
                     </button>
                 </div>
             </div>
-
-            {/* Success banner */}
-            {instantiateResult && (
-                <div style={{
-                    padding: '10px 14px',
-                    background: 'rgba(16,185,129,0.15)',
-                    border: '1px solid rgba(16,185,129,0.3)',
-                    borderRadius: '8px',
-                    color: '#6ee7b7',
-                    fontSize: '13px',
-                    marginBottom: '12px',
-                }}>
-                    ✅ {instantiateResult.generated} turnos generados para la semana del {WEEK_START}
-                </div>
-            )}
 
             {/* Create form */}
             {showForm && (
@@ -137,7 +94,7 @@ export function ShiftTemplatesPanel() {
                     <div>
                         <label style={labelStyle}>Día</label>
                         <select
-                            value={form.dayOfWeek}
+                            value={form.dayOfWeek ?? 1}
                             onChange={e => setForm(f => ({ ...f, dayOfWeek: +e.target.value }))}
                             style={inputStyle}
                         >
@@ -216,7 +173,7 @@ export function ShiftTemplatesPanel() {
                                 minWidth: '32px',
                                 textAlign: 'center',
                             }}>
-                                {DAY_LABELS[t.dayOfWeek]}
+                                {t.dayOfWeek === null ? 'Todos' : DAY_LABELS[t.dayOfWeek]}
                             </span>
                             <span style={{ flex: 1, fontSize: '13px', color: '#cbd5e1', fontWeight: 500 }}>
                                 {t.name}
