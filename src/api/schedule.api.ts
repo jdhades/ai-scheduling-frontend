@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import type { Shift, Employee } from '../store/scheduleStore'
+import type { Shift } from '../store/scheduleStore'
 
 // In a real app, this API_URL would be inside an env variable like import.meta.env.VITE_API_URL
 const API_URL = 'http://localhost:3000'
@@ -8,28 +8,6 @@ const API_URL = 'http://localhost:3000'
 // Company ID for demo purposes
 const COMPANY_ID = '11111111-2222-3333-4444-555555555555'
 const WEEK_START = '2024-03-04' // Matching backend requirements for scenario 5
-
-export const useEmployeesQuery = () => {
-    return useQuery({
-        queryKey: ['employees', COMPANY_ID],
-        queryFn: async () => {
-            const { data } = await axios.get<any[]>(`${API_URL}/employees`, {
-                params: {
-                    companyId: COMPANY_ID,
-                },
-                headers: {
-                    'x-company-id': COMPANY_ID
-                }
-            })
-            return data.map(emp => ({
-                id: emp._id || emp.id,
-                name: emp._name || emp.name,
-                role: emp._role || emp.role,
-                skills: [] // We don't render them complexly yet
-            })) as Employee[]
-        }
-    })
-}
 
 export const useScheduleQuery = () => {
     return useQuery({

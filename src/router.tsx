@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from './layouts/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { Placeholder } from './pages/Placeholder';
+import { EmployeesPage } from './pages/workforce/EmployeesPage';
 
 export const router = createBrowserRouter([
   {
@@ -17,12 +18,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="employees" replace /> },
           {
             path: 'employees',
-            element: (
-              <Placeholder
-                title="Empleados"
-                description="Listar / crear / editar / desactivar empleados del tenant."
-              />
-            ),
+            element: <EmployeesPage />,
           },
           {
             path: 'employees/:id',

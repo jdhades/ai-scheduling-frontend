@@ -3,7 +3,8 @@ import { EmployeeRow } from './EmployeeRow.tsx'
 import { ShiftTemplatesPanel } from './ShiftTemplatesPanel.tsx'
 import { useTranslation } from 'react-i18next'
 import { useScheduleStore } from '../../store/scheduleStore.ts'
-import { useEmployeesQuery, useScheduleQuery, useGenerateScheduleMutation, useGenerateHybridMutation } from '../../api/schedule.api.ts'
+import { useEmployeesQuery } from '../../api/employees.api'
+import { useScheduleQuery, useGenerateScheduleMutation, useGenerateHybridMutation } from '../../api/schedule.api.ts'
 import { RotateCcw, Wand2 } from 'lucide-react'
 
 // Constants
