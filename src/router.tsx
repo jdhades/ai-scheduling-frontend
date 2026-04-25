@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from './layouts/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
-import { Placeholder } from './pages/Placeholder';
 import { EmployeesPage } from './pages/workforce/EmployeesPage';
 import { MembershipsPage } from './pages/workforce/MembershipsPage';
 import { SkillsPage } from './pages/workforce/SkillsPage';
@@ -14,6 +13,9 @@ import { IncidentsPage } from './pages/approvals/IncidentsPage';
 import { SwapsPage } from './pages/approvals/SwapsPage';
 import { AbsencesPage } from './pages/approvals/AbsencesPage';
 import { DayOffsPage } from './pages/approvals/DayOffsPage';
+import { FairnessPage } from './pages/insights/FairnessPage';
+import { CoveragePage } from './pages/insights/CoveragePage';
+import { DemandPage } from './pages/insights/DemandPage';
 
 export const router = createBrowserRouter([
   {
@@ -86,23 +88,9 @@ export const router = createBrowserRouter([
         path: 'insights',
         children: [
           { index: true, element: <Navigate to="fairness" replace /> },
-          {
-            path: 'fairness',
-            element: (
-              <Placeholder
-                title="Fairness por empleado"
-                description="Indicadores acumulados de carga."
-              />
-            ),
-          },
-          {
-            path: 'coverage',
-            element: <Placeholder title="Coverage Heatmap" />,
-          },
-          {
-            path: 'demand',
-            element: <Placeholder title="Demand Heatmap" />,
-          },
+          { path: 'fairness', element: <FairnessPage /> },
+          { path: 'coverage', element: <CoveragePage /> },
+          { path: 'demand', element: <DemandPage /> },
         ],
       },
 
