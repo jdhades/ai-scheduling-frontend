@@ -1,5 +1,6 @@
 import { Search, Bell, User } from "lucide-react";
 import { Badge } from "../ui/Badge";
+import { LanguageSwitcher } from "../LanguageSwitcher";
 import { cn } from "../../lib/utils.ts";
 
 export const DashboardHeader = () => {
@@ -36,6 +37,8 @@ export const DashboardHeader = () => {
           />
         </div>
         
+        <LanguageSwitcher />
+
         <button className="relative p-2 text-muted-foreground hover:text-white transition-colors group">
           <Bell className="w-5 h-5 transition-transform group-hover:scale-110" />
           <div className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border-2 border-background shadow-[0_0_8px_rgba(68,226,205,0.6)]" />

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { describeApiError } from '../../lib/api-error';
 import {
   Dialog,
   DialogContent,
@@ -71,7 +72,7 @@ export const MembershipFormDialog = ({
       });
       reset();
     } catch (err) {
-      setError((err as Error).message ?? 'Error al crear membership.');
+      setError(describeApiError(err));
     }
   };
 

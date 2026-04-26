@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { DataTable } from '../../components/ui/data-table';
+import { describeApiError } from '../../lib/api-error';
 import {
   Dialog,
   DialogContent,
@@ -47,7 +48,7 @@ export const SkillsPage = () => {
       setName('');
       setOpen(false);
     } catch (err) {
-      setError((err as Error).message ?? 'Error al crear skill.');
+      setError(describeApiError(err));
     }
   };
 

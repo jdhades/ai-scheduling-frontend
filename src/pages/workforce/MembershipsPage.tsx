@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Info, Plus, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   useShiftMembershipsQuery,
@@ -55,10 +55,24 @@ export const MembershipsPage = () => {
       },
       {
         id: 'template',
-        header: 'Template',
+        header: 'Shift Template',
         accessorFn: (m) => tplById.get(m.templateId) ?? m.templateId,
         enableGlobalFilter: true,
-        cell: ({ getValue }) => getValue() as string,
+        cell: ({ row }) => {
+          const name = tplById.get(row.original.templateId);
+          if (name) return name;
+          // Fallback cuando el catálogo no resolvió: mostramos los últimos
+          // 8 chars (los UUIDs de la seed comparten prefijo, así que el
+          // sufijo discrimina mejor).
+          return (
+            <span
+              className="font-mono text-muted-foreground"
+              title={row.original.templateId}
+            >
+              …{row.original.templateId.slice(-8)}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'effectiveFrom',
@@ -125,6 +139,16 @@ export const MembershipsPage = () => {
           <Plus className="h-4 w-4" /> Nuevo
         </Button>
       </header>
+
+      <div className="flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+        <p>
+          Un empleado puede pertenecer a varios shift templates al mismo
+          tiempo — define a qué turnos está habilitado. El scheduler decide
+          cada día a cuál asignarlo según cobertura, fairness y conflictos
+          de horario.
+        </p>
+      </div>
 
       <DataTable
         data={rows}

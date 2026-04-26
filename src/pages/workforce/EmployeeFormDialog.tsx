@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { describeApiError } from '../../lib/api-error';
 import {
   Dialog,
   DialogContent,
@@ -77,7 +78,7 @@ export const EmployeeFormDialog = ({
         externalId: values.externalId?.trim() || undefined,
       });
     } catch (err) {
-      setError((err as Error).message ?? 'Error al guardar empleado.');
+      setError(describeApiError(err));
     }
   };
 
@@ -124,16 +125,20 @@ export const EmployeeFormDialog = ({
               id="employee-exp"
               type="number"
               min={0}
-              value={values.experienceMonths}
+              // value=0 → input vacío para evitar el "043" cuando el manager
+              // tipea sobre el placeholder. Al editar un empleado con
+              // experiencia >0, el valor se muestra normalmente.
+              value={values.experienceMonths === 0 ? '' : values.experienceMonths}
               onChange={(e) =>
                 setValues((v) => ({
                   ...v,
-                  experienceMonths: Number.parseInt(e.target.value, 10) || 0,
+                  experienceMonths:
+                    e.target.value === '' ? 0 : Number.parseInt(e.target.value, 10) || 0,
                 }))
               }
+              placeholder="0"
               data-testid="employee-exp-input"
               disabled={submitting}
-              required
             />
           </div>
           <div className="space-y-1">
