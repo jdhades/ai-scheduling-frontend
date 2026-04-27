@@ -35,6 +35,11 @@ export interface SemanticRuleListItem {
   isActive: boolean;
   expiresAt: string | null;
   createdAt: string;
+  /** true si el LLM generó embedding (regla buscable semánticamente). */
+  hasEmbedding: boolean;
+  /** true si el LLM extrajo estructura (regla aplicable por el scheduler).
+   *  Sin estructura, la regla queda como contexto para humanos. */
+  hasStructure: boolean;
 }
 
 export interface CreateSemanticRulePayload {

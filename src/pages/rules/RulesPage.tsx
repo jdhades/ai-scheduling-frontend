@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Trash2, Pencil, FileEdit } from 'lucide-react';
+import { Plus, Trash2, Pencil, FileEdit, AlertTriangle, Sparkles } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   useSemanticRulesQuery,
@@ -68,6 +68,45 @@ export const RulesPage = () => {
         cell: ({ row }) => (
           <Badge>{PRIORITY_LABEL[row.original.priorityLevel]}</Badge>
         ),
+      },
+      {
+        id: 'ai',
+        header: 'IA',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const r = row.original;
+          if (!r.hasStructure) {
+            return (
+              <span
+                className="inline-flex items-center gap-1 text-error"
+                title="El LLM no pudo extraer estructura. El scheduler ignora esta regla hasta que se reformule."
+              >
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="text-xs">Sin estructura</span>
+              </span>
+            );
+          }
+          if (!r.hasEmbedding) {
+            return (
+              <span
+                className="inline-flex items-center gap-1 text-muted-foreground"
+                title="No tiene embedding — no es buscable semánticamente. Editá el texto para reintentar."
+              >
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="text-xs">Sin embedding</span>
+              </span>
+            );
+          }
+          return (
+            <span
+              className="inline-flex items-center gap-1 text-primary"
+              title="Embedding + estructura OK. El scheduler la aplica."
+            >
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="text-xs">OK</span>
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'ruleType',
@@ -176,7 +215,7 @@ export const RulesPage = () => {
       <CreateRuleDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSubmit={(p) => createMut.mutateAsync(p).then(() => setCreateOpen(false))}
+        onSubmit={(p) => createMut.mutateAsync(p)}
         submitting={createMut.isPending}
       />
       <EditRuleMetadataDialog

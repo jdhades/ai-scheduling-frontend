@@ -15,6 +15,8 @@ const rule = (over: Partial<Record<string, unknown>> = {}) => ({
   isActive: true,
   expiresAt: null,
   createdAt: '2026-04-01T00:00:00Z',
+  hasEmbedding: true,
+  hasStructure: true,
   ...over,
 });
 
@@ -148,6 +150,62 @@ describe('RulesPage', () => {
     await user.click(screen.getByTestId('rt-submit'));
 
     await waitFor(() => expect(patchCalled).toBe(true));
+  });
+
+  it('cuando el LLM detecta duplicado, el dialog queda abierto con el ID existente', async () => {
+    server.use(
+      http.get(`${API_URL}/rules/semantic`, () => HttpResponse.json([])),
+      http.post(`${API_URL}/rules/semantic`, () =>
+        HttpResponse.json(
+          {
+            id: 'existing-1',
+            embeddingGenerated: false,
+            isDuplicate: true,
+            duplicateOfId: 'existing-1',
+            structureExtracted: true,
+          },
+          { status: 201 },
+        ),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<RulesPage />);
+
+    await waitFor(() =>
+      expect(screen.getByText('No hay reglas todavía.')).toBeInTheDocument(),
+    );
+    await user.click(screen.getByTestId('new-rule-btn'));
+    await user.type(
+      screen.getByTestId('r-text-input'),
+      'Pablo no trabaja los lunes',
+    );
+    await user.click(screen.getByTestId('r-submit'));
+
+    // No se cierra: muestra el panel de resultado con el ID existente.
+    await waitFor(() =>
+      expect(screen.getByTestId('r-result-panel')).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('r-duplicate-of-id')).toHaveTextContent(
+      'existing-1',
+    );
+  });
+
+  it('muestra badge "Sin estructura" cuando hasStructure=false', async () => {
+    server.use(
+      http.get(`${API_URL}/rules/semantic`, () =>
+        HttpResponse.json([
+          rule({ id: 'broken', ruleText: 'Texto raro', hasStructure: false }),
+        ]),
+      ),
+    );
+
+    renderWithProviders(<RulesPage />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Texto raro')).toBeInTheDocument(),
+    );
+    expect(screen.getByText('Sin estructura')).toBeInTheDocument();
   });
 
   it('elimina tras confirmar', async () => {
