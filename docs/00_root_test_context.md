@@ -201,3 +201,62 @@ Hallazgos implícitos (deuda no marcada):
 - `vitest.setup.ts` central con mocks comunes (i18n, Recharts).
 - MSW server compartido en `src/test/msw/` para integración.
 - Wrapper helper `renderWithProviders` con `QueryClient`, `MemoryRouter`, `SocketContext` mock.
+
+---
+
+## 8. Cambios recientes (sprint Company Policies — 2026-04-26 → 2026-04-27)
+
+> Doc complementario: `.claude/commands/preflight-ui.md` (checklist
+> pre-entrega) y `docs/design-system.md` (tokens + estados obligatorios).
+
+### Componentes y páginas nuevos
+
+| Pieza | Ubicación | Tests |
+|---|---|---|
+| **`<DataTable>`** (TanStack Table) reusable: search global, sort, paginación, page-size selector | [src/components/ui/data-table.tsx](../src/components/ui/data-table.tsx) | ✅ 9 casos |
+| **`<LanguageSwitcher>`** (toggle EN/ES, persiste en localStorage) | [src/components/LanguageSwitcher.tsx](../src/components/LanguageSwitcher.tsx) | ❌ |
+| **`describeApiError(err)`** helper i18n para errores del backend (lee `errorCode` del filter, traduce via i18n) | [src/lib/api-error.ts](../src/lib/api-error.ts) | ❌ (cubierto indirecto via dialogs) |
+| **`<CompanyPoliciesPage>`** + `<CompanyPolicyFormDialog>` con state machine para suggestion-loop | [src/pages/policies/](../src/pages/policies/) | ✅ 6 casos |
+| **`<TemplateFormDialog>`** create+edit con `<select>` skill | [src/pages/scheduling/TemplateFormDialog.tsx](../src/pages/scheduling/TemplateFormDialog.tsx) | ✅ via TemplatesPage |
+
+### Páginas migradas a `<DataTable>` (rollout completo, excepto grilla de horarios)
+
+`EmployeesPage`, `SkillsPage`, `MembershipsPage`, `RulesPage`,
+`TemplatesPage`, `FairnessPage`, `AbsencesPage`, `IncidentsPage`,
+`SwapsPage`, `DayOffsPage`. Cada una declara `columns: ColumnDef[]`,
+preserva data-testids de filas y acciones, y gana búsqueda global +
+sort + paginación de 10 default (opciones 5/10/15/20).
+
+### i18n — namespace `errors`
+
+[src/lib/i18n.ts](../src/lib/i18n.ts) tiene un namespace `errors` con
+las claves: `EMPLOYEE_PHONE_DUPLICATE`, `EMPLOYEE_EXTERNAL_ID_DUPLICATE`,
+`MEMBERSHIP_DUPLICATE`, `SKILL_DUPLICATE`, `POLICY_INTERPRETER_DUPLICATE`,
+`UNIQUE_VIOLATION`, `NOT_NULL_VIOLATION`, `FOREIGN_KEY_VIOLATION`,
+`CHECK_VIOLATION`, `INTERNAL_ERROR`, `GENERIC_HTTP`, `UNKNOWN`. Todas
+disponibles en EN y ES. Detección con `load: 'languageOnly'` (resuelve
+`en-US` → `en`).
+
+### Manejo de errores (sección 4 desactualizada)
+
+La nota "prácticamente nulo" ya **no aplica**. Ahora los dialogs llaman
+`describeApiError(err)` que extrae `errorCode` del backend y lo traduce
+vía i18n. Cada form crítico (Employee, Membership, Skill, Policy, Rule)
+muestra mensajes user-friendly. Los `RulesPage` y `CompanyPoliciesPage`
+implementan suggestion-loop: cuando el LLM marca complex / no
+matchea interpreter, el dialog muestra picker de reformulaciones
+verificadas por el backend.
+
+### Endpoints nuevos consumidos
+
+| Verbo | URL | Hook |
+|---|---|---|
+| GET/POST/PATCH/DELETE | `/company-policies` | `useCompanyPoliciesQuery / useCreateCompanyPolicyMutation / useUpdateCompanyPolicyMutation / useDeleteCompanyPolicyMutation` |
+| Existentes con suggestion-loop activo | `/rules/semantic` | `useCreateSemanticRuleMutation` ahora puede devolver `{ status: 'needs_clarification', suggestions }` |
+
+### Tests count actualizado
+
+Contando los nuevos del sprint: ~125+ tests verdes en suite total.
+Los más relevantes son `data-table.test.tsx` (9), `CompanyPoliciesPage`
+(6), `RulesPage` (8), `EmployeesPage` (8), Templates/Memberships (4
+c/u), interpreters + servicios del backend.
