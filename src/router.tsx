@@ -9,6 +9,7 @@ import { TemplatesPage } from './pages/scheduling/TemplatesPage';
 import { SchedulePage } from './pages/scheduling/SchedulePage';
 import { GeneratePage } from './pages/scheduling/GeneratePage';
 import { RulesPage } from './pages/rules/RulesPage';
+import { CompanyPoliciesPage } from './pages/policies/CompanyPoliciesPage';
 import { IncidentsPage } from './pages/approvals/IncidentsPage';
 import { SwapsPage } from './pages/approvals/SwapsPage';
 import { AbsencesPage } from './pages/approvals/AbsencesPage';
@@ -70,6 +71,9 @@ export const router = createBrowserRouter([
 
       // Rules --------------------------------------------------------------
       { path: 'rules', element: <RulesPage /> },
+
+      // Policies -----------------------------------------------------------
+      { path: 'policies', element: <CompanyPoliciesPage /> },
 
       // Approvals ----------------------------------------------------------
       {

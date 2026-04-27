@@ -24,6 +24,7 @@ import {
   Map,
   TrendingUp,
   Zap,
+  Shield,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useDashboardStore } from '../../store/dashboardStore';
@@ -58,7 +59,10 @@ const groups: NavGroup[] = [
   {
     label: 'Rules',
     icon: ScrollText,
-    items: [{ to: '/rules', label: 'Reglas semánticas', icon: ScrollText }],
+    items: [
+      { to: '/rules', label: 'Reglas semánticas', icon: ScrollText },
+      { to: '/policies', label: 'Políticas', icon: Shield },
+    ],
   },
   {
     label: 'Approvals',

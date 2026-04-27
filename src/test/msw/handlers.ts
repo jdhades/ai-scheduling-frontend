@@ -15,4 +15,6 @@ export const defaultHandlers = [
   // Catálogo de skills del tenant — vacío por default. Lo consumen forms
   // que necesitan elegir una skill (ej. TemplateFormDialog).
   http.get(`${API_URL}/company-skills`, () => HttpResponse.json([])),
+  // Políticas de la empresa — vacío por default.
+  http.get(`${API_URL}/company-policies`, () => HttpResponse.json([])),
 ];
