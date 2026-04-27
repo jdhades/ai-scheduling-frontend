@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { AlertTriangle, CheckCircle2, Copy } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,11 +11,13 @@ import {
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
+import { Badge } from '../../components/ui/Badge';
 import type {
   CreateSemanticRulePayload,
   CreateSemanticRuleResult,
   RulePriority,
   RuleType,
+  SemanticRuleSuggestion,
 } from '../../types/semantic-rule';
 import { describeApiError } from '../../lib/api-error';
 
@@ -54,6 +56,9 @@ export const CreateRuleDialog = ({
   const [ruleType, setRuleType] = useState<RuleType>('preference');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CreateSemanticRuleResult | null>(null);
+  const [suggestions, setSuggestions] = useState<
+    SemanticRuleSuggestion[] | null
+  >(null);
 
   const reset = () => {
     setRuleText('');
@@ -61,26 +66,34 @@ export const CreateRuleDialog = ({
     setRuleType('preference');
     setError(null);
     setResult(null);
+    setSuggestions(null);
   };
 
-  const handle = async (e: FormEvent) => {
-    e.preventDefault();
+  const submitWithText = async (textToSubmit: string) => {
     setError(null);
-    if (ruleText.trim().length < 10) {
+    setSuggestions(null);
+    if (textToSubmit.trim().length < 10) {
       setError('La regla debe tener al menos 10 caracteres.');
       return;
     }
     try {
       const r = await onSubmit({
-        ruleText: ruleText.trim(),
+        ruleText: textToSubmit.trim(),
         priorityLevel,
         ruleType,
       });
-      // OK total → cerrar.
+      // 1. Suggestion-loop: el LLM marcó complex y propuso alternativas.
+      //    NO se persistió. Mostramos el picker.
+      if (r.suggestions && r.suggestions.length > 0) {
+        setSuggestions(r.suggestions);
+        return;
+      }
+      // 2. Resultado con warnings o duplicado → panel de resultado.
       if (r.isDuplicate || !r.embeddingGenerated || !r.structureExtracted) {
         setResult(r);
         return;
       }
+      // 3. OK total → cerrar.
       reset();
       onOpenChange(false);
     } catch (err) {
@@ -88,6 +101,17 @@ export const CreateRuleDialog = ({
     }
   };
 
+  const handle = async (e: FormEvent) => {
+    e.preventDefault();
+    await submitWithText(ruleText);
+  };
+
+  const pickSuggestion = async (s: SemanticRuleSuggestion) => {
+    setRuleText(s.suggestedText);
+    await submitWithText(s.suggestedText);
+  };
+
+  const showSuggestions = suggestions !== null;
   const showResult = result !== null;
   const isDup = result?.isDuplicate === true;
   const noEmb = result !== null && !result.embeddingGenerated;
@@ -104,16 +128,66 @@ export const CreateRuleDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {showResult ? 'Resultado de la creación' : 'Nueva regla semántica'}
+            {showSuggestions
+              ? 'Sugerencias de reformulación'
+              : showResult
+                ? 'Resultado de la creación'
+                : 'Nueva regla semántica'}
           </DialogTitle>
           <DialogDescription>
-            {showResult
-              ? 'La IA procesó la regla. Revisá el resultado antes de cerrar.'
-              : 'Escribí la regla en lenguaje natural. La IA genera embedding, busca duplicados y extrae estructura para el scheduler.'}
+            {showSuggestions
+              ? 'El sistema no pudo aplicar tu regla tal cual (texto ambiguo o sin sujeto). La IA propuso estas alternativas. Elegí una para crearla, o volvé al texto libre.'
+              : showResult
+                ? 'La IA procesó la regla. Revisá el resultado antes de cerrar.'
+                : 'Escribí la regla en lenguaje natural. La IA genera embedding, busca duplicados y extrae estructura para el scheduler.'}
           </DialogDescription>
         </DialogHeader>
 
-        {showResult ? (
+        {showSuggestions ? (
+          <div className="space-y-3" data-testid="r-suggestions-panel">
+            {suggestions!.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => pickSuggestion(s)}
+                disabled={submitting}
+                data-testid={`r-suggestion-${i}`}
+                className="w-full rounded-md border border-white/10 bg-surface-low p-3 text-left transition-colors hover:border-primary/40 hover:bg-surface-container disabled:opacity-50"
+              >
+                <div className="flex items-start gap-2">
+                  <Sparkles
+                    className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">
+                      {s.suggestedText}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {s.explanation}
+                    </p>
+                    {s.previewIntent && (
+                      <div className="pt-1">
+                        <Badge>intent: {s.previewIntent}</Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSuggestions(null)}
+                disabled={submitting}
+                data-testid="r-suggestions-back"
+              >
+                Volver al texto libre
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : showResult ? (
           <div className="space-y-3" data-testid="r-result-panel">
             {isDup ? (
               <div className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">

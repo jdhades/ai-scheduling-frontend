@@ -208,6 +208,76 @@ describe('RulesPage', () => {
     expect(screen.getByText('Sin estructura')).toBeInTheDocument();
   });
 
+  it('intent=complex con suggestions: el dialog muestra picker y al elegir re-submitea con el texto sugerido', async () => {
+    const calls: Array<{ ruleText: string }> = [];
+    server.use(
+      http.get(`${API_URL}/rules/semantic`, () => HttpResponse.json([])),
+      http.post(`${API_URL}/rules/semantic`, async ({ request }) => {
+        const body = (await request.json()) as { ruleText: string };
+        calls.push({ ruleText: body.ruleText });
+        if (calls.length === 1) {
+          // Primer submit → complex con sugerencias.
+          return HttpResponse.json(
+            {
+              id: 'pending',
+              embeddingGenerated: true,
+              isDuplicate: false,
+              structureExtracted: false,
+              intent: 'complex',
+              suggestions: [
+                {
+                  id: 's1',
+                  suggestedText: 'Pablo no trabaja los lunes',
+                  explanation: 'Sujeto + día concreto, intent block',
+                  previewIntent: 'block',
+                },
+                {
+                  id: 's2',
+                  suggestedText: 'Sofía prefiere turnos de mañana',
+                  explanation: 'Preferencia explícita',
+                  previewIntent: 'preference',
+                },
+              ],
+            },
+            { status: 201 },
+          );
+        }
+        // Segundo submit con el texto elegido → ahora sí, persistido.
+        return HttpResponse.json(
+          rule({ id: 'new', ruleText: body.ruleText }),
+          { status: 201 },
+        );
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<RulesPage />);
+
+    await waitFor(() =>
+      expect(screen.getByText('No hay reglas todavía.')).toBeInTheDocument(),
+    );
+    await user.click(screen.getByTestId('new-rule-btn'));
+    await user.type(
+      screen.getByTestId('r-text-input'),
+      'el día después de pasado mañana es bueno',
+    );
+    await user.click(screen.getByTestId('r-submit'));
+
+    // Aparece el picker.
+    await waitFor(() =>
+      expect(screen.getByTestId('r-suggestions-panel')).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText('Pablo no trabaja los lunes'),
+    ).toBeInTheDocument();
+
+    // El usuario elige la primera.
+    await user.click(screen.getByTestId('r-suggestion-0'));
+
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(calls[1].ruleText).toBe('Pablo no trabaja los lunes');
+  });
+
   it('elimina tras confirmar', async () => {
     let deleteCalled = false;
     server.use(

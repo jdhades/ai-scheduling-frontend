@@ -67,6 +67,17 @@ export interface UpdateSemanticRuleTextPayload {
   ruleText: string;
 }
 
+/** Sugerencia de reformulación cuando el LLM marcó la regla como
+ *  intent=complex y logró proponer alternativas aplicables. */
+export interface SemanticRuleSuggestion {
+  id: string;
+  suggestedText: string;
+  explanation: string;
+  /** Intent estimado por el LLM. Solo informativo — la verificación real
+   *  pasa al re-submitear con el texto elegido. */
+  previewIntent?: string;
+}
+
 export interface CreateSemanticRuleResult {
   id: string;
   embeddingGenerated: boolean;
@@ -74,4 +85,10 @@ export interface CreateSemanticRuleResult {
   duplicateOfId?: string;
   structureExtracted: boolean;
   intent?: string;
+  /** Si intent='complex' Y el LLM propuso alternativas, la regla NO se
+   *  persistió y `suggestions` trae las opciones. El dialog muestra el
+   *  suggestion-loop y el manager elige una. Si el LLM no propuso nada,
+   *  queda undefined y la regla SÍ se persiste como complex (con badge
+   *  "Sin estructura"). */
+  suggestions?: SemanticRuleSuggestion[];
 }
