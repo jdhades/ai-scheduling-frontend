@@ -7,6 +7,8 @@ import {
   useUpdateCompanyPolicyMutation,
   useDeleteCompanyPolicyMutation,
 } from '../../api/company-policies.api';
+import { useBranchesQuery, useDepartmentsQuery } from '../../api/scope-targets.api';
+import { useEmployeesQuery } from '../../api/employees.api';
 import type { CompanyPolicy } from '../../types/company-policy';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
@@ -30,10 +32,22 @@ export const CompanyPoliciesPage = () => {
   const createMut = useCreateCompanyPolicyMutation();
   const updateMut = useUpdateCompanyPolicyMutation();
   const deleteMut = useDeleteCompanyPolicyMutation();
+  const branchesQ = useBranchesQuery();
+  const departmentsQ = useDepartmentsQuery();
+  const employeesQ = useEmployeesQuery();
 
   const [createOpen, setCreateOpen] = useState(false);
 
   const rows = list.data ?? [];
+
+  // Phase 14.3 — para resolver scope.id → name en la columna de la tabla.
+  const scopeNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const b of branchesQ.data ?? []) m.set(b.id, b.name);
+    for (const d of departmentsQ.data ?? []) m.set(d.id, d.name);
+    for (const e of employeesQ.data ?? []) m.set(e.id, e.name);
+    return m;
+  }, [branchesQ.data, departmentsQ.data, employeesQ.data]);
 
   const columns = useMemo<ColumnDef<CompanyPolicy>[]>(
     () => [
@@ -58,6 +72,30 @@ export const CompanyPoliciesPage = () => {
             {row.original.severity === 'hard' ? 'HARD' : 'SOFT'}
           </Badge>
         ),
+      },
+      {
+        id: 'scope',
+        header: 'Aplica a',
+        accessorFn: (p) => `${p.scope.type}:${p.scope.id ?? ''}`,
+        cell: ({ row }) => {
+          const s = row.original.scope;
+          if (s.type === 'company') {
+            return <span className="text-xs text-muted-foreground">Toda la empresa</span>;
+          }
+          const label =
+            s.type === 'branch'
+              ? 'Sucursal'
+              : s.type === 'department'
+                ? 'Departamento'
+                : 'Empleado';
+          const name = s.id ? (scopeNameById.get(s.id) ?? s.id.slice(0, 8)) : '?';
+          return (
+            <span className="text-xs">
+              <span className="text-muted-foreground">{label}: </span>
+              <span className="font-medium">{name}</span>
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'hasInterpreter',
@@ -162,7 +200,7 @@ export const CompanyPoliciesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [updateMut, deleteMut],
+    [updateMut, deleteMut, scopeNameById],
   );
 
   return (
@@ -214,6 +252,9 @@ export const CompanyPoliciesPage = () => {
         onOpenChange={setCreateOpen}
         onSubmit={(payload) => createMut.mutateAsync(payload)}
         submitting={createMut.isPending}
+        branches={branchesQ.data ?? []}
+        departments={departmentsQ.data ?? []}
+        employees={(employeesQ.data ?? []).map((e) => ({ id: e.id, name: e.name }))}
       />
     </div>
   );

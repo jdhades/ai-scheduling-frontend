@@ -15,10 +15,16 @@ import { Badge } from '../../components/ui/Badge';
 import type {
   CreateCompanyPolicyPayload,
   CreateCompanyPolicyResult,
+  PolicyScopeType,
   PolicySeverity,
   RephraseSuggestion,
 } from '../../types/company-policy';
 import { describeApiError } from '../../lib/api-error';
+
+export interface ScopeTarget {
+  id: string;
+  name: string;
+}
 
 interface Props {
   open: boolean;
@@ -32,6 +38,10 @@ interface Props {
     payload: CreateCompanyPolicyPayload,
   ) => Promise<CreateCompanyPolicyResult>;
   submitting?: boolean;
+  /** Phase 14.1 — listas precargadas para resolver scope.id. */
+  branches?: ScopeTarget[];
+  departments?: ScopeTarget[];
+  employees?: ScopeTarget[];
 }
 
 type Stage =
@@ -53,17 +63,31 @@ export const CompanyPolicyFormDialog = ({
   onOpenChange,
   onSubmit,
   submitting,
+  branches = [],
+  departments = [],
+  employees = [],
 }: Props) => {
   const [text, setText] = useState('');
   const [severity, setSeverity] = useState<PolicySeverity>('hard');
+  const [scopeType, setScopeType] = useState<PolicyScopeType>('company');
+  const [scopeId, setScopeId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>({ kind: 'form' });
 
   const reset = () => {
     setText('');
     setSeverity('hard');
+    setScopeType('company');
+    setScopeId('');
     setError(null);
     setStage({ kind: 'form' });
+  };
+
+  const targetsForScope = (t: PolicyScopeType): ScopeTarget[] => {
+    if (t === 'branch') return branches;
+    if (t === 'department') return departments;
+    if (t === 'employee') return employees;
+    return [];
   };
 
   const submitWithText = async (textToSubmit: string) => {
@@ -72,10 +96,18 @@ export const CompanyPolicyFormDialog = ({
       setError('El texto debe tener al menos 10 caracteres.');
       return;
     }
+    if (scopeType !== 'company' && !scopeId) {
+      setError(`Seleccioná el ${scopeType === 'branch' ? 'sucursal' : scopeType === 'department' ? 'departamento' : 'empleado'} al que aplica.`);
+      return;
+    }
     try {
       const result = await onSubmit({
         text: textToSubmit.trim(),
         severity,
+        scope: {
+          type: scopeType,
+          id: scopeType === 'company' ? null : scopeId,
+        },
       });
       if (result.status === 'needs_clarification') {
         setStage({ kind: 'suggestions', suggestions: result.suggestions });
@@ -247,6 +279,54 @@ export const CompanyPolicyFormDialog = ({
                   soft — preferencia, puede ceder
                 </option>
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="cp-scope-type">Aplica a</Label>
+                <select
+                  id="cp-scope-type"
+                  data-testid="policy-scope-type-select"
+                  value={scopeType}
+                  onChange={(e) => {
+                    setScopeType(e.target.value as PolicyScopeType);
+                    setScopeId('');
+                  }}
+                  disabled={submitting}
+                  className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+                >
+                  <option value="company">Toda la empresa</option>
+                  <option value="branch">Sucursal</option>
+                  <option value="department">Departamento</option>
+                  <option value="employee">Empleado</option>
+                </select>
+              </div>
+              {scopeType !== 'company' && (
+                <div className="space-y-1">
+                  <Label htmlFor="cp-scope-id">
+                    {scopeType === 'branch'
+                      ? 'Sucursal'
+                      : scopeType === 'department'
+                        ? 'Departamento'
+                        : 'Empleado'}
+                  </Label>
+                  <select
+                    id="cp-scope-id"
+                    data-testid="policy-scope-id-select"
+                    value={scopeId}
+                    onChange={(e) => setScopeId(e.target.value)}
+                    disabled={submitting}
+                    className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+                  >
+                    <option value="">Elegí…</option>
+                    {targetsForScope(scopeType).map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             {error && (
               <p

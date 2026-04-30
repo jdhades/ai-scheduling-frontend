@@ -12,11 +12,26 @@
  */
 export type PolicySeverity = 'hard' | 'soft';
 
+/**
+ * Phase 14.1 — alcance de la policy. Una policy aplica a:
+ *   - company   : toda la empresa (default).
+ *   - branch    : una sucursal.
+ *   - department: un departamento.
+ *   - employee  : una persona.
+ */
+export type PolicyScopeType = 'company' | 'branch' | 'department' | 'employee';
+export interface PolicyScope {
+  type: PolicyScopeType;
+  /** UUID del target. NULL sii type='company'. */
+  id: string | null;
+}
+
 export interface CompanyPolicy {
   id: string;
   companyId: string;
   text: string;
   severity: PolicySeverity;
+  scope: PolicyScope;
   params: Record<string, unknown>;
   interpreterId: string | null;
   /** True si el sistema tiene un interpreter en código que aplica esta
@@ -31,6 +46,7 @@ export interface CompanyPolicy {
 export interface CreateCompanyPolicyPayload {
   text: string;
   severity: PolicySeverity;
+  scope?: PolicyScope;
   effectiveFrom?: string;
   createdBy?: string;
 }
