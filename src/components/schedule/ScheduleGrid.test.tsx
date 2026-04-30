@@ -19,7 +19,7 @@ describe('ScheduleGrid Overview', () => {
             http.get(`${API_URL}/shift-templates`, () => HttpResponse.json([])),
         )
 
-        renderWithProviders(<ScheduleGrid />)
+        renderWithProviders(<ScheduleGrid weekStart="2026-05-04" />)
 
         await waitFor(() =>
             expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0),

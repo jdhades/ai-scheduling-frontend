@@ -4,21 +4,28 @@ import { ShiftTemplatesPanel } from './ShiftTemplatesPanel.tsx'
 import { useTranslation } from 'react-i18next'
 import { useScheduleStore } from '../../store/scheduleStore.ts'
 import { useEmployeesQuery } from '../../api/employees.api'
-import { useScheduleQuery, useGenerateScheduleMutation, useGenerateHybridMutation } from '../../api/schedule.api.ts'
-import { RotateCcw, Wand2 } from 'lucide-react'
+import { useScheduleQuery } from '../../api/schedule.api.ts'
 
 // Constants
 const hours = Array.from({ length: 12 }, (_, i) => `${8 + i}:00`) // 8am to 8pm
 
-export function ScheduleGrid() {
+interface Props {
+    /** ISO 'YYYY-MM-DD' del lunes que se está viendo. */
+    weekStart: string
+    /** Phase 14 — opcional, restringe la grilla a un departamento. */
+    departmentId?: string
+}
+
+export function ScheduleGrid({ weekStart, departmentId }: Props) {
     const { t } = useTranslation()
     const { setEmployees, setShifts } = useScheduleStore()
 
     // REST API Integration
     const { data: employeesData } = useEmployeesQuery()
-    const { data: remoteShifts, isLoading, isError } = useScheduleQuery()
-    const generateDeterministic = useGenerateScheduleMutation()
-    const generateHybrid = useGenerateHybridMutation()
+    const { data: remoteShifts, isLoading, isError } = useScheduleQuery({
+        weekStart,
+        departmentId,
+    })
 
     // El store usa un Employee con `skills: string[]` (IDs), mientras que el
     // API devuelve `skills: { id, name, level }[]`. Bridgeamos al ID para
@@ -50,30 +57,10 @@ export function ScheduleGrid() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold tracking-tight">{t('scheduleGrid.title')}</h3>
-                    {isLoading && <span className="text-xs text-muted-foreground animate-pulse ml-2">Loading...</span>}
-                    {isError && <span className="text-xs text-destructive ml-2">Connection Error</span>}
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => generateDeterministic.mutate({ strategy: 'cost' })}
-                        disabled={generateDeterministic.isPending || generateHybrid.isPending}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 disabled:opacity-50"
-                    >
-                        <RotateCcw className="w-4 h-4" />
-                        {generateDeterministic.isPending ? 'Generating...' : 'Auto Fill (Cost)'}
-                    </button>
-                    <button
-                        onClick={() => generateHybrid.mutate({ maxFairnessDeviation: 1 })}
-                        disabled={generateDeterministic.isPending || generateHybrid.isPending}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-                    >
-                        <Wand2 className="w-4 h-4" />
-                        {generateHybrid.isPending ? 'Agents Thinking...' : 'AI Hybrid Repair'}
-                    </button>
-                </div>
+            <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold tracking-tight">{t('scheduleGrid.title')}</h3>
+                {isLoading && <span className="text-xs text-muted-foreground animate-pulse ml-2">Loading...</span>}
+                {isError && <span className="text-xs text-destructive ml-2">Connection Error</span>}
             </div>
 
             {/* Phase 2: Shift Templates Panel — above the schedule grid */}
