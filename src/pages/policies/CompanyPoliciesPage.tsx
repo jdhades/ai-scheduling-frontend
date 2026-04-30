@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Trash2, Power, AlertTriangle, Sparkles, Info } from 'lucide-react';
+import { Plus, Trash2, Power, AlertTriangle, Sparkles, Info, Bot } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   useCompanyPoliciesQuery,
@@ -100,26 +100,37 @@ export const CompanyPoliciesPage = () => {
       {
         accessorKey: 'hasInterpreter',
         header: 'Aplicación',
-        // Sort booleano (true antes que false).
         cell: ({ row }) => {
-          if (row.original.hasInterpreter) {
+          const p = row.original;
+          if (!p.hasInterpreter) {
             return (
               <span
-                className="inline-flex items-center gap-1 text-primary"
-                title={`Interpreter: ${row.original.interpreterId}. El solver la aplica deterministicamente.`}
+                className="inline-flex items-center gap-1 text-muted-foreground"
+                title="Sin interpreter — solo se pasa al prompt del LLM como referencia, sin enforcement runtime."
               >
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-xs">Determinística</span>
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="text-xs">LLM-only</span>
+              </span>
+            );
+          }
+          if (p.interpreterId === 'llm_runtime') {
+            return (
+              <span
+                className="inline-flex items-center gap-1 text-secondary"
+                title="LLM-runtime: el solver invoca al LLM en cada evaluación para chequear esta policy. Enforcement probabilístico (no determinístico)."
+              >
+                <Bot className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="text-xs">LLM-runtime</span>
               </span>
             );
           }
           return (
             <span
-              className="inline-flex items-center gap-1 text-muted-foreground"
-              title="Sin interpreter — solo se pasa al LLM en la fase de generación."
+              className="inline-flex items-center gap-1 text-primary"
+              title={`Interpreter: ${p.interpreterId}. El solver la aplica deterministicamente.`}
             >
-              <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="text-xs">LLM-only</span>
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="text-xs">Determinística</span>
             </span>
           );
         },
@@ -129,6 +140,12 @@ export const CompanyPoliciesPage = () => {
         header: 'Parámetros',
         enableSorting: false,
         cell: ({ row }) => {
+          // Para llm_runtime los "params" son originalText/englishText
+          // — el texto ya aparece en la columna "Política", no lo
+          // duplicamos acá.
+          if (row.original.interpreterId === 'llm_runtime') {
+            return <span className="text-muted-foreground">—</span>;
+          }
           const keys = Object.keys(row.original.params);
           if (keys.length === 0) {
             return <span className="text-muted-foreground">—</span>;

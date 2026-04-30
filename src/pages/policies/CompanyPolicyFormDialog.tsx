@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
+import { AlertTriangle, Bot, CheckCircle2, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/Badge';
 import type {
+  CompanyPolicy,
   CreateCompanyPolicyPayload,
   CreateCompanyPolicyResult,
   PolicyScopeType,
@@ -47,16 +48,18 @@ interface Props {
 type Stage =
   | { kind: 'form' }
   | { kind: 'suggestions'; suggestions: RephraseSuggestion[] }
-  | { kind: 'llm-only-warning' };
+  | { kind: 'created-info'; policy: CompanyPolicy };
 
 /**
  * Dialog de creación de CompanyPolicy con suggestion-loop. Tres ramas
  * post-submit:
  *
- *   - 'created' + hasInterpreter   → cierra silencioso.
- *   - 'created' sin interpreter    → panel "se guardó como LLM-only".
- *   - 'needs_clarification'        → 2-3 sugerencias verificadas; el
- *                                    manager elige una y re-submitea.
+ *   - 'created' (cualquier modo)    → panel `created-info` con el tipo
+ *                                      de enforcement (determinístico /
+ *                                      LLM-runtime / LLM-only). El manager
+ *                                      cierra cuando entiende.
+ *   - 'needs_clarification'         → 2-3 sugerencias verificadas; el
+ *                                      manager elige una y re-submitea.
  */
 export const CompanyPolicyFormDialog = ({
   open,
@@ -113,15 +116,10 @@ export const CompanyPolicyFormDialog = ({
         setStage({ kind: 'suggestions', suggestions: result.suggestions });
         return;
       }
-      // status === 'created'
-      if (result.policy.hasInterpreter) {
-        // Camino feliz total → cerramos.
-        reset();
-        onOpenChange(false);
-        return;
-      }
-      // Sin interpreter → guardado pero LLM-only. Avisamos al manager.
-      setStage({ kind: 'llm-only-warning' });
+      // status === 'created' — siempre mostramos el tipo de enforcement
+      // que quedó (determinístico / LLM-runtime / LLM-only) para que el
+      // manager sepa qué garantía tiene su policy.
+      setStage({ kind: 'created-info', policy: result.policy });
     } catch (err) {
       setError(describeApiError(err));
     }
@@ -151,16 +149,16 @@ export const CompanyPolicyFormDialog = ({
           <DialogTitle>
             {stage.kind === 'suggestions'
               ? 'Sugerencias de reformulación'
-              : stage.kind === 'llm-only-warning'
-                ? 'Política guardada como LLM-only'
+              : stage.kind === 'created-info'
+                ? 'Política creada'
                 : 'Nueva política'}
           </DialogTitle>
           <DialogDescription>
             {stage.kind === 'suggestions'
               ? 'El sistema no encontró un patrón aplicable a tu texto. La IA propuso estas alternativas (cada una verificada). Elegí una para crearla, o cerrá y reformulá libre.'
-              : stage.kind === 'llm-only-warning'
-                ? 'La política se guardó pero el solver no la puede aplicar deterministicamente — solo la considera al pasarla al LLM en la fase de generación.'
-                : 'Política tenant-wide. Aplica a todos los empleados (ej. "11h descanso entre turnos consecutivos"). Para reglas de caso particular, usá Reglas semánticas.'}
+              : stage.kind === 'created-info'
+                ? 'La política quedó guardada. Te indicamos abajo cómo se va a aplicar al generar horarios.'
+                : 'Política aplicable a toda la empresa, una sucursal, un departamento o un empleado puntual. Para reglas de caso particular en lenguaje natural, usá Reglas semánticas.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -211,24 +209,73 @@ export const CompanyPolicyFormDialog = ({
           </div>
         )}
 
-        {stage.kind === 'llm-only-warning' && (
-          <div className="space-y-3">
-            <div className="rounded-md border border-secondary/40 bg-secondary/10 p-3 text-sm">
-              <div className="flex items-start gap-2">
-                <AlertTriangle
-                  className="mt-0.5 h-4 w-4 shrink-0 text-secondary"
-                  aria-hidden="true"
-                />
-                <p className="text-foreground">
-                  La política se guardó como{' '}
-                  <span className="font-medium">LLM-only</span>. El scheduler
-                  determinístico no la aplica; solo la incluye como contexto
-                  al LLM en la fase de generación. Si querés que el solver la
-                  aplique directo, editala con un texto que matchee uno de los
-                  patrones del sistema.
-                </p>
-              </div>
-            </div>
+        {stage.kind === 'created-info' && (
+          <div className="space-y-3" data-testid="policy-created-info">
+            {(() => {
+              const p = stage.policy;
+              if (!p.hasInterpreter) {
+                // LLM-only puro: solo viaja al prompt como contexto.
+                return (
+                  <div className="rounded-md border border-secondary/40 bg-secondary/10 p-3 text-sm">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle
+                        className="mt-0.5 h-4 w-4 shrink-0 text-secondary"
+                        aria-hidden="true"
+                      />
+                      <p className="text-foreground">
+                        Guardada como{' '}
+                        <span className="font-medium">LLM-only</span>. El
+                        solver no la aplica deterministicamente; solo la
+                        incluye como contexto al LLM al generar el horario.
+                        Sin garantía dura.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              if (p.interpreterId === 'llm_runtime') {
+                // Catch-all: el LLM la evalúa en cada propuesta del solver.
+                return (
+                  <div className="rounded-md border border-secondary/40 bg-secondary/10 p-3 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Bot
+                        className="mt-0.5 h-4 w-4 shrink-0 text-secondary"
+                        aria-hidden="true"
+                      />
+                      <p className="text-foreground">
+                        Aplicación{' '}
+                        <span className="font-medium">LLM-runtime</span>: el
+                        solver invoca al LLM en cada evaluación para chequear
+                        esta policy. Garantía probabilística — en cada intento
+                        del verify-loop el LLM decide si hay violación. Tiene
+                        costo extra en tokens.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              // Determinística (interpreter estructurado).
+              return (
+                <div className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <Sparkles
+                      className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                      aria-hidden="true"
+                    />
+                    <p className="text-foreground">
+                      Aplicación{' '}
+                      <span className="font-medium">determinística</span> con
+                      el interpreter{' '}
+                      <span className="font-mono text-xs">
+                        {p.interpreterId}
+                      </span>
+                      . El solver chequea matemáticamente cada propuesta
+                      contra los parámetros extraídos.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
             <DialogFooter>
               <Button
                 type="button"
@@ -236,7 +283,7 @@ export const CompanyPolicyFormDialog = ({
                   reset();
                   onOpenChange(false);
                 }}
-                data-testid="llm-only-close"
+                data-testid="created-info-close"
               >
                 <CheckCircle2 className="mr-2 h-4 w-4" />
                 Entendido
