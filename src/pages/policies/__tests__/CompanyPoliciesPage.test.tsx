@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -12,6 +12,7 @@ const policy = (over: Partial<Record<string, unknown>> = {}) => ({
   companyId: 'c1',
   text: '2 días de descanso para el empleado aparte del feriado',
   severity: 'hard',
+  scope: { type: 'company', id: null },
   params: { days: 2, holidayCounts: false },
   interpreterId: 'min_rest_days_per_week',
   hasInterpreter: true,
@@ -22,7 +23,20 @@ const policy = (over: Partial<Record<string, unknown>> = {}) => ({
   ...over,
 });
 
+// Phase 14.3 — la página carga branches/departments/employees para
+// poblar el selector de scope. Mockeamos endpoints vacíos por default.
+const mockScopeEndpoints = () => {
+  server.use(
+    http.get(`${API_URL}/branches`, () => HttpResponse.json([])),
+    http.get(`${API_URL}/departments`, () => HttpResponse.json([])),
+    http.get(`${API_URL}/employees`, () => HttpResponse.json([])),
+  );
+};
+
 describe('CompanyPoliciesPage', () => {
+  beforeEach(() => {
+    mockScopeEndpoints();
+  });
   it('lista políticas con badge "Determinística" cuando tienen interpreter', async () => {
     server.use(
       http.get(`${API_URL}/company-policies`, () =>
@@ -41,7 +55,7 @@ describe('CompanyPoliciesPage', () => {
     expect(screen.getByText('LLM-only')).toBeInTheDocument();
   });
 
-  it('camino feliz: el sistema matchea un interpreter, dialog cierra solo', async () => {
+  it('camino feliz: el sistema matchea un interpreter, muestra panel "Política creada" y se cierra al confirmar', async () => {
     let listCalls = 0;
     server.use(
       http.get(`${API_URL}/company-policies`, () => {
@@ -74,7 +88,13 @@ describe('CompanyPoliciesPage', () => {
     );
     await user.click(screen.getByTestId('policy-submit'));
 
-    // El dialog cierra y la lista refresca con la nueva.
+    // Phase 14 — el dialog ya no cierra solo. Muestra el panel
+    // `created-info` con el tipo de enforcement; el manager confirma
+    // con "Entendido".
+    await waitFor(() =>
+      expect(screen.getByTestId('created-info-close')).toBeInTheDocument(),
+    );
+    await user.click(screen.getByTestId('created-info-close'));
     await waitFor(() => expect(screen.getByText('nueva política')).toBeInTheDocument());
     expect(screen.queryByTestId('policy-text-input')).not.toBeInTheDocument();
   });
@@ -188,10 +208,13 @@ describe('CompanyPoliciesPage', () => {
     );
     await user.click(screen.getByTestId('policy-submit'));
 
-    // No cierra automáticamente — muestra el panel de warning con el botón
-    // "Entendido" (data-testid llm-only-close).
-    await waitFor(() => expect(screen.getByTestId('llm-only-close')).toBeInTheDocument());
-    // El form ya no está visible — pasamos a stage llm-only-warning.
+    // Phase 14 — el panel se llama `created-info` ahora; para policies
+    // sin interpreter (LLM-only puro) muestra warning de "sin garantía".
+    await waitFor(() =>
+      expect(screen.getByTestId('created-info-close')).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('policy-created-info')).toBeInTheDocument();
+    expect(screen.getByText(/LLM-only/i)).toBeInTheDocument();
     expect(screen.queryByTestId('policy-text-input')).not.toBeInTheDocument();
   });
 

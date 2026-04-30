@@ -7,7 +7,7 @@
  *
  * `API_URL` lee `import.meta.env.VITE_API_URL` con fallback a localhost.
  */
-export const TENANT_ID = '11111111-2222-3333-4444-555555555555';
+export const TENANT_ID = '22222222-2222-3333-4444-555555555555';
 
 export const API_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000';

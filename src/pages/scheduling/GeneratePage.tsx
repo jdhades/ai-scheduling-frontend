@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Wand2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Wand2, AlertTriangle, CheckCircle2, Cpu } from 'lucide-react';
 import {
   useGenerateHybridForWeekMutation,
   type GenerateScheduleResult,
 } from '../../api/schedule.api';
+import { useBranchesQuery, useDepartmentsQuery } from '../../api/scope-targets.api';
+import { useShiftTemplatesQuery } from '../../api/shift-templates.api';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -19,16 +21,62 @@ const upcomingMondayISO = (): string => {
 };
 
 /**
- * GeneratePage — dispara una generación híbrida para una semana específica
- * y muestra el resumen del resultado: total de asignaciones, underfilled,
- * warnings, explanation generada por el handler.
+ * GeneratePage — dispara una generación híbrida con flow jerárquico
+ * branch → department → template (alineado con el flow conversacional
+ * de WhatsApp). Niveles con 1 sola opción se ocultan (smart-skip).
  *
- * El flujo real corre en el backend (LLM-autoritativo + verify + fallback
- * determinístico). Esta página solo es el trigger + visualización.
+ * Phase 14 — pasa `departmentId`/`shiftTemplateId` al backend para que
+ * el delete previo a la regeneración respete los OTROS departamentos /
+ * templates de la misma semana.
  */
 export const GeneratePage = () => {
   const [weekStart, setWeekStart] = useState<string>(upcomingMondayISO());
+  const [branchId, setBranchId] = useState<string>('');
+  const [departmentId, setDepartmentId] = useState<string>('');
+  const [templateId, setTemplateId] = useState<string>(''); // '' = todos
+
   const generate = useGenerateHybridForWeekMutation();
+  const branchesQ = useBranchesQuery();
+  const departmentsQ = useDepartmentsQuery();
+  const templatesQ = useShiftTemplatesQuery();
+
+  const branches = branchesQ.data ?? [];
+  const allDepartments = departmentsQ.data ?? [];
+  const allTemplates = templatesQ.data ?? [];
+
+  // Smart-skip: si solo hay 1 sucursal, no la mostramos como dropdown.
+  const showBranchSelector = branches.length > 1;
+
+  // Filter de departments: hoy `Department.branchId` no viene en el type
+  // del hook (ScopeTarget); usamos todos. Cuando se enriquezca el endpoint
+  // con branch_id, este filter se vuelve `d.branchId === branchId`.
+  const departments = allDepartments;
+  const showDepartmentSelector = departments.length > 1;
+  const effectiveDepartmentId =
+    showDepartmentSelector ? departmentId : (departments[0]?.id ?? '');
+
+  // Templates filtrados por departamento elegido.
+  const templates = useMemo(
+    () =>
+      effectiveDepartmentId
+        ? allTemplates.filter((t) => t.departmentId === effectiveDepartmentId)
+        : allTemplates,
+    [allTemplates, effectiveDepartmentId],
+  );
+
+  const canSubmit =
+    !!weekStart &&
+    !generate.isPending &&
+    (!showBranchSelector || branchId !== '') &&
+    (!showDepartmentSelector || departmentId !== '');
+
+  const onSubmit = () => {
+    generate.mutate({
+      weekStart,
+      departmentId: effectiveDepartmentId || undefined,
+      shiftTemplateId: templateId || undefined,
+    });
+  };
 
   const result: GenerateScheduleResult | null =
     generate.data?.result ?? null;
@@ -39,6 +87,8 @@ export const GeneratePage = () => {
         <h1 className="text-xl font-bold text-foreground">Generar horario</h1>
         <p className="text-sm text-muted-foreground">
           Dispara la generación LLM-autoritativa para una semana puntual.
+          Si elegís departamento o turno, solo se regeneran sus asignaciones —
+          el resto de la semana queda intacto.
         </p>
       </header>
 
@@ -58,9 +108,80 @@ export const GeneratePage = () => {
           </p>
         </div>
 
+        {showBranchSelector && (
+          <div className="space-y-1">
+            <Label htmlFor="g-branch">Sucursal</Label>
+            <select
+              id="g-branch"
+              data-testid="g-branch-select"
+              value={branchId}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                setDepartmentId('');
+                setTemplateId('');
+              }}
+              disabled={generate.isPending}
+              className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+            >
+              <option value="">Elegí…</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {showDepartmentSelector && (
+          <div className="space-y-1">
+            <Label htmlFor="g-dept">Departamento</Label>
+            <select
+              id="g-dept"
+              data-testid="g-dept-select"
+              value={departmentId}
+              onChange={(e) => {
+                setDepartmentId(e.target.value);
+                setTemplateId('');
+              }}
+              disabled={generate.isPending}
+              className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+            >
+              <option value="">Elegí…</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <Label htmlFor="g-template">Turno (opcional)</Label>
+          <select
+            id="g-template"
+            data-testid="g-template-select"
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            disabled={generate.isPending || templates.length === 0}
+            className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+          >
+            <option value="">Todos los turnos</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Dejá "Todos" para regenerar el departamento entero.
+          </p>
+        </div>
+
         <Button
-          onClick={() => generate.mutate({ weekStart })}
-          disabled={!weekStart || generate.isPending}
+          onClick={onSubmit}
+          disabled={!canSubmit}
           data-testid="g-submit"
         >
           {generate.isPending ? (
@@ -98,6 +219,28 @@ export const GeneratePage = () => {
           <p className="text-sm text-foreground/80 whitespace-pre-line">
             {result.explanation}
           </p>
+
+          {result.llmUsage && result.llmUsage.calls > 0 && (
+            <div className="rounded-md border border-white/10 bg-surface-low/60 p-3 text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="uppercase tracking-widest">Costo LLM</span>
+              </div>
+              <div className="mt-1 grid grid-cols-4 gap-2 font-mono text-foreground">
+                <span>
+                  {result.llmUsage.calls} call{result.llmUsage.calls === 1 ? '' : 's'}
+                </span>
+                <span>prompt {result.llmUsage.prompt.toLocaleString('es-AR')}</span>
+                <span>
+                  completion{' '}
+                  {result.llmUsage.completion.toLocaleString('es-AR')}
+                </span>
+                <span className="font-semibold">
+                  total {result.llmUsage.total.toLocaleString('es-AR')}
+                </span>
+              </div>
+            </div>
+          )}
 
           {result.warnings.length > 0 && (
             <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 space-y-1">

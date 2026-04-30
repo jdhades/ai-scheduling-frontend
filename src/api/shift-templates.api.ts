@@ -23,6 +23,8 @@ export interface ShiftTemplate {
   undesirableWeight: number;
   isActive: boolean;
   requiredEmployees: number | null;
+  /** Phase 14 — id del departamento al que pertenece. Null para tenants legacy. */
+  departmentId?: string | null;
 }
 
 export interface CreateShiftTemplatePayload {

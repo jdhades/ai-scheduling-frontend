@@ -75,26 +75,31 @@ export const useGenerateScheduleMutation = () => {
     })
 }
 
-interface GenerateHybridParams {
+interface LegacyGenerateHybridParams {
     maxFairnessDeviation?: number
 }
 
-// LLM + Algorithmic Orchestrator endpoint
+/**
+ * Legacy — usa la WEEK_START hardcodeada (semana del rework demo).
+ * Mantenido sólo para compat con `ScheduleGrid`. Fixes mínimos
+ * aplicados al endpoint y la strategy obligatoria del DTO.
+ */
 export const useGenerateHybridMutation = () => {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: async (params: GenerateHybridParams) => {
-            const { data } = await axios.post(`${API_URL}/schedules/generate/hybrid`, {
-                weekStart: WEEK_START,
-                maxFairnessDeviation: params.maxFairnessDeviation
-            }, {
-                params: { companyId: COMPANY_ID },
-                headers: { 'x-company-id': COMPANY_ID }
-            })
+        mutationFn: async (params: LegacyGenerateHybridParams) => {
+            const { data } = await api.post<GenerateScheduleResult>(
+                '/schedules/generate',
+                {
+                    weekStart: WEEK_START,
+                    strategy: 'hybrid',
+                    maxFairnessDeviation: params.maxFairnessDeviation,
+                },
+            )
             return data
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['schedules', COMPANY_ID, WEEK_START] })
+            queryClient.invalidateQueries({ queryKey: ['schedules'] })
         }
     })
 }
@@ -108,32 +113,47 @@ export interface GenerateScheduleResult {
     algorithmCorrected: number
     explanation: string
     warnings: string[]
+    /**
+     * Tokens consumidos durante la generación (LLM-proposer + catch-all
+     * llm_runtime + traducción de rules). NO incluye los del classifier
+     * conversacional (esos solo viajan en el flow WhatsApp).
+     */
+    llmUsage?: { calls: number; prompt: number; completion: number; total: number }
+}
+
+export interface GenerateHybridParams {
+    weekStart: string
+    maxFairnessDeviation?: number
+    /** Phase 14 — restringe el run a un departamento (pisa solo sus templates). */
+    departmentId?: string
+    /** Restringe el run a un único template. Combinable con departmentId. */
+    shiftTemplateId?: string
 }
 
 /**
- * Variante moderna que acepta `weekStart` desde el caller. Usa la
- * instancia `api` compartida (header X-Company-Id + query companyId
- * vía interceptor). Reemplaza a `useGenerateHybridMutation` cuando el
- * caller necesita controlar la semana objetivo.
+ * Dispara una generación híbrida. Endpoint correcto: POST /schedules/generate
+ * con strategy='hybrid' obligatorio (el DTO valida `@IsIn(['cost','fairness',
+ * 'hybrid'])`). Phase 14 — soporta scope por departmentId + shiftTemplateId.
  */
 export const useGenerateHybridForWeekMutation = () => {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: async (params: { weekStart: string; maxFairnessDeviation?: number }) => {
+        mutationFn: async (params: GenerateHybridParams) => {
             const { data } = await api.post<GenerateScheduleResult>(
-                '/schedules/generate/hybrid',
+                '/schedules/generate',
                 {
                     weekStart: params.weekStart,
+                    strategy: 'hybrid',
                     maxFairnessDeviation: params.maxFairnessDeviation,
+                    departmentId: params.departmentId,
+                    shiftTemplateId: params.shiftTemplateId,
                 },
             )
             return { result: data, weekStart: params.weekStart }
         },
         onSuccess: ({ weekStart }) => {
-            // Invalida cualquier query de schedules — no sabemos qué keys
-            // estarán activas en el grid.
             queryClient.invalidateQueries({ queryKey: ['schedules'] })
-            queryClient.invalidateQueries({ queryKey: ['schedules', COMPANY_ID, weekStart] })
+            queryClient.invalidateQueries({ queryKey: ['schedules', weekStart] })
         },
     })
 }

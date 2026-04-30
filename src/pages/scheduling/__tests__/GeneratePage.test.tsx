@@ -10,7 +10,7 @@ import { API_URL } from '../../../config';
 describe('GeneratePage', () => {
   it('dispara la mutación y muestra el resumen', async () => {
     server.use(
-      http.post(`${API_URL}/schedules/generate/hybrid`, () =>
+      http.post(`${API_URL}/schedules/generate`, () =>
         HttpResponse.json({
           assignmentsCount: 25,
           unfilledShiftsCount: 0,
@@ -45,7 +45,7 @@ describe('GeneratePage', () => {
 
   it('muestra error cuando el backend falla', async () => {
     server.use(
-      http.post(`${API_URL}/schedules/generate/hybrid`, () =>
+      http.post(`${API_URL}/schedules/generate`, () =>
         HttpResponse.json({ message: 'failed' }, { status: 500 }),
       ),
     );
