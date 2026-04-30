@@ -8,6 +8,7 @@ import {
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
 } from '../../api/employees.api';
+import { useDepartmentsQuery } from '../../api/scope-targets.api';
 import type { Employee } from '../../types/employee';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
@@ -26,22 +27,41 @@ export const EmployeesPage = () => {
   const createMut = useCreateEmployeeMutation();
   const updateMut = useUpdateEmployeeMutation();
   const deleteMut = useDeleteEmployeeMutation();
+  const departmentsQ = useDepartmentsQuery();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editOf, setEditOf] = useState<Employee | null>(null);
   const [roleFilter, setRoleFilter] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
 
   const employees = data ?? [];
+  const departments = departmentsQ.data ?? [];
+  const showDeptFilter = departments.length > 1;
+
+  // Map id → name para resolver scope en la columna.
+  const departmentNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const d of departments) m.set(d.id, d.name);
+    return m;
+  }, [departments]);
 
   const roleOptions = useMemo(
     () => Array.from(new Set(employees.map((e) => e.role))).sort(),
     [employees],
   );
 
-  const filteredData = useMemo(
-    () => (roleFilter ? employees.filter((e) => e.role === roleFilter) : employees),
-    [employees, roleFilter],
-  );
+  const filteredData = useMemo(() => {
+    let out = employees;
+    if (roleFilter) out = out.filter((e) => e.role === roleFilter);
+    if (departmentFilter) {
+      out = out.filter((e) =>
+        departmentFilter === '__none__'
+          ? !e.departmentId
+          : e.departmentId === departmentFilter,
+      );
+    }
+    return out;
+  }, [employees, roleFilter, departmentFilter]);
 
   const handleCreate = async (values: EmployeeFormValues) => {
     await createMut.mutateAsync(values);
@@ -98,6 +118,29 @@ export const EmployeesPage = () => {
         ),
       },
       {
+        id: 'department',
+        header: 'Departamento',
+        accessorFn: (e) => e.departmentId ?? '',
+        cell: ({ row }) => {
+          const id = row.original.departmentId;
+          if (!id) {
+            return (
+              <span
+                className="text-xs italic text-muted-foreground"
+                title="Empleado sin departamento — NO se incluye en la generación de horarios."
+              >
+                — sin depto
+              </span>
+            );
+          }
+          return (
+            <span className="text-muted-foreground">
+              {departmentNameById.get(id) ?? id.slice(0, 8)}
+            </span>
+          );
+        },
+      },
+      {
         accessorKey: 'phone',
         header: 'Teléfono',
         enableGlobalFilter: true,
@@ -151,7 +194,7 @@ export const EmployeesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [deleteMut],
+    [deleteMut, departmentNameById],
   );
 
   return (
@@ -178,22 +221,41 @@ export const EmployeesPage = () => {
         pageSizeOptions={[5, 10, 15, 20]}
         searchPlaceholder="Buscar por nombre, ID o teléfono…"
         toolbar={
-          roleOptions.length > 0 ? (
-            <select
-              data-testid="role-filter"
-              aria-label="Filtrar por rol"
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="flex h-9 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
-            >
-              <option value="">Todos los roles</option>
-              {roleOptions.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          ) : null
+          <div className="flex flex-wrap gap-2">
+            {roleOptions.length > 0 && (
+              <select
+                data-testid="role-filter"
+                aria-label="Filtrar por rol"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="flex h-9 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+              >
+                <option value="">Todos los roles</option>
+                {roleOptions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            )}
+            {showDeptFilter && (
+              <select
+                data-testid="department-filter"
+                aria-label="Filtrar por departamento"
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="flex h-9 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+              >
+                <option value="">Todos los departamentos</option>
+                <option value="__none__">— sin depto</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         }
         isLoading={isLoading}
         errorMessage={isError ? 'Error cargando empleados.' : undefined}

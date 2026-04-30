@@ -9,6 +9,7 @@ import {
   type ShiftTemplate,
 } from '../../api/shift-templates.api';
 import { useCompanySkillsQuery } from '../../api/company-skills.api';
+import { useDepartmentsQuery } from '../../api/scope-targets.api';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
 import {
@@ -32,6 +33,7 @@ const fmtTime = (t: string) => t.slice(0, 5);
 export const TemplatesPage = () => {
   const templates = useShiftTemplatesQuery();
   const skills = useCompanySkillsQuery();
+  const departmentsQ = useDepartmentsQuery();
   const createMut = useCreateTemplateMutation();
   const updateMut = useUpdateTemplateMutation();
   const deleteMut = useDeleteTemplateMutation();
@@ -40,10 +42,17 @@ export const TemplatesPage = () => {
   const [editOf, setEditOf] = useState<ShiftTemplate | null>(null);
 
   const rows = templates.data ?? [];
+  const departments = departmentsQ.data ?? [];
+  const showDeptColumn = departments.length > 1;
 
   const skillById = useMemo(
     () => new Map((skills.data ?? []).map((s) => [s.id, s.name] as const)),
     [skills.data],
+  );
+
+  const departmentNameById = useMemo(
+    () => new Map(departments.map((d) => [d.id, d.name] as const)),
+    [departments],
   );
 
   const handleCreate = async (values: TemplateFormValues) => {
@@ -104,6 +113,26 @@ export const TemplatesPage = () => {
             <span className="text-muted-foreground">—</span>
           ),
       },
+      ...(showDeptColumn
+        ? ([
+            {
+              id: 'department',
+              header: 'Departamento',
+              accessorFn: (t) =>
+                t.departmentId ? departmentNameById.get(t.departmentId) ?? '' : '',
+              cell: ({ row }) => {
+                const id = row.original.departmentId;
+                return id ? (
+                  <span className="text-muted-foreground">
+                    {departmentNameById.get(id) ?? id.slice(0, 8)}
+                  </span>
+                ) : (
+                  <span className="text-xs italic text-muted-foreground">—</span>
+                );
+              },
+            },
+          ] as ColumnDef<ShiftTemplate>[])
+        : []),
       {
         accessorKey: 'requiredEmployees',
         header: 'required_employees',
@@ -154,7 +183,7 @@ export const TemplatesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [skillById, deleteMut],
+    [skillById, departmentNameById, showDeptColumn, deleteMut],
   );
 
   return (
