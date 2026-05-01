@@ -84,6 +84,41 @@
       }
     }
   },
+  "departments": {
+    "page": {
+      "title": "Departamentos",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} departamento",
+      "summaryCount_other": "{{count}} departamentos",
+      "searchPlaceholder": "Buscar departamento o manager…",
+      "loadError": "Error cargando departamentos.",
+      "empty": "No hay departamentos todavía."
+    },
+    "table": {
+      "name": "Nombre",
+      "manager": "Manager",
+      "managerNone": "— sin asignar",
+      "managerNoneTooltip": "Sin manager asignado — las approvals del departamento caen al fallback (cualquier manager del tenant).",
+      "actions": "Acciones"
+    },
+    "rowActions": {
+      "edit": "Asignar manager"
+    },
+    "dialog": {
+      "title": "Manager para {{name}}",
+      "description": "Designá al empleado que va a recibir las solicitudes de aprobación (intercambios, ausencias, incidencias, días libres) originadas por empleados de este departamento. Si queda sin asignar, las solicitudes caen al fallback (cualquier manager del tenant).",
+      "fields": {
+        "manager": "Manager",
+        "managerNone": "(sin manager — fallback a cualquier manager del tenant)",
+        "noManagersHint": "No hay empleados con rol \"manager\" en el tenant. El selector lista todos los empleados, pero considerá crear un manager primero."
+      },
+      "actions": {
+        "submit": "Guardar",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  },
   "memberships": {
     "page": {
       "title": "Vínculos",

@@ -5,6 +5,7 @@ import { EmployeesPage } from './pages/workforce/EmployeesPage';
 import { MembershipsPage } from './pages/workforce/MembershipsPage';
 import { SkillsPage } from './pages/workforce/SkillsPage';
 import { EmployeeDetailPage } from './pages/workforce/EmployeeDetailPage';
+import { DepartmentsPage } from './pages/workforce/DepartmentsPage';
 import { TemplatesPage } from './pages/scheduling/TemplatesPage';
 import { SchedulePage } from './pages/scheduling/SchedulePage';
 import { GeneratePage } from './pages/scheduling/GeneratePage';
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
           {
             path: 'skills',
             element: <SkillsPage />,
+          },
+          {
+            path: 'departments',
+            element: <DepartmentsPage />,
           },
         ],
       },

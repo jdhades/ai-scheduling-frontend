@@ -84,6 +84,41 @@
       }
     }
   },
+  "departments": {
+    "page": {
+      "title": "Departments",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} department",
+      "summaryCount_other": "{{count}} departments",
+      "searchPlaceholder": "Search department or manager…",
+      "loadError": "Failed to load departments.",
+      "empty": "No departments yet."
+    },
+    "table": {
+      "name": "Name",
+      "manager": "Manager",
+      "managerNone": "— unassigned",
+      "managerNoneTooltip": "No manager assigned — approvals from this department fall back to any manager in the tenant.",
+      "actions": "Actions"
+    },
+    "rowActions": {
+      "edit": "Assign manager"
+    },
+    "dialog": {
+      "title": "Manager for {{name}}",
+      "description": "Assign the employee who receives approval requests (swaps, absences, incidents, day-offs) from this department's employees. If unassigned, requests fall back to any manager in the tenant.",
+      "fields": {
+        "manager": "Manager",
+        "managerNone": "(no manager — fall back to any tenant manager)",
+        "noManagersHint": "No employees with role=\"manager\" in the tenant. The dropdown lists every employee, but consider creating a manager first."
+      },
+      "actions": {
+        "submit": "Save",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  },
   "memberships": {
     "page": {
       "title": "Memberships",

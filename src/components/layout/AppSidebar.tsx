@@ -14,6 +14,7 @@ import {
   User,
   Link2,
   Award,
+  Building2,
   Layers,
   Grid3x3,
   Wand2,
@@ -48,6 +49,7 @@ const groups: NavGroup[] = [
       { to: '/workforce/employees', labelKey: 'nav:items.employees', icon: User },
       { to: '/workforce/memberships', labelKey: 'nav:items.memberships', icon: Link2 },
       { to: '/workforce/skills', labelKey: 'nav:items.skills', icon: Award },
+      { to: '/workforce/departments', labelKey: 'nav:items.departments', icon: Building2 },
     ],
   },
   {
