@@ -97,19 +97,19 @@ describe('DataTable', () => {
     );
 
     expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(10);
-    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 1 de 3');
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Page 1 of 3');
     expect(screen.getByTestId('datatable-page-summary')).toHaveTextContent(
-      'Mostrando 10 de 25',
+      'Showing 10 of 25',
     );
     expect(screen.getByTestId('datatable-prev')).toBeDisabled();
 
     await user.click(screen.getByTestId('datatable-next'));
-    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 2 de 3');
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Page 2 of 3');
     expect(screen.getByTestId('datatable-row-r10')).toBeInTheDocument();
     expect(screen.queryByTestId('datatable-row-r0')).not.toBeInTheDocument();
 
     await user.click(screen.getByTestId('datatable-next'));
-    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 3 de 3');
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Page 3 of 3');
     expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(5);
     expect(screen.getByTestId('datatable-next')).toBeDisabled();
   });
@@ -134,12 +134,12 @@ describe('DataTable', () => {
     );
 
     expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(5);
-    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 1 de 3');
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Page 1 of 3');
 
     await user.selectOptions(screen.getByTestId('datatable-page-size'), '10');
 
     expect(screen.getAllByTestId(/^datatable-row-/)).toHaveLength(10);
-    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Página 1 de 2');
+    expect(screen.getByTestId('datatable-page-info')).toHaveTextContent('Page 1 of 2');
   });
 
   it('sin pageSizeOptions, no renderiza el selector', () => {
@@ -164,7 +164,7 @@ describe('DataTable', () => {
     const { rerender } = render(
       <DataTable data={[]} columns={columns} isLoading getRowId={(r) => r.id} />,
     );
-    expect(screen.getByText(/Cargando/)).toBeInTheDocument();
+    expect(screen.getByText(/Loading/)).toBeInTheDocument();
 
     rerender(
       <DataTable

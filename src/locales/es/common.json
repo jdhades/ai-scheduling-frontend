@@ -37,10 +37,17 @@
   },
   "table": {
     "rowsPerPage": "Filas por página",
+    "rowsLabel": "Filas:",
     "page": "Página {{current}} de {{total}}",
     "previous": "Anterior",
     "next": "Siguiente",
-    "noResults": "Sin resultados."
+    "previousAria": "Página anterior",
+    "nextAria": "Página siguiente",
+    "noResults": "Sin resultados.",
+    "results_one": "{{count}} resultado",
+    "results_other": "{{count}} resultados",
+    "showingOf": "Mostrando {{shown}} de {{total}}",
+    "sortByAria": "Ordenar por {{column}}"
   },
   "managerFilter": {
     "label": "Manager",

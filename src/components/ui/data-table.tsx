@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   type ColumnDef,
   type RowData,
@@ -66,8 +67,10 @@ export function DataTable<T>({
   pageSizeOptions,
   isLoading,
   errorMessage,
-  emptyMessage = 'No hay datos.',
+  emptyMessage,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
+  const resolvedEmptyMessage = emptyMessage ?? t('common:states.empty');
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
 
@@ -145,7 +148,9 @@ export function DataTable<T>({
                           onClick={header.column.getToggleSortingHandler()}
                           className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
                           data-testid={`datatable-sort-${header.column.id}`}
-                          aria-label={`Ordenar por ${String(header.column.id)}`}
+                          aria-label={t('common:table.sortByAria', {
+                            column: String(header.column.id),
+                          })}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {sorted === 'asc' ? (
@@ -172,7 +177,8 @@ export function DataTable<T>({
                   colSpan={visibleColumnCount}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" /> Cargando…
+                  <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" />{' '}
+                  {t('common:actions.loading')}
                 </TableCell>
               </TableRow>
             )}
@@ -182,7 +188,7 @@ export function DataTable<T>({
                   colSpan={visibleColumnCount}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {resolvedEmptyMessage}
                 </TableCell>
               </TableRow>
             )}
@@ -208,10 +214,10 @@ export function DataTable<T>({
           <div className="flex items-center gap-2">
             {pageSizeOptions && pageSizeOptions.length > 0 && (
               <label className="flex items-center gap-2">
-                <span>Filas:</span>
+                <span>{t('common:table.rowsLabel')}</span>
                 <select
                   data-testid="datatable-page-size"
-                  aria-label="Filas por página"
+                  aria-label={t('common:table.rowsPerPage')}
                   value={table.getState().pagination.pageSize}
                   onChange={(e) => table.setPageSize(Number(e.target.value))}
                   className="flex h-8 rounded-md border border-white/10 bg-surface-low px-2 text-sm text-foreground"
@@ -226,8 +232,11 @@ export function DataTable<T>({
             )}
             <span data-testid="datatable-page-summary">
               {rows.length === totalRows
-                ? `${totalRows} resultado${totalRows === 1 ? '' : 's'}`
-                : `Mostrando ${rows.length} de ${totalRows}`}
+                ? t('common:table.results', { count: totalRows })
+                : t('common:table.showingOf', {
+                    shown: rows.length,
+                    total: totalRows,
+                  })}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -237,13 +246,15 @@ export function DataTable<T>({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               data-testid="datatable-prev"
-              aria-label="Página anterior"
+              aria-label={t('common:table.previousAria')}
             >
-              <ChevronLeft className="h-4 w-4" /> Anterior
+              <ChevronLeft className="h-4 w-4" /> {t('common:table.previous')}
             </Button>
             <span data-testid="datatable-page-info">
-              Página {table.getState().pagination.pageIndex + 1} de{' '}
-              {Math.max(1, table.getPageCount())}
+              {t('common:table.page', {
+                current: table.getState().pagination.pageIndex + 1,
+                total: Math.max(1, table.getPageCount()),
+              })}
             </span>
             <Button
               variant="ghost"
@@ -251,9 +262,9 @@ export function DataTable<T>({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               data-testid="datatable-next"
-              aria-label="Página siguiente"
+              aria-label={t('common:table.nextAria')}
             >
-              Siguiente <ChevronRight className="h-4 w-4" />
+              {t('common:table.next')} <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

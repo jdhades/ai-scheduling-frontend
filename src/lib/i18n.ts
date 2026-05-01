@@ -13,6 +13,7 @@ import enScheduling from '../locales/en/scheduling.json';
 import enRules from '../locales/en/rules.json';
 import enDashboard from '../locales/en/dashboard.json';
 import enApprovals from '../locales/en/approvals.json';
+import enInsights from '../locales/en/insights.json';
 
 import esCommon from '../locales/es/common.json';
 import esErrors from '../locales/es/errors.json';
@@ -25,6 +26,7 @@ import esScheduling from '../locales/es/scheduling.json';
 import esRules from '../locales/es/rules.json';
 import esDashboard from '../locales/es/dashboard.json';
 import esApprovals from '../locales/es/approvals.json';
+import esInsights from '../locales/es/insights.json';
 
 /**
  * Default language is English. The detector intentionally OMITS
@@ -55,6 +57,7 @@ i18n
       'rules',
       'dashboard',
       'approvals',
+      'insights',
     ],
     defaultNS: 'common',
     fallbackNS: ['common', 'legacy', 'nav'],
@@ -71,6 +74,7 @@ i18n
         rules: enRules,
         dashboard: enDashboard,
         approvals: enApprovals,
+        insights: enInsights,
       },
       es: {
         common: esCommon,
@@ -84,6 +88,7 @@ i18n
         rules: esRules,
         dashboard: esDashboard,
         approvals: esApprovals,
+        insights: esInsights,
       },
     },
     interpolation: {

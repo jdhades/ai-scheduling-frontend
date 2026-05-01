@@ -1,0 +1,28 @@
+{
+  "fairness": {
+    "page": {
+      "title": "Fairness por empleado",
+      "subtitle": "Contadores acumulados para la semana seleccionada.",
+      "weekLabel": "Semana",
+      "searchPlaceholder": "Buscar empleado…",
+      "loadError": "Error cargando fairness.",
+      "empty": "No hay datos para esa semana."
+    },
+    "table": {
+      "employee": "Empleado",
+      "hours": "Horas",
+      "undesirable": "Undesirable",
+      "nightShifts": "Nocturnos",
+      "weekend": "Weekend",
+      "voluntaryExtra": "Voluntary extra"
+    }
+  },
+  "coverage": {
+    "title": "Coverage heatmap",
+    "subtitle": "Cobertura por día y hora del horario actual."
+  },
+  "demand": {
+    "title": "Demand heatmap",
+    "subtitle": "Demanda histórica por día y hora."
+  }
+}

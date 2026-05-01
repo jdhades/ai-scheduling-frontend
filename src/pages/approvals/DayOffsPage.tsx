@@ -40,7 +40,7 @@ export const DayOffsPage = () => {
     () => [
       {
         accessorKey: 'employeeId',
-        header: 'Empleado',
+        header: t('approvals:dayOff.table.employee'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span title={row.original.employeeId}>
@@ -50,14 +50,14 @@ export const DayOffsPage = () => {
       },
       {
         accessorKey: 'date',
-        header: 'Fecha',
+        header: t('approvals:dayOff.table.date'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.date}</span>
         ),
       },
       {
         accessorKey: 'reason',
-        header: 'Razón',
+        header: t('approvals:dayOff.table.reason'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="block max-w-md truncate" title={row.original.reason}>
@@ -67,12 +67,14 @@ export const DayOffsPage = () => {
       },
       {
         accessorKey: 'status',
-        header: 'Estado',
+        header: t('approvals:dayOff.table.status'),
         cell: ({ row }) => <Badge>{row.original.status}</Badge>,
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">{t('approvals:dayOff.table.actions')}</span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -82,7 +84,7 @@ export const DayOffsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Aprobar"
+                title={t('approvals:dayOff.rowActions.approve')}
                 data-testid={`approve-${r.id}`}
                 disabled={r.status !== 'pending' || approveMut.isPending}
                 onClick={() => approveMut.mutate(r.id)}
@@ -92,7 +94,7 @@ export const DayOffsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Rechazar"
+                title={t('approvals:dayOff.rowActions.reject')}
                 data-testid={`reject-${r.id}`}
                 disabled={r.status !== 'pending' || rejectMut.isPending}
                 onClick={() => rejectMut.mutate(r.id)}
@@ -105,18 +107,20 @@ export const DayOffsPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [approveMut, rejectMut],
+    [t, approveMut, rejectMut],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Solicitudes de día libre</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('approvals:dayOff.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {list.isLoading
-              ? 'Cargando…'
-              : `${rows.length} pedido${rows.length === 1 ? '' : 's'}`}
+              ? t('approvals:dayOff.page.summaryLoading')
+              : t('approvals:dayOff.page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button
@@ -134,7 +138,7 @@ export const DayOffsPage = () => {
         getRowId={(r) => r.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por empleado o razón…"
+        searchPlaceholder={t('approvals:dayOff.page.searchPlaceholder')}
         toolbar={
           <ManagerScopeFilter
             value={managerEmployeeId}
@@ -142,8 +146,8 @@ export const DayOffsPage = () => {
           />
         }
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando day-offs.' : undefined}
-        emptyMessage="No hay solicitudes."
+        errorMessage={list.isError ? t('approvals:dayOff.page.loadError') : undefined}
+        emptyMessage={t('approvals:dayOff.page.empty')}
       />
 
       <CreateDayOffRequestDialog

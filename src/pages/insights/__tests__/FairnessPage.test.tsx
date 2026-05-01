@@ -43,7 +43,7 @@ describe('FairnessPage', () => {
     renderWithProviders(<FairnessPage />);
     await waitFor(() =>
       expect(
-        screen.getByText('No hay datos para esa semana.'),
+        screen.getByText('No data for this week.'),
       ).toBeInTheDocument(),
     );
   });

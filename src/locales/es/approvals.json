@@ -3,6 +3,26 @@
     "newButton": "Nuevo"
   },
   "absence": {
+    "page": {
+      "title": "Reportes de ausencia",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} reporte",
+      "summaryCount_other": "{{count}} reportes",
+      "searchPlaceholder": "Buscar por empleado o razón…",
+      "loadError": "Error cargando ausencias.",
+      "empty": "No hay ausencias reportadas."
+    },
+    "table": {
+      "employee": "Empleado",
+      "assignment": "Assignment",
+      "reason": "Razón",
+      "urgent": "Urgente",
+      "reportedAt": "Reportado"
+    },
+    "values": {
+      "urgent": "urgente",
+      "notUrgent": "no"
+    },
     "dialog": {
       "title": "Nuevo reporte de ausencia",
       "description": "Alta manual para casos donde el empleado avisó por teléfono, mail o en persona. El path principal (WhatsApp) sigue creando reportes automáticamente desde el bot.",
@@ -25,6 +45,26 @@
     }
   },
   "dayOff": {
+    "page": {
+      "title": "Solicitudes de día libre",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} pedido",
+      "summaryCount_other": "{{count}} pedidos",
+      "searchPlaceholder": "Buscar por empleado o razón…",
+      "loadError": "Error cargando day-offs.",
+      "empty": "No hay solicitudes."
+    },
+    "table": {
+      "employee": "Empleado",
+      "date": "Fecha",
+      "reason": "Razón",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "rowActions": {
+      "approve": "Aprobar",
+      "reject": "Rechazar"
+    },
     "dialog": {
       "title": "Nueva solicitud de día libre",
       "description": "Agendá un pedido de día libre manualmente. Útil cuando el empleado lo pidió verbalmente o por otro canal y el manager quiere registrarlo en el panel para seguimiento.",
@@ -104,6 +144,28 @@
         "submitting": "Guardando…",
         "cancel": "Cancelar"
       }
+    }
+  },
+  "swap": {
+    "page": {
+      "title": "Solicitudes de intercambio de turno",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} pedido",
+      "summaryCount_other": "{{count}} pedidos",
+      "searchPlaceholder": "Buscar por empleado…",
+      "loadError": "Error cargando swaps.",
+      "empty": "No hay swap requests."
+    },
+    "table": {
+      "requester": "Pide",
+      "target": "A",
+      "assignment": "Assignment",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "rowActions": {
+      "approve": "Aprobar",
+      "reject": "Rechazar"
     }
   }
 }

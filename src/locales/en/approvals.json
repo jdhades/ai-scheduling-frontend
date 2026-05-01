@@ -3,6 +3,26 @@
     "newButton": "New"
   },
   "absence": {
+    "page": {
+      "title": "Absence reports",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} report",
+      "summaryCount_other": "{{count}} reports",
+      "searchPlaceholder": "Search by employee or reason…",
+      "loadError": "Failed to load absences.",
+      "empty": "No absences reported."
+    },
+    "table": {
+      "employee": "Employee",
+      "assignment": "Assignment",
+      "reason": "Reason",
+      "urgent": "Urgent",
+      "reportedAt": "Reported"
+    },
+    "values": {
+      "urgent": "urgent",
+      "notUrgent": "no"
+    },
     "dialog": {
       "title": "New absence report",
       "description": "Manual entry for cases where the employee notified by phone, email or in person. The main path (WhatsApp) keeps creating reports automatically from the bot.",
@@ -25,6 +45,26 @@
     }
   },
   "dayOff": {
+    "page": {
+      "title": "Day-off requests",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} request",
+      "summaryCount_other": "{{count}} requests",
+      "searchPlaceholder": "Search by employee or reason…",
+      "loadError": "Failed to load day-offs.",
+      "empty": "No requests."
+    },
+    "table": {
+      "employee": "Employee",
+      "date": "Date",
+      "reason": "Reason",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "rowActions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    },
     "dialog": {
       "title": "New day-off request",
       "description": "Schedule a day-off request manually. Useful when the employee asked verbally or by another channel and the manager wants to register it in the panel for tracking.",
@@ -104,6 +144,28 @@
         "submitting": "Saving…",
         "cancel": "Cancel"
       }
+    }
+  },
+  "swap": {
+    "page": {
+      "title": "Shift swap requests",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} request",
+      "summaryCount_other": "{{count}} requests",
+      "searchPlaceholder": "Search by employee…",
+      "loadError": "Failed to load swaps.",
+      "empty": "No swap requests."
+    },
+    "table": {
+      "requester": "Requester",
+      "target": "Target",
+      "assignment": "Assignment",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "rowActions": {
+      "approve": "Approve",
+      "reject": "Reject"
     }
   }
 }

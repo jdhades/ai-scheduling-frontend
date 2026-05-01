@@ -37,10 +37,17 @@
   },
   "table": {
     "rowsPerPage": "Rows per page",
+    "rowsLabel": "Rows:",
     "page": "Page {{current}} of {{total}}",
     "previous": "Previous",
     "next": "Next",
-    "noResults": "No results."
+    "previousAria": "Previous page",
+    "nextAria": "Next page",
+    "noResults": "No results.",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results",
+    "showingOf": "Showing {{shown}} of {{total}}",
+    "sortByAria": "Sort by {{column}}"
   },
   "managerFilter": {
     "label": "Manager scope",

@@ -133,7 +133,7 @@ describe('AbsencesPage', () => {
     await waitFor(() =>
       expect(screen.getByText('Enfermo con gripe')).toBeInTheDocument(),
     );
-    expect(screen.getByText('urgente')).toBeInTheDocument();
+    expect(screen.getByText('urgent')).toBeInTheDocument();
   });
 });
 

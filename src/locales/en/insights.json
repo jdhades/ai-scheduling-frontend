@@ -1,0 +1,28 @@
+{
+  "fairness": {
+    "page": {
+      "title": "Fairness by employee",
+      "subtitle": "Cumulative counters for the selected week.",
+      "weekLabel": "Week",
+      "searchPlaceholder": "Search employee…",
+      "loadError": "Failed to load fairness.",
+      "empty": "No data for this week."
+    },
+    "table": {
+      "employee": "Employee",
+      "hours": "Hours",
+      "undesirable": "Undesirable",
+      "nightShifts": "Night shifts",
+      "weekend": "Weekend",
+      "voluntaryExtra": "Voluntary extra"
+    }
+  },
+  "coverage": {
+    "title": "Coverage heatmap",
+    "subtitle": "Day-by-hour coverage of the current schedule."
+  },
+  "demand": {
+    "title": "Demand heatmap",
+    "subtitle": "Historical demand by day and hour."
+  }
+}

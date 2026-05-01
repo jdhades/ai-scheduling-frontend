@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, X } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -20,6 +21,7 @@ interface SwapRow {
 }
 
 export const SwapsPage = () => {
+  const { t } = useTranslation();
   const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
     undefined,
   );
@@ -32,7 +34,7 @@ export const SwapsPage = () => {
     () => [
       {
         accessorKey: 'requesterId',
-        header: 'Pide',
+        header: t('approvals:swap.table.requester'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span title={row.original.requesterId}>
@@ -42,7 +44,7 @@ export const SwapsPage = () => {
       },
       {
         accessorKey: 'targetId',
-        header: 'A',
+        header: t('approvals:swap.table.target'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span title={row.original.targetId}>
@@ -52,7 +54,7 @@ export const SwapsPage = () => {
       },
       {
         accessorKey: 'assignmentId',
-        header: 'Assignment',
+        header: t('approvals:swap.table.assignment'),
         cell: ({ row }) => (
           <span
             className="text-muted-foreground"
@@ -66,12 +68,14 @@ export const SwapsPage = () => {
       },
       {
         accessorKey: 'status',
-        header: 'Estado',
+        header: t('approvals:swap.table.status'),
         cell: ({ row }) => <Badge>{row.original.status}</Badge>,
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">{t('approvals:swap.table.actions')}</span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -81,7 +85,7 @@ export const SwapsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Aprobar"
+                title={t('approvals:swap.rowActions.approve')}
                 data-testid={`approve-${r.id}`}
                 disabled={r.status !== 'pending' || approveMut.isPending}
                 onClick={() => approveMut.mutate(r.id)}
@@ -91,7 +95,7 @@ export const SwapsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Rechazar"
+                title={t('approvals:swap.rowActions.reject')}
                 data-testid={`reject-${r.id}`}
                 disabled={r.status !== 'pending' || rejectMut.isPending}
                 onClick={() => rejectMut.mutate(r.id)}
@@ -104,17 +108,19 @@ export const SwapsPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [approveMut, rejectMut],
+    [t, approveMut, rejectMut],
   );
 
   return (
     <div className="space-y-4">
       <header>
-        <h1 className="text-xl font-bold text-foreground">Shift swap requests</h1>
+        <h1 className="text-xl font-bold text-foreground">
+          {t('approvals:swap.page.title')}
+        </h1>
         <p className="text-sm text-muted-foreground">
           {list.isLoading
-            ? 'Cargando…'
-            : `${rows.length} pedido${rows.length === 1 ? '' : 's'}`}
+            ? t('approvals:swap.page.summaryLoading')
+            : t('approvals:swap.page.summaryCount', { count: rows.length })}
         </p>
       </header>
 
@@ -124,7 +130,7 @@ export const SwapsPage = () => {
         getRowId={(r) => r.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por empleado…"
+        searchPlaceholder={t('approvals:swap.page.searchPlaceholder')}
         toolbar={
           <ManagerScopeFilter
             value={managerEmployeeId}
@@ -132,8 +138,8 @@ export const SwapsPage = () => {
           />
         }
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando swaps.' : undefined}
-        emptyMessage="No hay swap requests."
+        errorMessage={list.isError ? t('approvals:swap.page.loadError') : undefined}
+        emptyMessage={t('approvals:swap.page.empty')}
       />
     </div>
   );

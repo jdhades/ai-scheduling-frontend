@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useFairnessHistoryQuery } from '../../api/fairness-history.api';
 import { useEmployeesQuery } from '../../api/employees.api';
@@ -32,6 +33,7 @@ interface FairnessRow {
  * aparte que podemos sumar más adelante.
  */
 export const FairnessPage = () => {
+  const { t } = useTranslation();
   const [weekStart, setWeekStart] = useState<string>(upcomingMondayISO());
   const employees = useEmployeesQuery();
   const fairness = useFairnessHistoryQuery(weekStart);
@@ -46,7 +48,7 @@ export const FairnessPage = () => {
     () => [
       {
         id: 'employee',
-        header: 'Empleado',
+        header: t('insights:fairness.table.employee'),
         accessorFn: (r) => empById.get(r.employeeId) ?? r.employeeId.slice(0, 8) + '…',
         enableGlobalFilter: true,
         cell: ({ getValue }) => (
@@ -55,7 +57,7 @@ export const FairnessPage = () => {
       },
       {
         accessorKey: 'hoursWorked',
-        header: 'Horas',
+        header: t('insights:fairness.table.hours'),
         cell: ({ row }) => (
           <span className="block text-right">{row.original.hoursWorked}</span>
         ),
@@ -63,7 +65,7 @@ export const FairnessPage = () => {
       },
       {
         accessorKey: 'undesirableCount',
-        header: 'Undesirable',
+        header: t('insights:fairness.table.undesirable'),
         cell: ({ row }) => (
           <span className="block text-right">{row.original.undesirableCount}</span>
         ),
@@ -71,7 +73,7 @@ export const FairnessPage = () => {
       },
       {
         accessorKey: 'nightShiftCount',
-        header: 'Nocturnos',
+        header: t('insights:fairness.table.nightShifts'),
         cell: ({ row }) => (
           <span className="block text-right">{row.original.nightShiftCount}</span>
         ),
@@ -79,7 +81,7 @@ export const FairnessPage = () => {
       },
       {
         accessorKey: 'weekendCount',
-        header: 'Weekend',
+        header: t('insights:fairness.table.weekend'),
         cell: ({ row }) => (
           <span className="block text-right">{row.original.weekendCount}</span>
         ),
@@ -87,27 +89,29 @@ export const FairnessPage = () => {
       },
       {
         accessorKey: 'voluntaryExtraShifts',
-        header: 'Voluntary extra',
+        header: t('insights:fairness.table.voluntaryExtra'),
         cell: ({ row }) => (
           <span className="block text-right">{row.original.voluntaryExtraShifts}</span>
         ),
         meta: { headerClassName: 'text-right', cellClassName: 'text-right' },
       },
     ],
-    [empById],
+    [t, empById],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Fairness por empleado</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('insights:fairness.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Contadores acumulados para la semana seleccionada.
+            {t('insights:fairness.page.subtitle')}
           </p>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="f-week">Semana</Label>
+          <Label htmlFor="f-week">{t('insights:fairness.page.weekLabel')}</Label>
           <Input
             id="f-week"
             type="date"
@@ -125,10 +129,10 @@ export const FairnessPage = () => {
         getRowId={(r) => r.employeeId}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar empleado…"
+        searchPlaceholder={t('insights:fairness.page.searchPlaceholder')}
         isLoading={fairness.isLoading}
-        errorMessage={fairness.isError ? 'Error cargando fairness.' : undefined}
-        emptyMessage="No hay datos para esa semana."
+        errorMessage={fairness.isError ? t('insights:fairness.page.loadError') : undefined}
+        emptyMessage={t('insights:fairness.page.empty')}
       />
     </div>
   );

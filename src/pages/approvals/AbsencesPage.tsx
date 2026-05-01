@@ -42,7 +42,7 @@ export const AbsencesPage = () => {
     () => [
       {
         accessorKey: 'employeeId',
-        header: 'Empleado',
+        header: t('approvals:absence.table.employee'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span title={row.original.employeeId}>
@@ -52,7 +52,7 @@ export const AbsencesPage = () => {
       },
       {
         accessorKey: 'assignmentId',
-        header: 'Assignment',
+        header: t('approvals:absence.table.assignment'),
         cell: ({ row }) => (
           <span
             className="text-muted-foreground"
@@ -66,7 +66,7 @@ export const AbsencesPage = () => {
       },
       {
         accessorKey: 'reason',
-        header: 'Razón',
+        header: t('approvals:absence.table.reason'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="block max-w-md truncate" title={row.original.reason}>
@@ -76,17 +76,19 @@ export const AbsencesPage = () => {
       },
       {
         accessorKey: 'isUrgent',
-        header: 'Urgente',
+        header: t('approvals:absence.table.urgent'),
         cell: ({ row }) =>
           row.original.isUrgent ? (
-            <Badge>urgente</Badge>
+            <Badge>{t('approvals:absence.values.urgent')}</Badge>
           ) : (
-            <span className="text-muted-foreground">no</span>
+            <span className="text-muted-foreground">
+              {t('approvals:absence.values.notUrgent')}
+            </span>
           ),
       },
       {
         accessorKey: 'reportedAt',
-        header: 'Reportado',
+        header: t('approvals:absence.table.reportedAt'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             {new Date(row.original.reportedAt).toLocaleString()}
@@ -94,18 +96,20 @@ export const AbsencesPage = () => {
         ),
       },
     ],
-    [],
+    [t],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Reportes de ausencia</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('approvals:absence.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {list.isLoading
-              ? 'Cargando…'
-              : `${rows.length} reporte${rows.length === 1 ? '' : 's'}`}
+              ? t('approvals:absence.page.summaryLoading')
+              : t('approvals:absence.page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button
@@ -123,7 +127,7 @@ export const AbsencesPage = () => {
         getRowId={(r) => r.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por empleado o razón…"
+        searchPlaceholder={t('approvals:absence.page.searchPlaceholder')}
         toolbar={
           <ManagerScopeFilter
             value={managerEmployeeId}
@@ -131,8 +135,8 @@ export const AbsencesPage = () => {
           />
         }
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando ausencias.' : undefined}
-        emptyMessage="No hay ausencias reportadas."
+        errorMessage={list.isError ? t('approvals:absence.page.loadError') : undefined}
+        emptyMessage={t('approvals:absence.page.empty')}
       />
 
       <CreateAbsenceReportDialog
