@@ -1,15 +1,19 @@
 import { useMemo, useState } from 'react';
-import { X, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { CheckCircle2, Plus, X } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   useIncidentsQuery,
   useRejectIncidentMutation,
   useResolveIncidentMutation,
+  useCreateIncidentMutation,
 } from '../../api/incidents.api';
+import { useEmployeesQuery } from '../../api/employees.api';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
 import { ManagerScopeFilter } from './ManagerScopeFilter';
+import { CreateIncidentDialog } from './CreateIncidentDialog';
 import type { Incident, IncidentStatus } from '../../types/approvals';
 
 const STATUS_LABEL: Record<IncidentStatus, string> = {
@@ -29,12 +33,16 @@ const STATUS_LABEL: Record<IncidentStatus, string> = {
 const isClosed = (s: IncidentStatus) => s === 'rejected' || s === 'resolved';
 
 export const IncidentsPage = () => {
+  const { t } = useTranslation();
   const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
     undefined,
   );
+  const [createOpen, setCreateOpen] = useState(false);
   const list = useIncidentsQuery({ managerEmployeeId });
+  const employeesQ = useEmployeesQuery();
   const rejectMut = useRejectIncidentMutation();
   const resolveMut = useResolveIncidentMutation();
+  const createMut = useCreateIncidentMutation();
   const [actingOn, setActingOn] = useState<string | null>(null);
 
   const rows = list.data ?? [];
@@ -140,13 +148,22 @@ export const IncidentsPage = () => {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-xl font-bold text-foreground">Incidents</h1>
-        <p className="text-sm text-muted-foreground">
-          {list.isLoading
-            ? 'Cargando…'
-            : `${rows.length} incidente${rows.length === 1 ? '' : 's'}`}
-        </p>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Incidents</h1>
+          <p className="text-sm text-muted-foreground">
+            {list.isLoading
+              ? 'Cargando…'
+              : `${rows.length} incidente${rows.length === 1 ? '' : 's'}`}
+          </p>
+        </div>
+        <Button
+          onClick={() => setCreateOpen(true)}
+          data-testid="new-incident-btn"
+          disabled={employeesQ.isLoading}
+        >
+          <Plus className="h-4 w-4" /> {t('approvals:common.newButton')}
+        </Button>
       </header>
 
       <DataTable
@@ -165,6 +182,16 @@ export const IncidentsPage = () => {
         isLoading={list.isLoading}
         errorMessage={list.isError ? 'Error cargando incidentes.' : undefined}
         emptyMessage="No hay incidentes."
+      />
+
+      <CreateIncidentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        employees={employeesQ.data ?? []}
+        onSubmit={(payload) =>
+          createMut.mutateAsync(payload).then(() => setCreateOpen(false))
+        }
+        submitting={createMut.isPending}
       />
     </div>
   );

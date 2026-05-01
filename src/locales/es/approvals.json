@@ -1,0 +1,74 @@
+{
+  "common": {
+    "newButton": "Nuevo"
+  },
+  "absence": {
+    "dialog": {
+      "title": "Nuevo reporte de ausencia",
+      "description": "Alta manual para casos donde el empleado avisó por teléfono, mail o en persona. El path principal (WhatsApp) sigue creando reportes automáticamente desde el bot.",
+      "fields": {
+        "employee": "Empleado",
+        "employeePick": "Elegí un empleado…",
+        "reason": "Razón",
+        "reasonPlaceholder": "ej. gripe — 2 días de reposo",
+        "urgent": "Urgente (turno empieza en menos de 2h)",
+        "urgentHint": "Los reportes urgentes disparan una alerta inmediata al manager asignado."
+      },
+      "errors": {
+        "required": "Empleado y razón son obligatorios."
+      },
+      "actions": {
+        "submit": "Crear",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  },
+  "dayOff": {
+    "dialog": {
+      "title": "Nueva solicitud de día libre",
+      "description": "Agendá un pedido de día libre manualmente. Útil cuando el empleado lo pidió verbalmente o por otro canal y el manager quiere registrarlo en el panel para seguimiento.",
+      "fields": {
+        "employee": "Empleado",
+        "employeePick": "Elegí un empleado…",
+        "date": "Fecha",
+        "reason": "Razón",
+        "reasonPlaceholder": "ej. turno médico"
+      },
+      "errors": {
+        "required": "Empleado, fecha y razón son obligatorios.",
+        "datePast": "La fecha no puede ser pasada."
+      },
+      "actions": {
+        "submit": "Crear",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  },
+  "incident": {
+    "dialog": {
+      "title": "Nuevo incidente",
+      "description": "Alta manual para registro retroactivo o testing. El path principal es por WhatsApp donde el empleado manda una foto y el pipeline OCR la valida automáticamente.",
+      "fields": {
+        "employee": "Empleado",
+        "employeePick": "Elegí un empleado…",
+        "message": "Mensaje",
+        "messagePlaceholder": "ej. auto roto, voy a llegar tarde",
+        "mediaUrl": "URL de la evidencia",
+        "mediaUrlHint": "(opcional · link a imagen / PDF)",
+        "mediaUrlPlaceholder": "https://…"
+      },
+      "errors": {
+        "required": "El empleado es obligatorio.",
+        "messageOrMedia": "Pasá al menos un mensaje o una URL de evidencia.",
+        "invalidUrl": "La URL de evidencia no es válida."
+      },
+      "actions": {
+        "submit": "Crear",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  }
+}

@@ -12,6 +12,7 @@ import enWorkforce from '../locales/en/workforce.json';
 import enScheduling from '../locales/en/scheduling.json';
 import enRules from '../locales/en/rules.json';
 import enDashboard from '../locales/en/dashboard.json';
+import enApprovals from '../locales/en/approvals.json';
 
 import esCommon from '../locales/es/common.json';
 import esErrors from '../locales/es/errors.json';
@@ -23,6 +24,7 @@ import esWorkforce from '../locales/es/workforce.json';
 import esScheduling from '../locales/es/scheduling.json';
 import esRules from '../locales/es/rules.json';
 import esDashboard from '../locales/es/dashboard.json';
+import esApprovals from '../locales/es/approvals.json';
 
 /**
  * Default language is English. The detector intentionally OMITS
@@ -52,6 +54,7 @@ i18n
       'scheduling',
       'rules',
       'dashboard',
+      'approvals',
     ],
     defaultNS: 'common',
     fallbackNS: ['common', 'legacy', 'nav'],
@@ -67,6 +70,7 @@ i18n
         scheduling: enScheduling,
         rules: enRules,
         dashboard: enDashboard,
+        approvals: enApprovals,
       },
       es: {
         common: esCommon,
@@ -79,6 +83,7 @@ i18n
         scheduling: esScheduling,
         rules: esRules,
         dashboard: esDashboard,
+        approvals: esApprovals,
       },
     },
     interpolation: {

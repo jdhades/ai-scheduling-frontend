@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useAbsenceReportsQuery } from '../../api/absence-reports.api';
+import {
+  useAbsenceReportsQuery,
+  useCreateAbsenceReportMutation,
+} from '../../api/absence-reports.api';
+import { useEmployeesQuery } from '../../api/employees.api';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/button';
 import { ManagerScopeFilter } from './ManagerScopeFilter';
+import { CreateAbsenceReportDialog } from './CreateAbsenceReportDialog';
 
 interface AbsenceRow {
   id: string;
@@ -20,10 +28,14 @@ interface AbsenceRow {
  * via POST /absence-reports desde una pantalla aparte (futura).
  */
 export const AbsencesPage = () => {
+  const { t } = useTranslation();
   const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
     undefined,
   );
+  const [createOpen, setCreateOpen] = useState(false);
   const list = useAbsenceReportsQuery({ managerEmployeeId });
+  const employeesQ = useEmployeesQuery();
+  const createMut = useCreateAbsenceReportMutation();
   const rows = (list.data ?? []) as AbsenceRow[];
 
   const columns = useMemo<ColumnDef<AbsenceRow>[]>(
@@ -87,13 +99,22 @@ export const AbsencesPage = () => {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-xl font-bold text-foreground">Reportes de ausencia</h1>
-        <p className="text-sm text-muted-foreground">
-          {list.isLoading
-            ? 'Cargando…'
-            : `${rows.length} reporte${rows.length === 1 ? '' : 's'}`}
-        </p>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Reportes de ausencia</h1>
+          <p className="text-sm text-muted-foreground">
+            {list.isLoading
+              ? 'Cargando…'
+              : `${rows.length} reporte${rows.length === 1 ? '' : 's'}`}
+          </p>
+        </div>
+        <Button
+          onClick={() => setCreateOpen(true)}
+          data-testid="new-absence-btn"
+          disabled={employeesQ.isLoading}
+        >
+          <Plus className="h-4 w-4" /> {t('approvals:common.newButton')}
+        </Button>
       </header>
 
       <DataTable
@@ -112,6 +133,16 @@ export const AbsencesPage = () => {
         isLoading={list.isLoading}
         errorMessage={list.isError ? 'Error cargando ausencias.' : undefined}
         emptyMessage="No hay ausencias reportadas."
+      />
+
+      <CreateAbsenceReportDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        employees={employeesQ.data ?? []}
+        onSubmit={(payload) =>
+          createMut.mutateAsync(payload).then(() => setCreateOpen(false))
+        }
+        submitting={createMut.isPending}
       />
     </div>
   );

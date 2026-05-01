@@ -1,0 +1,74 @@
+{
+  "common": {
+    "newButton": "New"
+  },
+  "absence": {
+    "dialog": {
+      "title": "New absence report",
+      "description": "Manual entry for cases where the employee notified by phone, email or in person. The main path (WhatsApp) keeps creating reports automatically from the bot.",
+      "fields": {
+        "employee": "Employee",
+        "employeePick": "Pick an employee…",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. flu — out for 2 days",
+        "urgent": "Urgent (shift starts in less than 2h)",
+        "urgentHint": "Urgent reports trigger an immediate alert to the assigned manager."
+      },
+      "errors": {
+        "required": "Employee and reason are required."
+      },
+      "actions": {
+        "submit": "Create",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "dayOff": {
+    "dialog": {
+      "title": "New day-off request",
+      "description": "Schedule a day-off request manually. Useful when the employee asked verbally or by another channel and the manager wants to register it in the panel for tracking.",
+      "fields": {
+        "employee": "Employee",
+        "employeePick": "Pick an employee…",
+        "date": "Date",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. medical appointment"
+      },
+      "errors": {
+        "required": "Employee, date and reason are required.",
+        "datePast": "The date cannot be in the past."
+      },
+      "actions": {
+        "submit": "Create",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "incident": {
+    "dialog": {
+      "title": "New incident",
+      "description": "Manual entry for retroactive registration or testing. The main path is via WhatsApp where the employee sends a photo and the OCR pipeline auto-validates it.",
+      "fields": {
+        "employee": "Employee",
+        "employeePick": "Pick an employee…",
+        "message": "Message",
+        "messagePlaceholder": "e.g. broken-down vehicle, will be late",
+        "mediaUrl": "Evidence URL",
+        "mediaUrlHint": "(optional · link to image / PDF)",
+        "mediaUrlPlaceholder": "https://…"
+      },
+      "errors": {
+        "required": "Employee is required.",
+        "messageOrMedia": "Provide at least a message or an evidence URL.",
+        "invalidUrl": "Evidence URL is not a valid URL."
+      },
+      "actions": {
+        "submit": "Create",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  }
+}
