@@ -99,6 +99,11 @@
       "manager": "Manager",
       "managerNone": "— sin asignar",
       "managerNoneTooltip": "Sin manager asignado — las approvals del departamento caen al fallback (cualquier manager del tenant).",
+      "autoApprove": "Auto-aprobar swaps",
+      "autoApproveOn": "Auto",
+      "autoApproveOnTooltip": "Las solicitudes de intercambio de turno del departamento se aceptan automáticamente (sin esperar al manager).",
+      "autoApproveOff": "Aprueba manager",
+      "autoApproveOffTooltip": "Default: las solicitudes de intercambio quedan pending hasta que el manager las aprueba.",
       "actions": "Acciones"
     },
     "rowActions": {
@@ -110,7 +115,9 @@
       "fields": {
         "manager": "Manager",
         "managerNone": "(sin manager — fallback a cualquier manager del tenant)",
-        "noManagersHint": "No hay empleados con rol \"manager\" en el tenant. El selector lista todos los empleados, pero considerá crear un manager primero."
+        "noManagersHint": "No hay empleados con rol \"manager\" en el tenant. El selector lista todos los empleados, pero considerá crear un manager primero.",
+        "swapAutoApprove": "Auto-aprobar intercambios de turno",
+        "swapAutoApproveHint": "Si está activo, las solicitudes de intercambio de turno originadas por empleados del departamento se aceptan automáticamente con approved_by='system:auto-approve'. Ambos empleados igual deben confirmar por WhatsApp; solo se salta la aprobación del manager."
       },
       "actions": {
         "submit": "Guardar",

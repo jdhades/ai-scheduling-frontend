@@ -10,6 +10,7 @@ import {
 import { useEmployeesQuery } from '../../api/employees.api';
 import type { Employee } from '../../types/employee';
 import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/Badge';
 import { DataTable } from '../../components/ui/data-table';
 import { DepartmentManagerDialog } from './DepartmentManagerDialog';
 
@@ -84,6 +85,24 @@ export const DepartmentsPage = () => {
         },
       },
       {
+        id: 'auto-approve',
+        header: t('workforce:departments.table.autoApprove'),
+        accessorFn: (d) => (d.swapAutoApprove ? 'on' : 'off'),
+        cell: ({ row }) =>
+          row.original.swapAutoApprove ? (
+            <Badge title={t('workforce:departments.table.autoApproveOnTooltip')}>
+              {t('workforce:departments.table.autoApproveOn')}
+            </Badge>
+          ) : (
+            <span
+              className="text-xs italic text-muted-foreground"
+              title={t('workforce:departments.table.autoApproveOffTooltip')}
+            >
+              {t('workforce:departments.table.autoApproveOff')}
+            </span>
+          ),
+      },
+      {
         id: 'actions',
         header: () => (
           <span className="sr-only">
@@ -147,11 +166,14 @@ export const DepartmentsPage = () => {
         managerCandidates={managerCandidates}
         allEmployees={employees}
         onOpenChange={(o) => !o && setEditOf(null)}
-        onSubmit={async (managerEmployeeId) => {
+        onSubmit={async (values) => {
           if (!editOf) return;
           await updateMut.mutateAsync({
             id: editOf.id,
-            patch: { managerEmployeeId },
+            patch: {
+              managerEmployeeId: values.managerEmployeeId,
+              swapAutoApprove: values.swapAutoApprove,
+            },
           });
           setEditOf(null);
         }}

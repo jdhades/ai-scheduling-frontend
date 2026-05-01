@@ -31,6 +31,12 @@ export interface Department extends ScopeTarget {
   branchId: string;
   /** Employee designado como manager del depto. null = sin asignar. */
   managerEmployeeId: string | null;
+  /**
+   * Phase 15.3 — si true, los shift_swap_requests originados por
+   * empleados del depto se aprueban automáticamente sin esperar al
+   * manager (status=accepted, approvedBy='system:auto-approve').
+   */
+  swapAutoApprove: boolean;
 }
 
 export const useDepartmentsQuery = () =>
@@ -46,6 +52,8 @@ export interface UpdateDepartmentPayload {
   /** Mandar `null` para limpiar la asignación. Mandar undefined no toca. */
   managerEmployeeId?: string | null;
   name?: string;
+  /** Phase 15.3 — toggle de auto-approve de swap requests. */
+  swapAutoApprove?: boolean;
 }
 
 export const useUpdateDepartmentMutation = () => {

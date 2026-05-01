@@ -99,6 +99,11 @@
       "manager": "Manager",
       "managerNone": "— unassigned",
       "managerNoneTooltip": "No manager assigned — approvals from this department fall back to any manager in the tenant.",
+      "autoApprove": "Auto-approve swaps",
+      "autoApproveOn": "Auto",
+      "autoApproveOnTooltip": "Shift swap requests from this department are accepted automatically (no manager approval needed).",
+      "autoApproveOff": "Manager approves",
+      "autoApproveOffTooltip": "Default: shift swap requests stay pending until the manager approves them.",
       "actions": "Actions"
     },
     "rowActions": {
@@ -110,7 +115,9 @@
       "fields": {
         "manager": "Manager",
         "managerNone": "(no manager — fall back to any tenant manager)",
-        "noManagersHint": "No employees with role=\"manager\" in the tenant. The dropdown lists every employee, but consider creating a manager first."
+        "noManagersHint": "No employees with role=\"manager\" in the tenant. The dropdown lists every employee, but consider creating a manager first.",
+        "swapAutoApprove": "Auto-approve shift swaps",
+        "swapAutoApproveHint": "When enabled, shift-swap requests from this department's employees are accepted automatically with approved_by='system:auto-approve'. Both employees still need to confirm via WhatsApp; only the manager approval step is skipped."
       },
       "actions": {
         "submit": "Save",
