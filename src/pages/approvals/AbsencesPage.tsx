@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   useAbsenceReportsQuery,
   useCreateAbsenceReportMutation,
+  useDeleteAbsenceReportMutation,
 } from '../../api/absence-reports.api';
 import { useEmployeesQuery } from '../../api/employees.api';
 import { DataTable } from '../../components/ui/data-table';
@@ -19,13 +20,20 @@ interface AbsenceRow {
   assignmentId: string | null;
   reason: string;
   isUrgent: boolean;
+  startDate: string;
+  endDate: string;
   reportedAt: string;
 }
 
 /**
- * AbsencesPage — listado read-only. Los reportes son inmutables;
- * sin acciones. Para crear uno nuevo se hace via WhatsApp o
- * via POST /absence-reports desde una pantalla aparte (futura).
+ * AbsencesPage — listado de reportes de ausencia.
+ *
+ * Phase 17 — los reportes son períodos (single-day o multi-day). El alta
+ * desde el panel borra los assignments del rango y notifica al manager,
+ * y el scheduler los respeta como hard constraint al generar.
+ *
+ * Soft-delete del reporte NO restaura assignments borrados — si el
+ * manager necesita reasignar el slot, regenera la semana.
  */
 export const AbsencesPage = () => {
   const { t } = useTranslation();
@@ -36,6 +44,7 @@ export const AbsencesPage = () => {
   const list = useAbsenceReportsQuery({ managerEmployeeId });
   const employeesQ = useEmployeesQuery();
   const createMut = useCreateAbsenceReportMutation();
+  const deleteMut = useDeleteAbsenceReportMutation();
   const rows = (list.data ?? []) as AbsenceRow[];
 
   const employeeNameById = useMemo(
@@ -81,6 +90,30 @@ export const AbsencesPage = () => {
         ),
       },
       {
+        id: 'period',
+        header: t('approvals:absence.table.period'),
+        accessorFn: (r) =>
+          r.startDate === r.endDate ? r.startDate : `${r.startDate}_${r.endDate}`,
+        cell: ({ row }) => {
+          const r = row.original;
+          if (r.startDate === r.endDate) {
+            return (
+              <span className="text-muted-foreground">
+                {t('approvals:absence.values.periodSingle', { date: r.startDate })}
+              </span>
+            );
+          }
+          return (
+            <span className="text-muted-foreground">
+              {t('approvals:absence.values.periodRange', {
+                start: r.startDate,
+                end: r.endDate,
+              })}
+            </span>
+          );
+        },
+      },
+      {
         accessorKey: 'reason',
         header: t('approvals:absence.table.reason'),
         enableGlobalFilter: true,
@@ -111,8 +144,39 @@ export const AbsencesPage = () => {
           </span>
         ),
       },
+      {
+        id: 'actions',
+        header: () => (
+          <span className="sr-only">{t('approvals:absence.table.actions')}</span>
+        ),
+        enableSorting: false,
+        enableGlobalFilter: false,
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              title={t('approvals:absence.rowActions.delete')}
+              data-testid={`delete-${row.original.id}`}
+              disabled={deleteMut.isPending}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    t('approvals:absence.rowActions.deleteConfirm'),
+                  )
+                ) {
+                  deleteMut.mutate(row.original.id);
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ),
+        meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
+      },
     ],
-    [t, employeeNameById],
+    [t, employeeNameById, deleteMut],
   );
 
   return (

@@ -16,26 +16,37 @@
       "employee": "Employee",
       "assignment": "Assignment",
       "reason": "Reason",
+      "period": "Period",
       "urgent": "Urgent",
-      "reportedAt": "Reported"
+      "reportedAt": "Reported",
+      "actions": "Actions"
     },
     "values": {
       "urgent": "urgent",
-      "notUrgent": "no"
+      "notUrgent": "no",
+      "periodSingle": "{{date}}",
+      "periodRange": "{{start}} → {{end}}"
+    },
+    "rowActions": {
+      "delete": "Delete",
+      "deleteConfirm": "Delete this absence report?"
     },
     "dialog": {
       "title": "New absence report",
-      "description": "Manual entry for cases where the employee notified by phone, email or in person. The main path (WhatsApp) keeps creating reports automatically from the bot.",
+      "description": "Register an absence period (single day or multi-day). Side effects: any shift assignments the employee had inside the period are deleted, the assigned manager is notified, and the scheduler will not assign them in this range when generating future weeks.",
       "fields": {
         "employee": "Employee",
         "employeePick": "Pick an employee…",
+        "startDate": "From",
+        "endDate": "To",
         "reason": "Reason",
         "reasonPlaceholder": "e.g. flu — out for 2 days",
         "urgent": "Urgent (shift starts in less than 2h)",
-        "urgentHint": "Urgent reports trigger an immediate alert to the assigned manager."
+        "urgentHint": "Recomputed automatically: if any deleted shift starts in less than 2 hours, the alert is escalated."
       },
       "errors": {
-        "required": "Employee and reason are required."
+        "required": "Employee, dates and reason are required.",
+        "endBeforeStart": "End date cannot be before start date."
       },
       "actions": {
         "submit": "Create",

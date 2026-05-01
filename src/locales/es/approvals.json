@@ -16,26 +16,37 @@
       "employee": "Empleado",
       "assignment": "Assignment",
       "reason": "Razón",
+      "period": "Período",
       "urgent": "Urgente",
-      "reportedAt": "Reportado"
+      "reportedAt": "Reportado",
+      "actions": "Acciones"
     },
     "values": {
       "urgent": "urgente",
-      "notUrgent": "no"
+      "notUrgent": "no",
+      "periodSingle": "{{date}}",
+      "periodRange": "{{start}} → {{end}}"
+    },
+    "rowActions": {
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar este reporte de ausencia?"
     },
     "dialog": {
       "title": "Nuevo reporte de ausencia",
-      "description": "Alta manual para casos donde el empleado avisó por teléfono, mail o en persona. El path principal (WhatsApp) sigue creando reportes automáticamente desde el bot.",
+      "description": "Registrá un período de ausencia (un día o varios). Efectos: los assignments del empleado dentro del período se eliminan, el manager asignado recibe notificación, y el scheduler no le asigna turnos en ese rango al generar próximas semanas.",
       "fields": {
         "employee": "Empleado",
         "employeePick": "Elegí un empleado…",
+        "startDate": "Desde",
+        "endDate": "Hasta",
         "reason": "Razón",
         "reasonPlaceholder": "ej. gripe — 2 días de reposo",
         "urgent": "Urgente (turno empieza en menos de 2h)",
-        "urgentHint": "Los reportes urgentes disparan una alerta inmediata al manager asignado."
+        "urgentHint": "Recalculado automáticamente: si algún turno borrado empieza en menos de 2 horas, escala como alerta."
       },
       "errors": {
-        "required": "Empleado y razón son obligatorios."
+        "required": "Empleado, fechas y razón son obligatorios.",
+        "endBeforeStart": "La fecha hasta no puede ser anterior a desde."
       },
       "actions": {
         "submit": "Crear",

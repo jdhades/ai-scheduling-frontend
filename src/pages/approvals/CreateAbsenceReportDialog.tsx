@@ -10,10 +10,13 @@ import {
   DialogTitle,
 } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import type { Employee } from '../../types/employee';
 import type { CreateAbsenceReportPayload } from '../../types/approvals';
+
+const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
 interface Props {
   open: boolean;
@@ -40,21 +43,30 @@ export const CreateAbsenceReportDialog = ({
   const [employeeId, setEmployeeId] = useState('');
   const [reason, setReason] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const [startDate, setStartDate] = useState(todayISO());
+  const [endDate, setEndDate] = useState(todayISO());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    const today = todayISO();
     setEmployeeId('');
     setReason('');
     setIsUrgent(false);
+    setStartDate(today);
+    setEndDate(today);
     setError(null);
   }, [open]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!employeeId || !reason.trim()) {
+    if (!employeeId || !reason.trim() || !startDate || !endDate) {
       setError(t('approvals:absence.dialog.errors.required'));
+      return;
+    }
+    if (endDate < startDate) {
+      setError(t('approvals:absence.dialog.errors.endBeforeStart'));
       return;
     }
     try {
@@ -62,6 +74,8 @@ export const CreateAbsenceReportDialog = ({
         employeeId,
         reason: reason.trim(),
         isUrgent,
+        startDate,
+        endDate,
       });
     } catch (err) {
       setError(describeApiError(err));
@@ -100,6 +114,41 @@ export const CreateAbsenceReportDialog = ({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="abs-start-date">
+                {t('approvals:absence.dialog.fields.startDate')}
+              </Label>
+              <Input
+                id="abs-start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setStartDate(next);
+                  if (endDate < next) setEndDate(next);
+                }}
+                data-testid="abs-start-date-input"
+                disabled={submitting}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="abs-end-date">
+                {t('approvals:absence.dialog.fields.endDate')}
+              </Label>
+              <Input
+                id="abs-end-date"
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                data-testid="abs-end-date-input"
+                disabled={submitting}
+                required
+              />
+            </div>
           </div>
           <div className="space-y-1">
             <Label htmlFor="abs-reason">

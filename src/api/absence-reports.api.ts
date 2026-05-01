@@ -48,6 +48,23 @@ export function useCreateAbsenceReportMutation() {
       return data;
     },
     onSuccess: () => {
+      // Phase 17.2 — el creator borra assignments del range, así que
+      // también invalidamos los listados de schedule para que se
+      // refresquen los slots vacantes.
+      qc.invalidateQueries({ queryKey: ['absence-reports', TENANT_ID] });
+      qc.invalidateQueries({ queryKey: ['schedule', TENANT_ID] });
+    },
+  });
+}
+
+export function useDeleteAbsenceReportMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/absence-reports/${id}`);
+      return { id };
+    },
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['absence-reports', TENANT_ID] });
     },
   });

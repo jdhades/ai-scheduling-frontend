@@ -77,6 +77,9 @@ export interface AbsenceReport {
   assignmentId: string | null;
   reason: string;
   isUrgent: boolean;
+  /** Phase 17 — período de la ausencia. Single-day cuando start === end. */
+  startDate: string;
+  endDate: string;
   reportedAt: string;
 }
 
@@ -85,6 +88,10 @@ export interface CreateAbsenceReportPayload {
   assignmentId?: string | null;
   reason: string;
   isUrgent?: boolean;
+  /** YYYY-MM-DD. Default backend = hoy. */
+  startDate?: string;
+  /** YYYY-MM-DD. Default backend = startDate. */
+  endDate?: string;
 }
 
 // ─── DayOffRequest ────────────────────────────────────────────────────────────
