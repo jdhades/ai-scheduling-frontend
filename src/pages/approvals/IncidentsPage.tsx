@@ -16,20 +16,6 @@ import { ManagerScopeFilter } from './ManagerScopeFilter';
 import { CreateIncidentDialog } from './CreateIncidentDialog';
 import type { Incident, IncidentStatus } from '../../types/approvals';
 
-const STATUS_LABEL: Record<IncidentStatus, string> = {
-  reported: 'Reportado',
-  document_received: 'Doc recibido',
-  pending_ocr: 'OCR pendiente',
-  processing_ocr: 'OCR en curso',
-  pending_validation: 'Validación pendiente',
-  validated: 'Validado',
-  rejected: 'Rechazado',
-  repair_in_progress: 'Reparación en curso',
-  replacement_pending: 'Reemplazo pendiente',
-  replacement_assigned: 'Reemplazo asignado',
-  resolved: 'Resuelto',
-};
-
 const isClosed = (s: IncidentStatus) => s === 'rejected' || s === 'resolved';
 
 export const IncidentsPage = () => {
@@ -48,7 +34,9 @@ export const IncidentsPage = () => {
   const rows = list.data ?? [];
 
   const handleReject = (i: Incident) => {
-    const reason = window.prompt(`Razón del rechazo para incident ${i.id}:`);
+    const reason = window.prompt(
+      t('approvals:incident.rowActions.rejectPrompt', { id: i.id }),
+    );
     if (!reason || !reason.trim()) return;
     setActingOn(i.id);
     rejectMut.mutate(
@@ -58,7 +46,9 @@ export const IncidentsPage = () => {
   };
 
   const handleResolve = (i: Incident) => {
-    const details = window.prompt(`Detalle de la resolución para incident ${i.id}:`);
+    const details = window.prompt(
+      t('approvals:incident.rowActions.resolvePrompt', { id: i.id }),
+    );
     if (!details || !details.trim()) return;
     setActingOn(i.id);
     resolveMut.mutate(
@@ -71,7 +61,7 @@ export const IncidentsPage = () => {
     () => [
       {
         accessorKey: 'employeeId',
-        header: 'Empleado',
+        header: t('approvals:incident.table.employee'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="font-medium" title={row.original.employeeId}>
@@ -81,7 +71,7 @@ export const IncidentsPage = () => {
       },
       {
         accessorKey: 'type',
-        header: 'Tipo',
+        header: t('approvals:incident.table.type'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.type}</span>
@@ -89,13 +79,15 @@ export const IncidentsPage = () => {
       },
       {
         accessorKey: 'status',
-        header: 'Estado',
+        header: t('approvals:incident.table.status'),
         // Sort por status string; mostramos label.
-        cell: ({ row }) => <Badge>{STATUS_LABEL[row.original.status]}</Badge>,
+        cell: ({ row }) => (
+          <Badge>{t(`approvals:incident.status.${row.original.status}`)}</Badge>
+        ),
       },
       {
         id: 'period',
-        header: 'Período',
+        header: t('approvals:incident.table.period'),
         accessorFn: (i) =>
           i.startDate ? `${i.startDate}${i.endDate ? ` → ${i.endDate}` : ''}` : '',
         cell: ({ row }) => (
@@ -108,7 +100,11 @@ export const IncidentsPage = () => {
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">
+            {t('approvals:incident.table.actions')}
+          </span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -118,7 +114,7 @@ export const IncidentsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Rechazar"
+                title={t('approvals:incident.rowActions.reject')}
                 data-testid={`reject-${i.id}`}
                 disabled={isClosed(i.status) || actingOn === i.id}
                 onClick={() => handleReject(i)}
@@ -128,7 +124,7 @@ export const IncidentsPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Resolver"
+                title={t('approvals:incident.rowActions.resolve')}
                 data-testid={`resolve-${i.id}`}
                 disabled={isClosed(i.status) || actingOn === i.id}
                 onClick={() => handleResolve(i)}
@@ -143,18 +139,20 @@ export const IncidentsPage = () => {
     ],
     // actingOn debe re-disparar el render del disabled. rejectMut/resolveMut
     // son estables.
-    [actingOn],
+    [t, actingOn],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Incidents</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('approvals:incident.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {list.isLoading
-              ? 'Cargando…'
-              : `${rows.length} incidente${rows.length === 1 ? '' : 's'}`}
+              ? t('approvals:incident.page.summaryLoading')
+              : t('approvals:incident.page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button
@@ -172,7 +170,7 @@ export const IncidentsPage = () => {
         getRowId={(i) => i.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por empleado o tipo…"
+        searchPlaceholder={t('approvals:incident.page.searchPlaceholder')}
         toolbar={
           <ManagerScopeFilter
             value={managerEmployeeId}
@@ -180,8 +178,8 @@ export const IncidentsPage = () => {
           />
         }
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando incidentes.' : undefined}
-        emptyMessage="No hay incidentes."
+        errorMessage={list.isError ? t('approvals:incident.page.loadError') : undefined}
+        emptyMessage={t('approvals:incident.page.empty')}
       />
 
       <CreateIncidentDialog

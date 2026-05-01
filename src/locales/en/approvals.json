@@ -47,6 +47,41 @@
     }
   },
   "incident": {
+    "page": {
+      "title": "Incidents",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} incident",
+      "summaryCount_other": "{{count}} incidents",
+      "searchPlaceholder": "Search by employee or type…",
+      "loadError": "Failed to load incidents.",
+      "empty": "No incidents."
+    },
+    "table": {
+      "employee": "Employee",
+      "type": "Type",
+      "status": "Status",
+      "period": "Period",
+      "actions": "Actions"
+    },
+    "status": {
+      "reported": "Reported",
+      "document_received": "Doc received",
+      "pending_ocr": "OCR pending",
+      "processing_ocr": "OCR running",
+      "pending_validation": "Validation pending",
+      "validated": "Validated",
+      "rejected": "Rejected",
+      "repair_in_progress": "Repair in progress",
+      "replacement_pending": "Replacement pending",
+      "replacement_assigned": "Replacement assigned",
+      "resolved": "Resolved"
+    },
+    "rowActions": {
+      "reject": "Reject",
+      "resolve": "Resolve",
+      "rejectPrompt": "Reason for rejecting incident {{id}}:",
+      "resolvePrompt": "Resolution details for incident {{id}}:"
+    },
     "dialog": {
       "title": "New incident",
       "description": "Manual entry for retroactive registration or testing. The main path is via WhatsApp where the employee sends a photo and the OCR pipeline auto-validates it.",

@@ -47,6 +47,41 @@
     }
   },
   "incident": {
+    "page": {
+      "title": "Incidentes",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} incidente",
+      "summaryCount_other": "{{count}} incidentes",
+      "searchPlaceholder": "Buscar por empleado o tipo…",
+      "loadError": "Error cargando incidentes.",
+      "empty": "No hay incidentes."
+    },
+    "table": {
+      "employee": "Empleado",
+      "type": "Tipo",
+      "status": "Estado",
+      "period": "Período",
+      "actions": "Acciones"
+    },
+    "status": {
+      "reported": "Reportado",
+      "document_received": "Doc recibido",
+      "pending_ocr": "OCR pendiente",
+      "processing_ocr": "OCR en curso",
+      "pending_validation": "Validación pendiente",
+      "validated": "Validado",
+      "rejected": "Rechazado",
+      "repair_in_progress": "Reparación en curso",
+      "replacement_pending": "Reemplazo pendiente",
+      "replacement_assigned": "Reemplazo asignado",
+      "resolved": "Resuelto"
+    },
+    "rowActions": {
+      "reject": "Rechazar",
+      "resolve": "Resolver",
+      "rejectPrompt": "Razón del rechazo para incident {{id}}:",
+      "resolvePrompt": "Detalle de la resolución para incident {{id}}:"
+    },
     "dialog": {
       "title": "Nuevo incidente",
       "description": "Alta manual para registro retroactivo o testing. El path principal es por WhatsApp donde el empleado manda una foto y el pipeline OCR la valida automáticamente.",
