@@ -7,6 +7,7 @@ import {
   useApproveShiftSwapRequestMutation,
   useRejectShiftSwapRequestMutation,
 } from '../../api/shift-swap-requests.api';
+import { useEmployeesQuery } from '../../api/employees.api';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
@@ -26,31 +27,47 @@ export const SwapsPage = () => {
     undefined,
   );
   const list = useShiftSwapRequestsQuery({ managerEmployeeId });
+  const employeesQ = useEmployeesQuery();
   const approveMut = useApproveShiftSwapRequestMutation();
   const rejectMut = useRejectShiftSwapRequestMutation();
   const rows = (list.data ?? []) as SwapRow[];
 
+  const employeeNameById = useMemo(
+    () =>
+      new Map(
+        (employeesQ.data ?? []).map((e) => [e.id, e.name] as const),
+      ),
+    [employeesQ.data],
+  );
+
+  const renderEmployee = (id: string) => {
+    const name = employeeNameById.get(id);
+    return (
+      <span
+        className={name ? 'font-medium' : 'font-mono text-muted-foreground'}
+        title={id}
+      >
+        {name ?? `${id.slice(0, 8)}…`}
+      </span>
+    );
+  };
+
   const columns = useMemo<ColumnDef<SwapRow>[]>(
     () => [
       {
-        accessorKey: 'requesterId',
+        id: 'requester',
         header: t('approvals:swap.table.requester'),
+        accessorFn: (r) =>
+          employeeNameById.get(r.requesterId) ?? r.requesterId,
         enableGlobalFilter: true,
-        cell: ({ row }) => (
-          <span title={row.original.requesterId}>
-            {row.original.requesterId.slice(0, 8)}…
-          </span>
-        ),
+        cell: ({ row }) => renderEmployee(row.original.requesterId),
       },
       {
-        accessorKey: 'targetId',
+        id: 'target',
         header: t('approvals:swap.table.target'),
+        accessorFn: (r) => employeeNameById.get(r.targetId) ?? r.targetId,
         enableGlobalFilter: true,
-        cell: ({ row }) => (
-          <span title={row.original.targetId}>
-            {row.original.targetId.slice(0, 8)}…
-          </span>
-        ),
+        cell: ({ row }) => renderEmployee(row.original.targetId),
       },
       {
         accessorKey: 'assignmentId',
@@ -108,7 +125,7 @@ export const SwapsPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [t, approveMut, rejectMut],
+    [t, employeeNameById, approveMut, rejectMut],
   );
 
   return (

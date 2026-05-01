@@ -38,17 +38,33 @@ export const AbsencesPage = () => {
   const createMut = useCreateAbsenceReportMutation();
   const rows = (list.data ?? []) as AbsenceRow[];
 
+  const employeeNameById = useMemo(
+    () =>
+      new Map(
+        (employeesQ.data ?? []).map((e) => [e.id, e.name] as const),
+      ),
+    [employeesQ.data],
+  );
+
   const columns = useMemo<ColumnDef<AbsenceRow>[]>(
     () => [
       {
-        accessorKey: 'employeeId',
+        id: 'employee',
         header: t('approvals:absence.table.employee'),
+        accessorFn: (r) =>
+          employeeNameById.get(r.employeeId) ?? r.employeeId,
         enableGlobalFilter: true,
-        cell: ({ row }) => (
-          <span title={row.original.employeeId}>
-            {row.original.employeeId.slice(0, 8)}…
-          </span>
-        ),
+        cell: ({ row }) => {
+          const name = employeeNameById.get(row.original.employeeId);
+          return (
+            <span
+              className={name ? 'font-medium' : 'font-mono text-muted-foreground'}
+              title={row.original.employeeId}
+            >
+              {name ?? `${row.original.employeeId.slice(0, 8)}…`}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'assignmentId',
@@ -96,7 +112,7 @@ export const AbsencesPage = () => {
         ),
       },
     ],
-    [t],
+    [t, employeeNameById],
   );
 
   return (

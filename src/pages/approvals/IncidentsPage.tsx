@@ -33,6 +33,14 @@ export const IncidentsPage = () => {
 
   const rows = list.data ?? [];
 
+  const employeeNameById = useMemo(
+    () =>
+      new Map(
+        (employeesQ.data ?? []).map((e) => [e.id, e.name] as const),
+      ),
+    [employeesQ.data],
+  );
+
   const handleReject = (i: Incident) => {
     const reason = window.prompt(
       t('approvals:incident.rowActions.rejectPrompt', { id: i.id }),
@@ -60,14 +68,22 @@ export const IncidentsPage = () => {
   const columns = useMemo<ColumnDef<Incident>[]>(
     () => [
       {
-        accessorKey: 'employeeId',
+        id: 'employee',
         header: t('approvals:incident.table.employee'),
+        accessorFn: (i) =>
+          employeeNameById.get(i.employeeId) ?? i.employeeId,
         enableGlobalFilter: true,
-        cell: ({ row }) => (
-          <span className="font-medium" title={row.original.employeeId}>
-            {row.original.employeeId.slice(0, 8)}…
-          </span>
-        ),
+        cell: ({ row }) => {
+          const name = employeeNameById.get(row.original.employeeId);
+          return (
+            <span
+              className={name ? 'font-medium' : 'font-mono text-muted-foreground'}
+              title={row.original.employeeId}
+            >
+              {name ?? `${row.original.employeeId.slice(0, 8)}…`}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'type',
@@ -139,7 +155,7 @@ export const IncidentsPage = () => {
     ],
     // actingOn debe re-disparar el render del disabled. rejectMut/resolveMut
     // son estables.
-    [t, actingOn],
+    [t, employeeNameById, actingOn],
   );
 
   return (
