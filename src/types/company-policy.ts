@@ -49,6 +49,14 @@ export interface CreateCompanyPolicyPayload {
   scope?: PolicyScope;
   effectiveFrom?: string;
   createdBy?: string;
+  /**
+   * Si true, el backend NO devuelve `needs_clarification`: salta el
+   * suggestion-loop y guarda la policy con el texto original (cae a
+   * llm_runtime para hard, llm_only puro para soft). Usado por el botón
+   * "Guardar sin reformular" del dialog cuando el manager prefiere su
+   * redacción a las sugerencias propuestas.
+   */
+  skipSuggestions?: boolean;
 }
 
 export interface UpdateCompanyPolicyPayload {

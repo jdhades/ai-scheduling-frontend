@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { AlertTriangle, Bot, CheckCircle2, Sparkles } from 'lucide-react';
+import { AlertTriangle, Bot, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import {
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
-import { Badge } from '../../components/ui/Badge';
 import type {
   CompanyPolicy,
   CreateCompanyPolicyPayload,
@@ -93,7 +92,10 @@ export const CompanyPolicyFormDialog = ({
     return [];
   };
 
-  const submitWithText = async (textToSubmit: string) => {
+  const submitWithText = async (
+    textToSubmit: string,
+    opts: { skipSuggestions?: boolean } = {},
+  ) => {
     setError(null);
     if (textToSubmit.trim().length < 10) {
       setError('El texto debe tener al menos 10 caracteres.');
@@ -111,6 +113,7 @@ export const CompanyPolicyFormDialog = ({
           type: scopeType,
           id: scopeType === 'company' ? null : scopeId,
         },
+        ...(opts.skipSuggestions ? { skipSuggestions: true } : {}),
       });
       if (result.status === 'needs_clarification') {
         setStage({ kind: 'suggestions', suggestions: result.suggestions });
@@ -134,6 +137,12 @@ export const CompanyPolicyFormDialog = ({
     setText(suggestion.suggestedText);
     setStage({ kind: 'form' });
     await submitWithText(suggestion.suggestedText);
+  };
+
+  /** "Guardar sin reformular": preserva el texto original del manager. */
+  const keepOriginal = async () => {
+    setStage({ kind: 'form' });
+    await submitWithText(text, { skipSuggestions: true });
   };
 
   return (
@@ -163,7 +172,7 @@ export const CompanyPolicyFormDialog = ({
         </DialogHeader>
 
         {stage.kind === 'suggestions' && (
-          <div className="space-y-3" data-testid="policy-suggestions">
+          <div className="relative space-y-3" data-testid="policy-suggestions">
             {stage.suggestions.map((s, i) => (
               <button
                 key={s.id}
@@ -185,17 +194,11 @@ export const CompanyPolicyFormDialog = ({
                     <p className="text-xs text-muted-foreground">
                       {s.explanation}
                     </p>
-                    <div className="flex items-center gap-2 pt-1">
-                      <Badge>{s.matchedInterpreterId}</Badge>
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        {JSON.stringify(s.matchedParams)}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </button>
             ))}
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -205,7 +208,17 @@ export const CompanyPolicyFormDialog = ({
               >
                 Volver al texto libre
               </Button>
+              <Button
+                type="button"
+                onClick={keepOriginal}
+                disabled={submitting}
+                data-testid="suggestions-keep-original"
+                title="Guarda tu redacción tal cual; el sistema la enforza vía LLM en cada generación."
+              >
+                Guardar mi texto original
+              </Button>
             </DialogFooter>
+            {submitting && <SubmittingOverlay />}
           </div>
         )}
 
@@ -293,7 +306,7 @@ export const CompanyPolicyFormDialog = ({
         )}
 
         {stage.kind === 'form' && (
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="relative space-y-3">
             <div className="space-y-1">
               <Label htmlFor="cp-text">Texto</Label>
               <Textarea
@@ -397,12 +410,46 @@ export const CompanyPolicyFormDialog = ({
                 disabled={submitting}
                 data-testid="policy-submit"
               >
-                {submitting ? 'Guardando…' : 'Crear'}
+                {submitting ? (
+                  <>
+                    <Loader2
+                      className="mr-2 h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
+                    Analizando con IA…
+                  </>
+                ) : (
+                  'Crear'
+                )}
               </Button>
             </DialogFooter>
+            {submitting && <SubmittingOverlay />}
           </form>
         )}
       </DialogContent>
     </Dialog>
   );
 };
+
+/**
+ * Overlay con spinner que cubre el stage activo mientras la IA procesa
+ * la creación (clasificación + match + posible rephrase + traducción).
+ * En el peor caso son varios LLM-calls — sin feedback visual el manager
+ * cree que la app se colgó.
+ */
+const SubmittingOverlay = () => (
+  <div
+    className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm"
+    data-testid="policy-submitting-overlay"
+    role="status"
+    aria-live="polite"
+  >
+    <div className="flex items-center gap-2 text-sm text-foreground">
+      <Loader2
+        className="h-4 w-4 animate-spin text-primary"
+        aria-hidden="true"
+      />
+      <span>La IA está analizando tu texto…</span>
+    </div>
+  </div>
+);
