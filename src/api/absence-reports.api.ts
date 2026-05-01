@@ -11,14 +11,20 @@ import type {
 } from '../types/approvals';
 
 const KEYS = {
-  list: (filter?: { employeeId?: string; isUrgent?: boolean; from?: string }) =>
-    ['absence-reports', TENANT_ID, filter ?? {}] as const,
+  list: (filter?: {
+    employeeId?: string;
+    isUrgent?: boolean;
+    from?: string;
+    managerEmployeeId?: string;
+  }) => ['absence-reports', TENANT_ID, filter ?? {}] as const,
 };
 
 export function useAbsenceReportsQuery(filter?: {
   employeeId?: string;
   isUrgent?: boolean;
   from?: string;
+  /** Phase 15.2 — solo absences del scope del manager. */
+  managerEmployeeId?: string;
 }) {
   return useQuery({
     queryKey: KEYS.list(filter),

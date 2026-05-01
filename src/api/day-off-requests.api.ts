@@ -17,6 +17,7 @@ const KEYS = {
     status?: DayOffRequestStatus;
     from?: string;
     to?: string;
+    managerEmployeeId?: string;
   }) => ['day-off-requests', TENANT_ID, filter ?? {}] as const,
 };
 
@@ -25,6 +26,8 @@ export function useDayOffRequestsQuery(filter?: {
   status?: DayOffRequestStatus;
   from?: string;
   to?: string;
+  /** Phase 15.2 — solo day-off requests del scope del manager. */
+  managerEmployeeId?: string;
 }) {
   return useQuery({
     queryKey: KEYS.list(filter),

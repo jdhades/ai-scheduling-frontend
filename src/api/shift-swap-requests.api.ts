@@ -16,6 +16,7 @@ const KEYS = {
     requesterId?: string;
     targetId?: string;
     status?: ShiftSwapRequestStatus;
+    managerEmployeeId?: string;
   }) => ['shift-swap-requests', TENANT_ID, filter ?? {}] as const,
   byId: (id: string) => ['shift-swap-requests', TENANT_ID, id] as const,
 };
@@ -24,6 +25,8 @@ export function useShiftSwapRequestsQuery(filter?: {
   requesterId?: string;
   targetId?: string;
   status?: ShiftSwapRequestStatus;
+  /** Phase 15.2 — solo swap requests del scope del manager. */
+  managerEmployeeId?: string;
 }) {
   return useQuery({
     queryKey: KEYS.list(filter),

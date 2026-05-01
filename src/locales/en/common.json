@@ -41,5 +41,10 @@
     "previous": "Previous",
     "next": "Next",
     "noResults": "No results."
+  },
+  "managerFilter": {
+    "label": "Manager scope",
+    "all": "All managers",
+    "valueScopedSuffix": "(their departments + unassigned)"
   }
 }

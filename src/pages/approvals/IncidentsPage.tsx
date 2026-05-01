@@ -9,6 +9,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
+import { ManagerScopeFilter } from './ManagerScopeFilter';
 import type { Incident, IncidentStatus } from '../../types/approvals';
 
 const STATUS_LABEL: Record<IncidentStatus, string> = {
@@ -28,7 +29,10 @@ const STATUS_LABEL: Record<IncidentStatus, string> = {
 const isClosed = (s: IncidentStatus) => s === 'rejected' || s === 'resolved';
 
 export const IncidentsPage = () => {
-  const list = useIncidentsQuery();
+  const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
+    undefined,
+  );
+  const list = useIncidentsQuery({ managerEmployeeId });
   const rejectMut = useRejectIncidentMutation();
   const resolveMut = useResolveIncidentMutation();
   const [actingOn, setActingOn] = useState<string | null>(null);
@@ -152,6 +156,12 @@ export const IncidentsPage = () => {
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
         searchPlaceholder="Buscar por empleado o tipo…"
+        toolbar={
+          <ManagerScopeFilter
+            value={managerEmployeeId}
+            onChange={setManagerEmployeeId}
+          />
+        }
         isLoading={list.isLoading}
         errorMessage={list.isError ? 'Error cargando incidentes.' : undefined}
         emptyMessage="No hay incidentes."

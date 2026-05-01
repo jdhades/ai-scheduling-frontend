@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -9,6 +9,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
+import { ManagerScopeFilter } from './ManagerScopeFilter';
 
 interface DayOffRow {
   id: string;
@@ -19,7 +20,10 @@ interface DayOffRow {
 }
 
 export const DayOffsPage = () => {
-  const list = useDayOffRequestsQuery();
+  const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
+    undefined,
+  );
+  const list = useDayOffRequestsQuery({ managerEmployeeId });
   const approveMut = useApproveDayOffRequestMutation();
   const rejectMut = useRejectDayOffRequestMutation();
   const rows = (list.data ?? []) as DayOffRow[];
@@ -114,6 +118,12 @@ export const DayOffsPage = () => {
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
         searchPlaceholder="Buscar por empleado o razón…"
+        toolbar={
+          <ManagerScopeFilter
+            value={managerEmployeeId}
+            onChange={setManagerEmployeeId}
+          />
+        }
         isLoading={list.isLoading}
         errorMessage={list.isError ? 'Error cargando day-offs.' : undefined}
         emptyMessage="No hay solicitudes."

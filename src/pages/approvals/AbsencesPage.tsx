@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useAbsenceReportsQuery } from '../../api/absence-reports.api';
 import { DataTable } from '../../components/ui/data-table';
 import { Badge } from '../../components/ui/Badge';
+import { ManagerScopeFilter } from './ManagerScopeFilter';
 
 interface AbsenceRow {
   id: string;
@@ -19,7 +20,10 @@ interface AbsenceRow {
  * via POST /absence-reports desde una pantalla aparte (futura).
  */
 export const AbsencesPage = () => {
-  const list = useAbsenceReportsQuery();
+  const [managerEmployeeId, setManagerEmployeeId] = useState<string | undefined>(
+    undefined,
+  );
+  const list = useAbsenceReportsQuery({ managerEmployeeId });
   const rows = (list.data ?? []) as AbsenceRow[];
 
   const columns = useMemo<ColumnDef<AbsenceRow>[]>(
@@ -99,6 +103,12 @@ export const AbsencesPage = () => {
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
         searchPlaceholder="Buscar por empleado o razón…"
+        toolbar={
+          <ManagerScopeFilter
+            value={managerEmployeeId}
+            onChange={setManagerEmployeeId}
+          />
+        }
         isLoading={list.isLoading}
         errorMessage={list.isError ? 'Error cargando ausencias.' : undefined}
         emptyMessage="No hay ausencias reportadas."

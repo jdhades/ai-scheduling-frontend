@@ -12,14 +12,19 @@ import type {
 } from '../types/approvals';
 
 const KEYS = {
-  list: (filter?: { employeeId?: string; status?: IncidentStatus }) =>
-    ['incidents', TENANT_ID, filter ?? {}] as const,
+  list: (filter?: {
+    employeeId?: string;
+    status?: IncidentStatus;
+    managerEmployeeId?: string;
+  }) => ['incidents', TENANT_ID, filter ?? {}] as const,
   byId: (id: string) => ['incidents', TENANT_ID, id] as const,
 };
 
 export function useIncidentsQuery(filter?: {
   employeeId?: string;
   status?: IncidentStatus;
+  /** Phase 15.2 — solo incidents de empleados del scope del manager. */
+  managerEmployeeId?: string;
 }) {
   return useQuery({
     queryKey: KEYS.list(filter),

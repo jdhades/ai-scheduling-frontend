@@ -41,5 +41,10 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "noResults": "Sin resultados."
+  },
+  "managerFilter": {
+    "label": "Manager",
+    "all": "Todos los managers",
+    "valueScopedSuffix": "(sus departamentos + sin asignar)"
   }
 }
