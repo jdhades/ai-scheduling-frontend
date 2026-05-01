@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "Planificador IA",
+    "scenario": "Resumen Escenario 6",
+    "managerView": "Vista de Gestor"
+  },
+  "languageSwitcher": {
+    "toggleTo": "Cambiar a {{lang}}"
+  },
+  "actions": {
+    "create": "Crear",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando…",
+    "saving": "Guardando…",
+    "close": "Cerrar",
+    "back": "Volver",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "retry": "Reintentar",
+    "loading": "Cargando…",
+    "understood": "Entendido",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "states": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "loading": "Cargando…",
+    "empty": "Sin elementos todavía.",
+    "error": "Algo salió mal.",
+    "none": "—"
+  },
+  "table": {
+    "rowsPerPage": "Filas por página",
+    "page": "Página {{current}} de {{total}}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "noResults": "Sin resultados."
+  }
+}

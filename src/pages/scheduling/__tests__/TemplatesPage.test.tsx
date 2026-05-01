@@ -36,8 +36,8 @@ describe('TemplatesPage', () => {
 
     await waitFor(() => expect(screen.getByText('Diurno')).toBeInTheDocument());
     expect(screen.getByText('Nocturno')).toBeInTheDocument();
-    // Día null → 'Todos'
-    expect(screen.getAllByText('Todos').length).toBeGreaterThanOrEqual(1);
+    // Día null → 'All'
+    expect(screen.getAllByText('All').length).toBeGreaterThanOrEqual(1);
     // Horario formateado.
     expect(screen.getAllByText('08:00–16:00').length).toBeGreaterThanOrEqual(1);
     // required_employees = 2 vs elastic.
@@ -67,7 +67,7 @@ describe('TemplatesPage', () => {
     renderWithProviders(<TemplatesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay templates todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No templates yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-template-btn'));
     await user.type(screen.getByTestId('t-name-input'), 'Apertura');

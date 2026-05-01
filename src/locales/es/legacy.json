@@ -1,0 +1,36 @@
+{
+  "scheduleGrid": {
+    "title": "Horario Interactivo",
+    "autoFill": "Llenado Automático",
+    "publish": "Publicar",
+    "employee": "Empleado"
+  },
+  "widgets": {
+    "statusTitle": "Estado Actual del Horario",
+    "statusOptimized": "Optimizados",
+    "statusLastUpdated": "Última regeneración IA: hace 10 mins",
+    "incidentsTitle": "Incidentes Activos",
+    "incidentsCount": "2 Turnos Falto de Personal",
+    "incidentsMessage": "El turno de noche del Viernes requiere atención."
+  },
+  "heatmap": {
+    "title": "Mapa de Calor de Cobertura Semanal",
+    "optimal": "Óptimo",
+    "warning": "Aviso",
+    "critical": "Crítico",
+    "dayHour": "Día / Hora",
+    "selected": "Seleccionado",
+    "coverage": "Cobertura",
+    "assigned": "asignado(s)",
+    "required": "requerido(s)",
+    "suggestBtn": "Sugerir Refuerzos",
+    "ackBtn": "Reconocer"
+  },
+  "fairness": {
+    "title": "Perspectivas de Equidad y Justicia",
+    "barTitle": "Horas Totales Asignadas vs Objetivo",
+    "radarTitle": "Distribución de Carga (Calidad)",
+    "assignedHours": "Horas Asignadas",
+    "targetHours": "Horas Objetivo"
+  }
+}

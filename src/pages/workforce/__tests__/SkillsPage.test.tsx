@@ -50,7 +50,7 @@ describe('SkillsPage', () => {
     renderWithProviders(<SkillsPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay skills todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No skills yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-skill-btn'));
     await user.type(screen.getByTestId('skill-name-input'), 'cocinero');
@@ -69,7 +69,7 @@ describe('SkillsPage', () => {
     renderWithProviders(<SkillsPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay skills todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No skills yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-skill-btn'));
     // Insertamos espacios y submit; el form HTML5 required no bloquea espacios
@@ -82,7 +82,7 @@ describe('SkillsPage', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('skill-form-error')).toHaveTextContent(
-        'no puede estar vacío',
+        'cannot be empty',
       ),
     );
   });

@@ -1,0 +1,48 @@
+{
+  "brand": {
+    "title": "AI Scheduling",
+    "subtitle": "Gestor"
+  },
+  "groups": {
+    "general": "General",
+    "workforce": "Personal",
+    "scheduling": "Programación",
+    "policies": "Reglas",
+    "approvals": "Aprobaciones",
+    "insights": "Análisis"
+  },
+  "items": {
+    "dashboard": "Panel",
+    "employees": "Empleados",
+    "memberships": "Vínculos",
+    "skills": "Habilidades",
+    "templates": "Plantillas",
+    "schedule": "Horario",
+    "generate": "Generar",
+    "rules": "Reglas semánticas",
+    "policies": "Políticas",
+    "incidents": "Incidencias",
+    "swaps": "Intercambios",
+    "absences": "Ausencias",
+    "dayOffs": "Días libres",
+    "fairness": "Equidad",
+    "coverage": "Cobertura",
+    "demand": "Demanda"
+  },
+  "actions": {
+    "expand": "Expandir sidebar",
+    "collapse": "Colapsar sidebar"
+  },
+  "header": {
+    "appName": "Orchestrator AI",
+    "searchPlaceholder": "Buscar nodo del sistema…",
+    "notifications": "Notificaciones",
+    "profile": "Perfil"
+  },
+  "settings": "Ajustes",
+  "logout": "Cerrar sesión",
+  "dashboard": "Panel",
+  "schedule": "Horario",
+  "staff": "Personal",
+  "incidents": "Incidencias"
+}

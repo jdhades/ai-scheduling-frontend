@@ -51,7 +51,7 @@ describe('CompanyPoliciesPage', () => {
         screen.getByText('2 días de descanso para el empleado aparte del feriado'),
       ).toBeInTheDocument(),
     );
-    expect(screen.getByText('Determinística')).toBeInTheDocument();
+    expect(screen.getByText('Deterministic')).toBeInTheDocument();
     expect(screen.getByText('LLM-only')).toBeInTheDocument();
   });
 
@@ -79,7 +79,7 @@ describe('CompanyPoliciesPage', () => {
     renderWithProviders(<CompanyPoliciesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay políticas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No policies yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-policy-btn'));
     await user.type(
@@ -147,7 +147,7 @@ describe('CompanyPoliciesPage', () => {
     renderWithProviders(<CompanyPoliciesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay políticas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No policies yet.')).toBeInTheDocument(),
     );
 
     await user.click(screen.getByTestId('new-policy-btn'));
@@ -198,7 +198,7 @@ describe('CompanyPoliciesPage', () => {
     renderWithProviders(<CompanyPoliciesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay políticas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No policies yet.')).toBeInTheDocument(),
     );
 
     await user.click(screen.getByTestId('new-policy-btn'));

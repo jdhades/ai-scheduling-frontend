@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Info, Plus, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -20,6 +21,7 @@ import { MembershipFormDialog } from './MembershipFormDialog';
  * arquitectura del backend lo fuerza así para mantener auditabilidad).
  */
 export const MembershipsPage = () => {
+  const { t } = useTranslation();
   const memberships = useShiftMembershipsQuery();
   const employees = useEmployeesQuery();
   const templates = useShiftTemplatesQuery();
@@ -45,8 +47,7 @@ export const MembershipsPage = () => {
     () => [
       {
         id: 'employee',
-        header: 'Empleado',
-        // accessorFn → search/sort opera sobre el nombre resuelto, no el UUID.
+        header: t('workforce:memberships.table.employee'),
         accessorFn: (m) => empById.get(m.employeeId) ?? m.employeeId,
         enableGlobalFilter: true,
         cell: ({ getValue }) => (
@@ -55,15 +56,12 @@ export const MembershipsPage = () => {
       },
       {
         id: 'template',
-        header: 'Shift Template',
+        header: t('workforce:memberships.table.template'),
         accessorFn: (m) => tplById.get(m.templateId) ?? m.templateId,
         enableGlobalFilter: true,
         cell: ({ row }) => {
           const name = tplById.get(row.original.templateId);
           if (name) return name;
-          // Fallback cuando el catálogo no resolvió: mostramos los últimos
-          // 8 chars (los UUIDs de la seed comparten prefijo, así que el
-          // sufijo discrimina mejor).
           return (
             <span
               className="font-mono text-muted-foreground"
@@ -76,23 +74,28 @@ export const MembershipsPage = () => {
       },
       {
         accessorKey: 'effectiveFrom',
-        header: 'Desde',
+        header: t('workforce:memberships.table.from'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.effectiveFrom}</span>
         ),
       },
       {
         accessorKey: 'effectiveUntil',
-        header: 'Hasta',
+        header: t('workforce:memberships.table.until'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
-            {row.original.effectiveUntil ?? 'abierto'}
+            {row.original.effectiveUntil ??
+              t('workforce:memberships.table.untilOpen')}
           </span>
         ),
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">
+            {t('workforce:memberships.table.actions')}
+          </span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -101,11 +104,15 @@ export const MembershipsPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              title="Eliminar"
+              title={t('workforce:memberships.rowActions.delete')}
               data-testid={`delete-${m.id}`}
               disabled={deleteMut.isPending}
               onClick={() => {
-                if (window.confirm('¿Eliminar este membership?')) {
+                if (
+                  window.confirm(
+                    t('workforce:memberships.rowActions.deleteConfirm'),
+                  )
+                ) {
                   deleteMut.mutate(m.id);
                 }
               }}
@@ -117,18 +124,22 @@ export const MembershipsPage = () => {
         meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
       },
     ],
-    [empById, tplById, deleteMut],
+    [t, empById, tplById, deleteMut],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Memberships</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('workforce:memberships.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {memberships.isLoading
-              ? 'Cargando…'
-              : `${rows.length} vínculo${rows.length === 1 ? '' : 's'}`}
+              ? t('workforce:memberships.page.summaryLoading')
+              : t('workforce:memberships.page.summaryCount', {
+                  count: rows.length,
+                })}
           </p>
         </div>
         <Button
@@ -136,18 +147,14 @@ export const MembershipsPage = () => {
           data-testid="new-membership-btn"
           disabled={employees.isLoading || templates.isLoading}
         >
-          <Plus className="h-4 w-4" /> Nuevo
+          <Plus className="h-4 w-4" />{' '}
+          {t('workforce:memberships.page.newButton')}
         </Button>
       </header>
 
       <div className="flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-        <p>
-          Un empleado puede pertenecer a varios shift templates al mismo
-          tiempo — define a qué turnos está habilitado. El scheduler decide
-          cada día a cuál asignarlo según cobertura, fairness y conflictos
-          de horario.
-        </p>
+        <p>{t('workforce:memberships.page.info')}</p>
       </div>
 
       <DataTable
@@ -156,12 +163,14 @@ export const MembershipsPage = () => {
         getRowId={(m) => m.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por empleado o template…"
+        searchPlaceholder={t('workforce:memberships.page.searchPlaceholder')}
         isLoading={memberships.isLoading}
         errorMessage={
-          memberships.isError ? 'Error cargando memberships.' : undefined
+          memberships.isError
+            ? t('workforce:memberships.page.loadError')
+            : undefined
         }
-        emptyMessage="No hay memberships todavía."
+        emptyMessage={t('workforce:memberships.page.empty')}
       />
 
       <MembershipFormDialog

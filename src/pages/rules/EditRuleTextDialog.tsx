@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -34,6 +35,7 @@ export const EditRuleTextDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const [ruleText, setRuleText] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,17 +54,17 @@ export const EditRuleTextDialog = ({
     e.preventDefault();
     setError(null);
     if (ruleText.trim().length < 10) {
-      setError('La regla debe tener al menos 10 caracteres.');
+      setError(t('rules:editText.errors.minLength'));
       return;
     }
     if (rule && ruleText.trim() === rule.ruleText.trim()) {
-      setError('El texto es idéntico al actual.');
+      setError(t('rules:editText.errors.identical'));
       return;
     }
     try {
       await onSubmit({ ruleText: ruleText.trim() });
     } catch (err) {
-      setError((err as Error).message ?? 'Error al actualizar texto.');
+      setError((err as Error).message ?? t('rules:editText.errors.generic'));
     }
   };
 
@@ -70,23 +72,18 @@ export const EditRuleTextDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar texto de la regla</DialogTitle>
+          <DialogTitle>{t('rules:editText.title')}</DialogTitle>
           <DialogDescription>
-            Operación CARA: el backend regenera el embedding y vuelve a
-            extraer la estructura con IA (≈ 2 llamadas LLM).
+            {t('rules:editText.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handle} className="space-y-3">
           <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 flex items-start gap-2 text-xs text-yellow-200">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>
-              Este cambio invalida el vector y la estructura actuales. La
-              regla puede dejar de aplicarse a horarios que ya estaban
-              alineados con el texto previo.
-            </span>
+            <span>{t('rules:editText.warning')}</span>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="rt-text">Nuevo texto</Label>
+            <Label htmlFor="rt-text">{t('rules:editText.fields.text')}</Label>
             <Textarea
               id="rt-text"
               rows={4}
@@ -107,7 +104,7 @@ export const EditRuleTextDialog = ({
               className="rounded border-white/20"
             />
             <Label htmlFor="rt-confirm" className="!text-sm !normal-case !tracking-normal">
-              Entiendo que se va a re-procesar con IA.
+              {t('rules:editText.fields.confirm')}
             </Label>
           </div>
           {error && (
@@ -122,14 +119,16 @@ export const EditRuleTextDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancelar
+              {t('rules:editText.actions.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={!confirmed || submitting}
               data-testid="rt-submit"
             >
-              {submitting ? 'Re-procesando…' : 'Reemplazar texto'}
+              {submitting
+                ? t('rules:editText.actions.submitting')
+                : t('rules:editText.actions.submit')}
             </Button>
           </DialogFooter>
         </form>

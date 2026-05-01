@@ -1,0 +1,117 @@
+{
+  "page": {
+    "title": "Semantic rules",
+    "summaryLoading": "Loading…",
+    "summaryCount_one": "{{count}} rule",
+    "summaryCount_other": "{{count}} rules",
+    "newButton": "New",
+    "searchPlaceholder": "Search by text or type…",
+    "loadError": "Failed to load rules.",
+    "empty": "No rules yet."
+  },
+  "table": {
+    "text": "Text",
+    "priority": "Priority",
+    "ai": "AI",
+    "type": "Type",
+    "active": "Active",
+    "expires": "Expires",
+    "actions": "Actions"
+  },
+  "priority": {
+    "1": "Legal",
+    "2": "Hard",
+    "3": "Soft"
+  },
+  "ai": {
+    "noStructure": "No structure",
+    "noStructureTooltip": "The LLM could not extract structure. The scheduler ignores this rule until it is rephrased.",
+    "noEmbedding": "No embedding",
+    "noEmbeddingTooltip": "No embedding — not searchable semantically. Edit the text to retry.",
+    "ok": "OK",
+    "okTooltip": "Embedding + structure OK. The scheduler applies it."
+  },
+  "rowActions": {
+    "editMetadata": "Edit metadata",
+    "editText": "Edit text (re-processed by AI)",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this rule?"
+  },
+  "yesShort": "yes",
+  "noShort": "no",
+  "create": {
+    "titleNew": "New semantic rule",
+    "titleSuggestions": "Reformulation suggestions",
+    "titleResult": "Creation result",
+    "descriptionNew": "Write the rule in natural language. The AI generates an embedding, looks for duplicates and extracts structure for the scheduler.",
+    "descriptionSuggestions": "The system could not apply your rule as-is (ambiguous text or missing subject). The AI proposed these alternatives. Pick one to create it, or go back to free text.",
+    "descriptionResult": "The AI processed the rule. Review the result before closing.",
+    "fields": {
+      "text": "Text",
+      "textPlaceholder": "e.g. Pablo doesn't work on Mondays",
+      "textCounter": "{{count}} / min 10",
+      "priority": "Priority",
+      "priorityLegal": "1 — Legal",
+      "priorityHard": "2 — Hard",
+      "prioritySoft": "3 — Soft (preference)",
+      "type": "Type"
+    },
+    "errors": {
+      "minLength": "The rule must have at least 10 characters."
+    },
+    "result": {
+      "duplicateTitle": "Duplicate rule — not created",
+      "duplicateBody": "The AI detected a semantically equivalent rule already in your tenant (cosine distance < 0.12). To modify it, open the existing one and edit it.",
+      "duplicateExistingId": "Existing ID: {{id}}",
+      "saved": "Rule saved.",
+      "noStructureTitle": "No structure.",
+      "noStructureBody": "The LLM could not parse the rule into an applicable format. The scheduler <strong>ignores</strong> it until you rephrase with clearer text.",
+      "noEmbeddingTitle": "No embedding.",
+      "noEmbeddingBody": "The rule is not searchable semantically. Edit the text to retry the embedding."
+    },
+    "intentLabel": "intent: {{intent}}",
+    "actions": {
+      "submit": "Create",
+      "submitting": "Saving…",
+      "cancel": "Cancel",
+      "back": "Back to free text",
+      "close": "Close"
+    }
+  },
+  "editMetadata": {
+    "title": "Edit metadata",
+    "description": "Cheap edits: priority, active flag, expiration. Does NOT touch the text or regenerate embeddings.",
+    "fields": {
+      "priority": "Priority",
+      "priorityLegal": "1 — Legal",
+      "priorityHard": "2 — Hard",
+      "prioritySoft": "3 — Soft",
+      "active": "Active",
+      "expires": "Expires (empty = no expiration)"
+    },
+    "actions": {
+      "submit": "Save",
+      "submitting": "Saving…",
+      "cancel": "Cancel"
+    }
+  },
+  "editText": {
+    "title": "Edit rule text",
+    "description": "EXPENSIVE operation: the backend regenerates the embedding and re-extracts the structure with AI (≈ 2 LLM calls).",
+    "warning": "This change invalidates the current vector and structure. The rule may stop applying to schedules that were already aligned with the previous text.",
+    "fields": {
+      "text": "New text",
+      "confirm": "I understand that this will be re-processed by AI."
+    },
+    "errors": {
+      "minLength": "The rule must have at least 10 characters.",
+      "identical": "The text is identical to the current one.",
+      "generic": "Failed to update rule text."
+    },
+    "actions": {
+      "submit": "Replace text",
+      "submitting": "Re-processing…",
+      "cancel": "Cancel"
+    }
+  }
+}

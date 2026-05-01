@@ -1,0 +1,72 @@
+{
+  "page": {
+    "title": "Plantillas de turno",
+    "summaryLoading": "Cargando…",
+    "summaryCount_one": "{{count}} plantilla",
+    "summaryCount_other": "{{count}} plantillas",
+    "newButton": "Nuevo",
+    "searchPlaceholder": "Buscar plantilla o skill…",
+    "loadError": "Error cargando plantillas.",
+    "empty": "No hay plantillas todavía."
+  },
+  "table": {
+    "name": "Nombre",
+    "day": "Día",
+    "schedule": "Horario",
+    "skill": "Skill",
+    "department": "Departamento",
+    "requiredEmployees": "required_employees",
+    "actions": "Acciones"
+  },
+  "values": {
+    "elastic": "elastic",
+    "allDays": "Todos",
+    "departmentNone": "—"
+  },
+  "rowActions": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar la plantilla \"{{name}}\"?"
+  },
+  "days": {
+    "0": "Dom",
+    "1": "Lun",
+    "2": "Mar",
+    "3": "Mié",
+    "4": "Jue",
+    "5": "Vie",
+    "6": "Sáb"
+  },
+  "dialog": {
+    "titleNew": "Nueva plantilla",
+    "titleEdit": "Editar plantilla",
+    "descriptionNew": "Define un turno recurrente. Si dejás \"required_employees\" vacío, el slot es ELASTIC y absorbe sobrante.",
+    "descriptionEdit": "Modificá los campos de la plantilla. La skill puede limpiarse seleccionando \"Ninguna\".",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "ej. Turno Diurno",
+      "day": "Día (vacío = todos)",
+      "dayAll": "Todos",
+      "start": "Inicio",
+      "end": "Fin",
+      "requiredEmployees": "required_employees",
+      "requiredEmployeesHint": "(vacío = elastic)",
+      "department": "Departamento",
+      "departmentOptional": "(opcional)",
+      "departmentAll": "Toda la empresa",
+      "skill": "Skill requerida",
+      "skillOptional": "(opcional)",
+      "skillNone": "Ninguna"
+    },
+    "errors": {
+      "required": "Nombre, hora inicio y hora fin son obligatorios.",
+      "generic": "Error al guardar la plantilla."
+    },
+    "actions": {
+      "submitCreate": "Crear",
+      "submitEdit": "Guardar",
+      "submitting": "Guardando…",
+      "cancel": "Cancelar"
+    }
+  }
+}

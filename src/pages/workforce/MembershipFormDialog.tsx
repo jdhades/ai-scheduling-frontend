@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { describeApiError } from '../../lib/api-error';
 import {
   Dialog,
@@ -38,6 +39,7 @@ export const MembershipFormDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const [employeeId, setEmployeeId] = useState('');
   const [templateId, setTemplateId] = useState('');
   const [effectiveFrom, setEffectiveFrom] = useState(today());
@@ -56,11 +58,11 @@ export const MembershipFormDialog = ({
     e.preventDefault();
     setError(null);
     if (!employeeId || !templateId || !effectiveFrom) {
-      setError('Empleado, template y fecha "desde" son obligatorios.');
+      setError(t('workforce:memberships.dialog.errors.required'));
       return;
     }
     if (effectiveUntil && effectiveUntil < effectiveFrom) {
-      setError('"Hasta" debe ser igual o posterior a "Desde".');
+      setError(t('workforce:memberships.dialog.errors.untilBeforeFrom'));
       return;
     }
     try {
@@ -86,15 +88,16 @@ export const MembershipFormDialog = ({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nuevo membership</DialogTitle>
+          <DialogTitle>{t('workforce:memberships.dialog.title')}</DialogTitle>
           <DialogDescription>
-            Vincula un empleado a un shift template. Para cambiar luego:
-            eliminar y crear de nuevo (mantiene el histórico limpio).
+            {t('workforce:memberships.dialog.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="m-employee">Empleado</Label>
+            <Label htmlFor="m-employee">
+              {t('workforce:memberships.dialog.fields.employee')}
+            </Label>
             <select
               id="m-employee"
               data-testid="m-employee-select"
@@ -104,16 +107,20 @@ export const MembershipFormDialog = ({
               required
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Elegí un empleado…</option>
-              {employees.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
+              <option value="">
+                {t('workforce:memberships.dialog.fields.employeePick')}
+              </option>
+              {employees.map((employee) => (
+                <option key={employee.id} value={employee.id}>
+                  {employee.name}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="m-template">Template</Label>
+            <Label htmlFor="m-template">
+              {t('workforce:memberships.dialog.fields.template')}
+            </Label>
             <select
               id="m-template"
               data-testid="m-template-select"
@@ -123,17 +130,21 @@ export const MembershipFormDialog = ({
               required
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Elegí un template…</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+              <option value="">
+                {t('workforce:memberships.dialog.fields.templatePick')}
+              </option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
                 </option>
               ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="m-from">Desde</Label>
+              <Label htmlFor="m-from">
+                {t('workforce:memberships.dialog.fields.from')}
+              </Label>
               <Input
                 id="m-from"
                 type="date"
@@ -145,7 +156,9 @@ export const MembershipFormDialog = ({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="m-until">Hasta (opcional)</Label>
+              <Label htmlFor="m-until">
+                {t('workforce:memberships.dialog.fields.until')}
+              </Label>
               <Input
                 id="m-until"
                 type="date"
@@ -168,10 +181,12 @@ export const MembershipFormDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancelar
+              {t('workforce:memberships.dialog.actions.cancel')}
             </Button>
             <Button type="submit" disabled={submitting} data-testid="m-submit">
-              {submitting ? 'Guardando…' : 'Crear'}
+              {submitting
+                ? t('workforce:memberships.dialog.actions.submitting')
+                : t('workforce:memberships.dialog.actions.submit')}
             </Button>
           </DialogFooter>
         </form>

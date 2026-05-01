@@ -1,0 +1,91 @@
+{
+  "page": {
+    "title": "Company policies",
+    "summaryLoading": "Loading…",
+    "summaryCount_one": "{{count}} policy",
+    "summaryCount_other": "{{count}} policies",
+    "newButton": "New",
+    "info": "Policies are <strong>tenant-wide</strong> — they apply to every employee (e.g. 11h rest between shifts). For per-person or date exceptions, use <strong>Semantic rules</strong>. The AI auto-detects known patterns; if it can't, it proposes rewordings that can be applied.",
+    "searchPlaceholder": "Search policy…",
+    "loadError": "Failed to load policies.",
+    "empty": "No policies yet."
+  },
+  "table": {
+    "policy": "Policy",
+    "severity": "Severity",
+    "scope": "Applies to",
+    "enforcement": "Enforcement",
+    "params": "Parameters",
+    "active": "Active",
+    "actions": "Actions"
+  },
+  "severity": {
+    "hard": "HARD",
+    "soft": "SOFT"
+  },
+  "scope": {
+    "company": "Company-wide",
+    "branch": "Branch",
+    "department": "Department",
+    "employee": "Employee"
+  },
+  "enforcement": {
+    "deterministic": "Deterministic",
+    "deterministicTooltip": "Interpreter: {{interpreterId}}. The solver enforces it deterministically.",
+    "llmRuntime": "LLM-runtime",
+    "llmRuntimeTooltip": "LLM-runtime: the solver invokes the LLM on every evaluation to check this policy. Probabilistic enforcement (not deterministic).",
+    "llmOnly": "LLM-only",
+    "llmOnlyTooltip": "No interpreter — only passed to the LLM prompt as context, no runtime enforcement."
+  },
+  "rowActions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "delete": "Delete",
+    "deleteConfirm": "Delete the policy \"{{text}}…\"?"
+  },
+  "yesShort": "yes",
+  "noShort": "no",
+  "dialog": {
+    "titleNew": "New policy",
+    "titleSuggestions": "Reformulation suggestions",
+    "titleCreated": "Policy created",
+    "descriptionNew": "Policy applicable to the whole company, a branch, a department or a single employee. For natural-language one-off rules, use Semantic rules.",
+    "descriptionSuggestions": "The system did not find a pattern that fits your text. The AI proposed these alternatives (each one verified). Pick one to create it, or close and rephrase freely.",
+    "descriptionCreated": "Your policy was saved. Below we explain how it will be applied when generating schedules.",
+    "fields": {
+      "text": "Text",
+      "textPlaceholder": "e.g. Each employee rests at least 2 days per week, excluding holidays.",
+      "textCounter": "{{count}} / min 10",
+      "severity": "Severity",
+      "severityHard": "hard — the solver cannot violate it",
+      "severitySoft": "soft — preference, can yield",
+      "scopeType": "Applies to",
+      "scopeCompany": "Whole company",
+      "scopeBranch": "Branch",
+      "scopeDepartment": "Department",
+      "scopeEmployee": "Employee",
+      "scopePick": "Pick…"
+    },
+    "errors": {
+      "minLength": "The text must have at least 10 characters.",
+      "scopeMissingBranch": "Pick the branch this applies to.",
+      "scopeMissingDepartment": "Pick the department this applies to.",
+      "scopeMissingEmployee": "Pick the employee this applies to."
+    },
+    "actions": {
+      "submit": "Create",
+      "submitting": "Analyzing with AI…",
+      "cancel": "Cancel",
+      "back": "Back to free text",
+      "keepOriginal": "Save my original text",
+      "keepOriginalTooltip": "Keep your wording as-is; the system will enforce it via LLM on each generation.",
+      "understood": "Got it"
+    },
+    "loadingOverlay": "AI is analyzing your text…",
+    "createdInfo": {
+      "llmOnly": "Saved as <strong>LLM-only</strong>. The solver does not enforce it deterministically; it only includes the text as context for the LLM during schedule generation. No hard guarantee.",
+      "llmRuntime": "<strong>LLM-runtime</strong> enforcement: the solver invokes the LLM on every evaluation to check this policy. Probabilistic guarantee — on each verify-loop attempt the LLM decides if there's a violation. Adds extra token cost.",
+      "deterministic": "<strong>Deterministic</strong> enforcement with interpreter <code>{{interpreterId}}</code>. The solver mathematically checks every proposal against the extracted parameters."
+    }
+  }
+}

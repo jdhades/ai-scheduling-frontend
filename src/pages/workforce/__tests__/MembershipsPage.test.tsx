@@ -56,7 +56,7 @@ describe('MembershipsPage', () => {
     await waitFor(() => expect(screen.getByText('Ana')).toBeInTheDocument());
     expect(screen.getByText('Diurno')).toBeInTheDocument();
     expect(screen.getByText('2026-01-01')).toBeInTheDocument();
-    expect(screen.getByText('abierto')).toBeInTheDocument();
+    expect(screen.getByText('open')).toBeInTheDocument();
   });
 
   it('estado vacío', async () => {
@@ -64,7 +64,7 @@ describe('MembershipsPage', () => {
     renderWithProviders(<MembershipsPage />);
     await waitFor(() =>
       expect(
-        screen.getByText('No hay memberships todavía.'),
+        screen.getByText('No memberships yet.'),
       ).toBeInTheDocument(),
     );
   });

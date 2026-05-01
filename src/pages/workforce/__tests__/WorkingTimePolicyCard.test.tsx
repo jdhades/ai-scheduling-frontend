@@ -37,8 +37,8 @@ describe('WorkingTimePolicyCard', () => {
     expect(screen.getAllByText('9').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('45').length).toBeGreaterThanOrEqual(1);
     // Source labels.
-    expect(screen.getByTestId('src-day')).toHaveTextContent('Empleado');
-    expect(screen.getByTestId('src-week')).toHaveTextContent('Depto');
+    expect(screen.getByTestId('src-day')).toHaveTextContent('Employee');
+    expect(screen.getByTestId('src-week')).toHaveTextContent('Department');
     // Override de company-level (50, no efectivo) presente solo en la tabla.
     expect(screen.getByText('50')).toBeInTheDocument();
   });
@@ -67,9 +67,9 @@ describe('WorkingTimePolicyCard', () => {
     renderWithProviders(<WorkingTimePolicyCard employeeId="e2" />);
 
     await waitFor(() =>
-      expect(screen.getByTestId('src-day')).toHaveTextContent('Sistema'),
+      expect(screen.getByTestId('src-day')).toHaveTextContent('System'),
     );
-    expect(screen.getByTestId('src-week')).toHaveTextContent('Sistema');
+    expect(screen.getByTestId('src-week')).toHaveTextContent('System');
   });
 
   it('muestra error si la API falla', async () => {
@@ -83,7 +83,7 @@ describe('WorkingTimePolicyCard', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('Error cargando política de tiempo.'),
+        screen.getByText('Error loading working-time policy.'),
       ).toBeInTheDocument(),
     );
   });

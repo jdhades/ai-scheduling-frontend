@@ -1,0 +1,14 @@
+{
+  "EMPLOYEE_PHONE_DUPLICATE": "An employee with that phone number already exists.",
+  "EMPLOYEE_EXTERNAL_ID_DUPLICATE": "An employee with that external ID already exists.",
+  "MEMBERSHIP_DUPLICATE": "A membership for that employee, template and start date already exists.",
+  "SKILL_DUPLICATE": "That skill is already in your tenant catalog.",
+  "POLICY_INTERPRETER_DUPLICATE": "There is already an active policy for that pattern. Edit or deactivate the existing one first.",
+  "UNIQUE_VIOLATION": "A record with these values already exists.",
+  "NOT_NULL_VIOLATION": "The field \"{{field}}\" is required.",
+  "FOREIGN_KEY_VIOLATION": "The operation references a record that no longer exists.",
+  "CHECK_VIOLATION": "The submitted data does not meet a validation rule.",
+  "INTERNAL_ERROR": "An unexpected error occurred. Please try again or contact support.",
+  "GENERIC_HTTP": "Server error ({{status}}). Please try again.",
+  "UNKNOWN": "Something went wrong."
+}

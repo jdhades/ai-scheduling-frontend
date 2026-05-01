@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
     useShiftTemplatesQuery,
     useCreateTemplateMutation,
     useDeleteTemplateMutation,
     type CreateShiftTemplatePayload,
 } from '../../api/shift-templates.api'
-
-const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
 const EMPTY_FORM: CreateShiftTemplatePayload = {
@@ -19,9 +18,12 @@ const EMPTY_FORM: CreateShiftTemplatePayload = {
 }
 
 export function ShiftTemplatesPanel() {
+    const { t } = useTranslation()
     const { data: templates = [], isLoading } = useShiftTemplatesQuery()
     const createMutation = useCreateTemplateMutation()
     const deleteMutation = useDeleteTemplateMutation()
+    const dayLabel = (d: number | null): string =>
+        d === null ? t('scheduling:templatesPanel.values.allDays') : t(`templates:days.${d}`)
 
     const [form, setForm] = useState<CreateShiftTemplatePayload>(EMPTY_FORM)
     const [showForm, setShowForm] = useState(false)
@@ -45,10 +47,10 @@ export function ShiftTemplatesPanel() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#e2e8f0' }}>
-                        📋 Plantillas de Turno
+                        📋 {t('scheduling:templatesPanel.title')}
                     </h3>
                     <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                        Define una vez, genera semanas en 1 clic
+                        {t('scheduling:templatesPanel.subtitle')}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -64,7 +66,9 @@ export function ShiftTemplatesPanel() {
                             cursor: 'pointer',
                         }}
                     >
-                        {showForm ? '✕ Cerrar' : '+ Nueva Plantilla'}
+                        {showForm
+                            ? t('scheduling:templatesPanel.closeCreate')
+                            : t('scheduling:templatesPanel.openCreate')}
                     </button>
                 </div>
             </div>
@@ -82,29 +86,29 @@ export function ShiftTemplatesPanel() {
                     border: '1px solid rgba(255,255,255,0.07)',
                 }}>
                     <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={labelStyle}>Nombre</label>
+                        <label style={labelStyle}>{t('scheduling:templatesPanel.fields.name')}</label>
                         <input
                             required
                             value={form.name}
                             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                            placeholder="ej. Apertura Cocina"
+                            placeholder={t('scheduling:templatesPanel.fields.namePlaceholder')}
                             style={inputStyle}
                         />
                     </div>
                     <div>
-                        <label style={labelStyle}>Día</label>
+                        <label style={labelStyle}>{t('scheduling:templatesPanel.fields.day')}</label>
                         <select
                             value={form.dayOfWeek ?? 1}
                             onChange={e => setForm(f => ({ ...f, dayOfWeek: +e.target.value }))}
                             style={inputStyle}
                         >
-                            {DAY_LABELS.map((d, i) => (
-                                <option key={i} value={i}>{d}</option>
+                            {[0, 1, 2, 3, 4, 5, 6].map(i => (
+                                <option key={i} value={i}>{t(`templates:days.${i}`)}</option>
                             ))}
                         </select>
                     </div>
                     <div>
-                        <label style={labelStyle}>Inicio</label>
+                        <label style={labelStyle}>{t('scheduling:templatesPanel.fields.start')}</label>
                         <input
                             type="time"
                             required
@@ -114,7 +118,7 @@ export function ShiftTemplatesPanel() {
                         />
                     </div>
                     <div>
-                        <label style={labelStyle}>Fin</label>
+                        <label style={labelStyle}>{t('scheduling:templatesPanel.fields.end')}</label>
                         <input
                             type="time"
                             required
@@ -124,7 +128,7 @@ export function ShiftTemplatesPanel() {
                         />
                     </div>
                     <div>
-                        <label style={labelStyle}>Demanda (1–5)</label>
+                        <label style={labelStyle}>{t('scheduling:templatesPanel.fields.demand')}</label>
                         <input
                             type="number"
                             min={1} max={5} step={0.5}
@@ -135,10 +139,12 @@ export function ShiftTemplatesPanel() {
                     </div>
                     <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                         <button type="button" onClick={() => setShowForm(false)} style={cancelBtnStyle}>
-                            Cancelar
+                            {t('scheduling:templatesPanel.actions.cancel')}
                         </button>
                         <button type="submit" disabled={createMutation.isPending} style={submitBtnStyle}>
-                            {createMutation.isPending ? 'Guardando…' : '💾 Guardar Plantilla'}
+                            {createMutation.isPending
+                                ? t('scheduling:templatesPanel.actions.submitting')
+                                : t('scheduling:templatesPanel.actions.submit')}
                         </button>
                     </div>
                 </form>
@@ -146,15 +152,15 @@ export function ShiftTemplatesPanel() {
 
             {/* Template list */}
             {isLoading ? (
-                <p style={{ color: '#64748b', fontSize: '13px' }}>Cargando plantillas…</p>
+                <p style={{ color: '#64748b', fontSize: '13px' }}>{t('scheduling:templatesPanel.loading')}</p>
             ) : templates.length === 0 ? (
                 <p style={{ color: '#475569', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
-                    No hay plantillas aún. Crea una para empezar.
+                    {t('scheduling:templatesPanel.empty')}
                 </p>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {templates.map(t => (
-                        <div key={t.id} style={{
+                    {templates.map(tpl => (
+                        <div key={tpl.id} style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
@@ -173,13 +179,13 @@ export function ShiftTemplatesPanel() {
                                 minWidth: '32px',
                                 textAlign: 'center',
                             }}>
-                                {t.dayOfWeek === null ? 'Todos' : DAY_LABELS[t.dayOfWeek]}
+                                {dayLabel(tpl.dayOfWeek)}
                             </span>
                             <span style={{ flex: 1, fontSize: '13px', color: '#cbd5e1', fontWeight: 500 }}>
-                                {t.name}
+                                {tpl.name}
                             </span>
                             <span style={{ fontSize: '12px', color: '#64748b' }}>
-                                {t.startTime.slice(0, 5)}–{t.endTime.slice(0, 5)}
+                                {tpl.startTime.slice(0, 5)}–{tpl.endTime.slice(0, 5)}
                             </span>
                             <span style={{
                                 fontSize: '11px',
@@ -188,12 +194,12 @@ export function ShiftTemplatesPanel() {
                                 background: 'rgba(255,255,255,0.05)',
                                 borderRadius: '4px',
                             }}>
-                                ⚡ {t.demandScore}
+                                ⚡ {tpl.demandScore}
                             </span>
                             <button
-                                onClick={() => deleteMutation.mutate(t.id)}
+                                onClick={() => deleteMutation.mutate(tpl.id)}
                                 disabled={deleteMutation.isPending}
-                                title="Eliminar plantilla"
+                                title={t('scheduling:templatesPanel.actions.delete')}
                                 style={{
                                     background: 'transparent',
                                     border: 'none',

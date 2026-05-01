@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Wand2, AlertTriangle, CheckCircle2, Cpu } from 'lucide-react';
 import {
   useGenerateHybridForWeekMutation,
@@ -30,6 +31,7 @@ const upcomingMondayISO = (): string => {
  * templates de la misma semana.
  */
 export const GeneratePage = () => {
+  const { t } = useTranslation();
   const [weekStart, setWeekStart] = useState<string>(upcomingMondayISO());
   const [branchId, setBranchId] = useState<string>('');
   const [departmentId, setDepartmentId] = useState<string>('');
@@ -84,17 +86,19 @@ export const GeneratePage = () => {
   return (
     <div className="space-y-4 max-w-2xl">
       <header>
-        <h1 className="text-xl font-bold text-foreground">Generar horario</h1>
+        <h1 className="text-xl font-bold text-foreground">
+          {t('scheduling:generatePage.title')}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Dispara la generación LLM-autoritativa para una semana puntual.
-          Si elegís departamento o turno, solo se regeneran sus asignaciones —
-          el resto de la semana queda intacto.
+          {t('scheduling:generatePage.subtitle')}
         </p>
       </header>
 
       <Card className="p-4 space-y-3">
         <div className="space-y-1">
-          <Label htmlFor="g-week">Semana (lunes)</Label>
+          <Label htmlFor="g-week">
+            {t('scheduling:generatePage.weekLabel')}
+          </Label>
           <Input
             id="g-week"
             type="date"
@@ -104,13 +108,15 @@ export const GeneratePage = () => {
             disabled={generate.isPending}
           />
           <p className="text-xs text-muted-foreground">
-            El backend resuelve cualquier fecha al lunes de su semana ISO.
+            {t('scheduling:generatePage.weekHint')}
           </p>
         </div>
 
         {showBranchSelector && (
           <div className="space-y-1">
-            <Label htmlFor="g-branch">Sucursal</Label>
+            <Label htmlFor="g-branch">
+              {t('scheduling:generatePage.branchLabel')}
+            </Label>
             <select
               id="g-branch"
               data-testid="g-branch-select"
@@ -123,7 +129,9 @@ export const GeneratePage = () => {
               disabled={generate.isPending}
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Elegí…</option>
+              <option value="">
+                {t('scheduling:generatePage.branchPick')}
+              </option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -135,7 +143,9 @@ export const GeneratePage = () => {
 
         {showDepartmentSelector && (
           <div className="space-y-1">
-            <Label htmlFor="g-dept">Departamento</Label>
+            <Label htmlFor="g-dept">
+              {t('scheduling:generatePage.departmentLabel')}
+            </Label>
             <select
               id="g-dept"
               data-testid="g-dept-select"
@@ -147,7 +157,9 @@ export const GeneratePage = () => {
               disabled={generate.isPending}
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Elegí…</option>
+              <option value="">
+                {t('scheduling:generatePage.departmentPick')}
+              </option>
               {departments.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
@@ -158,7 +170,9 @@ export const GeneratePage = () => {
         )}
 
         <div className="space-y-1">
-          <Label htmlFor="g-template">Turno (opcional)</Label>
+          <Label htmlFor="g-template">
+            {t('scheduling:generatePage.templateLabel')}
+          </Label>
           <select
             id="g-template"
             data-testid="g-template-select"
@@ -167,15 +181,17 @@ export const GeneratePage = () => {
             disabled={generate.isPending || templates.length === 0}
             className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
           >
-            <option value="">Todos los turnos</option>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
+            <option value="">
+              {t('scheduling:generatePage.templateAll')}
+            </option>
+            {templates.map((tpl) => (
+              <option key={tpl.id} value={tpl.id}>
+                {tpl.name}
               </option>
             ))}
           </select>
           <p className="text-xs text-muted-foreground">
-            Dejá "Todos" para regenerar el departamento entero.
+            {t('scheduling:generatePage.templateHint')}
           </p>
         </div>
 
@@ -185,10 +201,11 @@ export const GeneratePage = () => {
           data-testid="g-submit"
         >
           {generate.isPending ? (
-            'Generando…'
+            t('scheduling:generatePage.generating')
           ) : (
             <>
-              <Wand2 className="w-4 h-4" /> Generar
+              <Wand2 className="w-4 h-4" />{' '}
+              {t('scheduling:generatePage.generate')}
             </>
           )}
         </Button>
@@ -198,7 +215,9 @@ export const GeneratePage = () => {
         <Card className="p-4 border-error/40 bg-error/10">
           <div className="flex items-center gap-2 text-sm text-error">
             <AlertTriangle className="w-4 h-4" />
-            Error: {(generate.error as Error).message}
+            {t('scheduling:generatePage.errorPrefix', {
+              message: (generate.error as Error).message,
+            })}
           </div>
         </Card>
       )}
@@ -207,13 +226,24 @@ export const GeneratePage = () => {
         <Card className="p-4 space-y-3" data-testid="g-result">
           <div className="flex items-center gap-2 text-sm text-foreground">
             <CheckCircle2 className="w-4 h-4 text-secondary" />
-            Generación completada para la semana del {generate.data?.weekStart}.
+            {t('scheduling:generatePage.result.completed', {
+              weekStart: generate.data?.weekStart ?? '',
+            })}
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <Stat label="Asignaciones" value={result.assignmentsCount} />
-            <Stat label="Underfilled" value={result.unfilledShiftsCount} />
-            <Stat label="LLM aceptado" value={result.llmAccepted} />
+            <Stat
+              label={t('scheduling:generatePage.result.stats.assignments')}
+              value={result.assignmentsCount}
+            />
+            <Stat
+              label={t('scheduling:generatePage.result.stats.underfilled')}
+              value={result.unfilledShiftsCount}
+            />
+            <Stat
+              label={t('scheduling:generatePage.result.stats.llmAccepted')}
+              value={result.llmAccepted}
+            />
           </div>
 
           <p className="text-sm text-foreground/80 whitespace-pre-line">
@@ -224,19 +254,30 @@ export const GeneratePage = () => {
             <div className="rounded-md border border-white/10 bg-surface-low/60 p-3 text-xs">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
-                <span className="uppercase tracking-widest">Costo LLM</span>
+                <span className="uppercase tracking-widest">
+                  {t('scheduling:generatePage.result.llmCostTitle')}
+                </span>
               </div>
               <div className="mt-1 grid grid-cols-4 gap-2 font-mono text-foreground">
                 <span>
-                  {result.llmUsage.calls} call{result.llmUsage.calls === 1 ? '' : 's'}
+                  {t('scheduling:generatePage.result.llmCalls', {
+                    count: result.llmUsage.calls,
+                  })}
                 </span>
-                <span>prompt {result.llmUsage.prompt.toLocaleString('es-AR')}</span>
                 <span>
-                  completion{' '}
-                  {result.llmUsage.completion.toLocaleString('es-AR')}
+                  {t('scheduling:generatePage.result.llmPrompt', {
+                    tokens: result.llmUsage.prompt.toLocaleString(),
+                  })}
+                </span>
+                <span>
+                  {t('scheduling:generatePage.result.llmCompletion', {
+                    tokens: result.llmUsage.completion.toLocaleString(),
+                  })}
                 </span>
                 <span className="font-semibold">
-                  total {result.llmUsage.total.toLocaleString('es-AR')}
+                  {t('scheduling:generatePage.result.llmTotal', {
+                    tokens: result.llmUsage.total.toLocaleString(),
+                  })}
                 </span>
               </div>
             </div>
@@ -245,7 +286,7 @@ export const GeneratePage = () => {
           {result.warnings.length > 0 && (
             <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 space-y-1">
               <div className="text-xs font-semibold uppercase tracking-wider text-yellow-300/80">
-                Warnings
+                {t('scheduling:generatePage.result.warningsTitle')}
               </div>
               <ul className="text-sm text-yellow-200 list-disc pl-5">
                 {result.warnings.map((w, i) => (

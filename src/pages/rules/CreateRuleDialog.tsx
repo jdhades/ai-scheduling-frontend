@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { AlertTriangle, CheckCircle2, Copy, Sparkles } from 'lucide-react';
 import {
   Dialog,
@@ -51,6 +52,7 @@ export const CreateRuleDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const [ruleText, setRuleText] = useState('');
   const [priorityLevel, setPriorityLevel] = useState<RulePriority>(3);
   const [ruleType, setRuleType] = useState<RuleType>('preference');
@@ -73,7 +75,7 @@ export const CreateRuleDialog = ({
     setError(null);
     setSuggestions(null);
     if (textToSubmit.trim().length < 10) {
-      setError('La regla debe tener al menos 10 caracteres.');
+      setError(t('rules:create.errors.minLength'));
       return;
     }
     try {
@@ -129,17 +131,17 @@ export const CreateRuleDialog = ({
         <DialogHeader>
           <DialogTitle>
             {showSuggestions
-              ? 'Sugerencias de reformulación'
+              ? t('rules:create.titleSuggestions')
               : showResult
-                ? 'Resultado de la creación'
-                : 'Nueva regla semántica'}
+                ? t('rules:create.titleResult')
+                : t('rules:create.titleNew')}
           </DialogTitle>
           <DialogDescription>
             {showSuggestions
-              ? 'El sistema no pudo aplicar tu regla tal cual (texto ambiguo o sin sujeto). La IA propuso estas alternativas. Elegí una para crearla, o volvé al texto libre.'
+              ? t('rules:create.descriptionSuggestions')
               : showResult
-                ? 'La IA procesó la regla. Revisá el resultado antes de cerrar.'
-                : 'Escribí la regla en lenguaje natural. La IA genera embedding, busca duplicados y extrae estructura para el scheduler.'}
+                ? t('rules:create.descriptionResult')
+                : t('rules:create.descriptionNew')}
           </DialogDescription>
         </DialogHeader>
 
@@ -168,7 +170,11 @@ export const CreateRuleDialog = ({
                     </p>
                     {s.previewIntent && (
                       <div className="pt-1">
-                        <Badge>intent: {s.previewIntent}</Badge>
+                        <Badge>
+                          {t('rules:create.intentLabel', {
+                            intent: s.previewIntent,
+                          })}
+                        </Badge>
                       </div>
                     )}
                   </div>
@@ -183,7 +189,7 @@ export const CreateRuleDialog = ({
                 disabled={submitting}
                 data-testid="r-suggestions-back"
               >
-                Volver al texto libre
+                {t('rules:create.actions.back')}
               </Button>
             </DialogFooter>
           </div>
@@ -195,19 +201,19 @@ export const CreateRuleDialog = ({
                   <Copy className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <div className="space-y-1">
                     <p className="font-medium text-foreground">
-                      Regla duplicada — no se creó
+                      {t('rules:create.result.duplicateTitle')}
                     </p>
                     <p className="text-muted-foreground">
-                      La IA detectó una regla ya existente semánticamente
-                      equivalente (distancia coseno &lt; 0.12). Si querés
-                      modificarla, abrí la existente y editala.
+                      {t('rules:create.result.duplicateBody')}
                     </p>
                     {result?.duplicateOfId && (
                       <p
                         className="font-mono text-xs text-muted-foreground"
                         data-testid="r-duplicate-of-id"
                       >
-                        ID existente: {result.duplicateOfId}
+                        {t('rules:create.result.duplicateExistingId', {
+                          id: result.duplicateOfId,
+                        })}
                       </p>
                     )}
                   </div>
@@ -217,7 +223,9 @@ export const CreateRuleDialog = ({
               <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                 <div className="flex items-start gap-2 text-primary">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  <p className="text-foreground">Regla guardada.</p>
+                  <p className="text-foreground">
+                    {t('rules:create.result.saved')}
+                  </p>
                 </div>
               </div>
             )}
@@ -227,10 +235,13 @@ export const CreateRuleDialog = ({
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <p>
-                    <span className="font-medium">Sin estructura.</span> El LLM
-                    no pudo parsear la regla a un formato aplicable. El
-                    scheduler la <strong>ignora</strong> hasta que la
-                    reformules con un texto más claro.
+                    <span className="font-medium">
+                      {t('rules:create.result.noStructureTitle')}
+                    </span>{' '}
+                    <Trans
+                      i18nKey="rules:create.result.noStructureBody"
+                      components={{ strong: <strong /> }}
+                    />
                   </p>
                 </div>
               </div>
@@ -241,9 +252,10 @@ export const CreateRuleDialog = ({
                 <div className="flex items-start gap-2 text-secondary">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <p className="text-foreground">
-                    <span className="font-medium">Sin embedding.</span> La
-                    regla no es buscable semánticamente. Editá el texto para
-                    reintentar la generación.
+                    <span className="font-medium">
+                      {t('rules:create.result.noEmbeddingTitle')}
+                    </span>{' '}
+                    {t('rules:create.result.noEmbeddingBody')}
                   </p>
                 </div>
               </div>
@@ -258,28 +270,34 @@ export const CreateRuleDialog = ({
                 }}
                 data-testid="r-result-close"
               >
-                Cerrar
+                {t('rules:create.actions.close')}
               </Button>
             </DialogFooter>
           </div>
         ) : (
           <form onSubmit={handle} className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="r-text">Texto</Label>
+              <Label htmlFor="r-text">{t('rules:create.fields.text')}</Label>
               <Textarea
                 id="r-text"
                 rows={3}
                 value={ruleText}
                 onChange={(e) => setRuleText(e.target.value)}
-                placeholder="ej. Pablo no trabaja los lunes"
+                placeholder={t('rules:create.fields.textPlaceholder')}
                 data-testid="r-text-input"
                 disabled={submitting}
               />
-              <p className="text-xs text-muted-foreground">{ruleText.trim().length} / mín 10</p>
+              <p className="text-xs text-muted-foreground">
+                {t('rules:create.fields.textCounter', {
+                  count: ruleText.trim().length,
+                })}
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="r-priority">Prioridad</Label>
+                <Label htmlFor="r-priority">
+                  {t('rules:create.fields.priority')}
+                </Label>
                 <select
                   id="r-priority"
                   data-testid="r-priority-select"
@@ -290,13 +308,13 @@ export const CreateRuleDialog = ({
                   disabled={submitting}
                   className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
                 >
-                  <option value={1}>1 — Legal</option>
-                  <option value={2}>2 — Hard</option>
-                  <option value={3}>3 — Soft (preferencia)</option>
+                  <option value={1}>{t('rules:create.fields.priorityLegal')}</option>
+                  <option value={2}>{t('rules:create.fields.priorityHard')}</option>
+                  <option value={3}>{t('rules:create.fields.prioritySoft')}</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="r-type">Tipo</Label>
+                <Label htmlFor="r-type">{t('rules:create.fields.type')}</Label>
                 <select
                   id="r-type"
                   data-testid="r-type-select"
@@ -323,10 +341,12 @@ export const CreateRuleDialog = ({
                 onClick={() => onOpenChange(false)}
                 disabled={submitting}
               >
-                Cancelar
+                {t('rules:create.actions.cancel')}
               </Button>
               <Button type="submit" disabled={submitting} data-testid="r-submit">
-                {submitting ? 'Guardando…' : 'Crear'}
+                {submitting
+                  ? t('rules:create.actions.submitting')
+                  : t('rules:create.actions.submit')}
               </Button>
             </DialogFooter>
           </form>

@@ -1,0 +1,36 @@
+{
+  "scheduleGrid": {
+    "title": "Interactive Schedule",
+    "autoFill": "Auto-Fill",
+    "publish": "Publish",
+    "employee": "Employee"
+  },
+  "widgets": {
+    "statusTitle": "Current Schedule Status",
+    "statusOptimized": "Optimized",
+    "statusLastUpdated": "Last AI regeneration: 10 mins ago",
+    "incidentsTitle": "Active Incidents",
+    "incidentsCount": "2 Understaffed Shifts",
+    "incidentsMessage": "Friday Night Rush requires attention."
+  },
+  "heatmap": {
+    "title": "Weekly Coverage Heatmap",
+    "optimal": "Optimal",
+    "warning": "Warning",
+    "critical": "Critical",
+    "dayHour": "Day / Hour",
+    "selected": "Selected",
+    "coverage": "Coverage",
+    "assigned": "assigned",
+    "required": "required",
+    "suggestBtn": "Suggest Reinforcements",
+    "ackBtn": "Acknowledge"
+  },
+  "fairness": {
+    "title": "Fairness & Equity Insights",
+    "barTitle": "Total Assigned Hours vs Target",
+    "radarTitle": "Workload Distribution (Quality)",
+    "assignedHours": "Assigned Hours",
+    "targetHours": "Target Hours"
+  }
+}

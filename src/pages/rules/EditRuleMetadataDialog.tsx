@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export const EditRuleMetadataDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const [priorityLevel, setPriorityLevel] = useState<RulePriority>(3);
   const [isActive, setIsActive] = useState(true);
   const [expiresAt, setExpiresAt] = useState('');
@@ -64,15 +66,16 @@ export const EditRuleMetadataDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar metadata</DialogTitle>
+          <DialogTitle>{t('rules:editMetadata.title')}</DialogTitle>
           <DialogDescription>
-            Cambios baratos: prioridad, activa, vencimiento. NO toca el texto
-            ni regenera embeddings.
+            {t('rules:editMetadata.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handle} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="m-priority">Prioridad</Label>
+            <Label htmlFor="m-priority">
+              {t('rules:editMetadata.fields.priority')}
+            </Label>
             <select
               id="m-priority"
               data-testid="meta-priority-select"
@@ -83,9 +86,9 @@ export const EditRuleMetadataDialog = ({
               disabled={submitting}
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value={1}>1 — Legal</option>
-              <option value={2}>2 — Hard</option>
-              <option value={3}>3 — Soft</option>
+              <option value={1}>{t('rules:editMetadata.fields.priorityLegal')}</option>
+              <option value={2}>{t('rules:editMetadata.fields.priorityHard')}</option>
+              <option value={3}>{t('rules:editMetadata.fields.prioritySoft')}</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -99,11 +102,13 @@ export const EditRuleMetadataDialog = ({
               className="rounded border-white/20"
             />
             <Label htmlFor="m-active" className="!text-sm !normal-case !tracking-normal">
-              Activa
+              {t('rules:editMetadata.fields.active')}
             </Label>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="m-expires">Vence (vacío = sin vencimiento)</Label>
+            <Label htmlFor="m-expires">
+              {t('rules:editMetadata.fields.expires')}
+            </Label>
             <Input
               id="m-expires"
               type="date"
@@ -120,10 +125,12 @@ export const EditRuleMetadataDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancelar
+              {t('rules:editMetadata.actions.cancel')}
             </Button>
             <Button type="submit" disabled={submitting} data-testid="meta-submit">
-              {submitting ? 'Guardando…' : 'Guardar'}
+              {submitting
+                ? t('rules:editMetadata.actions.submitting')
+                : t('rules:editMetadata.actions.submit')}
             </Button>
           </DialogFooter>
         </form>

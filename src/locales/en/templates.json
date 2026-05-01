@@ -1,0 +1,72 @@
+{
+  "page": {
+    "title": "Shift templates",
+    "summaryLoading": "Loading…",
+    "summaryCount_one": "{{count}} template",
+    "summaryCount_other": "{{count}} templates",
+    "newButton": "New",
+    "searchPlaceholder": "Search template or skill…",
+    "loadError": "Failed to load templates.",
+    "empty": "No templates yet."
+  },
+  "table": {
+    "name": "Name",
+    "day": "Day",
+    "schedule": "Schedule",
+    "skill": "Skill",
+    "department": "Department",
+    "requiredEmployees": "required_employees",
+    "actions": "Actions"
+  },
+  "values": {
+    "elastic": "elastic",
+    "allDays": "All",
+    "departmentNone": "—"
+  },
+  "rowActions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete the template \"{{name}}\"?"
+  },
+  "days": {
+    "0": "Sun",
+    "1": "Mon",
+    "2": "Tue",
+    "3": "Wed",
+    "4": "Thu",
+    "5": "Fri",
+    "6": "Sat"
+  },
+  "dialog": {
+    "titleNew": "New template",
+    "titleEdit": "Edit template",
+    "descriptionNew": "Defines a recurring shift. If you leave \"required_employees\" empty, the slot is ELASTIC and absorbs leftover.",
+    "descriptionEdit": "Update the template's fields. The skill can be cleared by selecting \"None\".",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Day shift",
+      "day": "Day (empty = all)",
+      "dayAll": "All",
+      "start": "Start",
+      "end": "End",
+      "requiredEmployees": "required_employees",
+      "requiredEmployeesHint": "(empty = elastic)",
+      "department": "Department",
+      "departmentOptional": "(optional)",
+      "departmentAll": "Whole company",
+      "skill": "Required skill",
+      "skillOptional": "(optional)",
+      "skillNone": "None"
+    },
+    "errors": {
+      "required": "Name, start time and end time are required.",
+      "generic": "Failed to save template."
+    },
+    "actions": {
+      "submitCreate": "Create",
+      "submitEdit": "Save",
+      "submitting": "Saving…",
+      "cancel": "Cancel"
+    }
+  }
+}

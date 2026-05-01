@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useWorkingTimePolicyQuery } from '../../api/working-time-policy.api';
 import type { PolicySource } from '../../types/working-time-policy';
 import { Card } from '../../components/ui/Card';
@@ -6,13 +7,6 @@ import { Card } from '../../components/ui/Card';
 interface Props {
   employeeId: string;
 }
-
-const sourceLabel: Record<PolicySource, string> = {
-  employee: 'Empleado',
-  department: 'Depto',
-  company: 'Empresa',
-  'system-fallback': 'Sistema',
-};
 
 const sourceTone: Record<PolicySource, string> = {
   employee: 'text-primary',
@@ -28,13 +22,14 @@ const sourceTone: Record<PolicySource, string> = {
  * desde EmployeeDetailPage cuando exista.
  */
 export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useWorkingTimePolicyQuery(employeeId);
 
   if (isLoading) {
     return (
       <Card className="p-4">
         <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-        Cargando política de tiempo…
+        {t('workforce:employees.workingTimePolicy.loading')}
       </Card>
     );
   }
@@ -42,26 +37,29 @@ export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
   if (isError || !data) {
     return (
       <Card className="p-4 border-error/40 bg-error/10 text-sm text-error">
-        Error cargando política de tiempo.
+        {t('workforce:employees.workingTimePolicy.loadError')}
       </Card>
     );
   }
+
+  const sourceLabel = (s: PolicySource) =>
+    t(`workforce:employees.workingTimePolicy.levels.${s}`);
 
   return (
     <Card className="p-4 space-y-4" data-testid="wtp-card">
       <div>
         <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-          Política de tiempo (efectiva)
+          {t('workforce:employees.workingTimePolicy.title')}
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Resuelta por jerarquía: empleado → depto → empresa → fallback.
+          {t('workforce:employees.workingTimePolicy.subtitle')}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-md border border-white/5 bg-surface-low/60 p-3">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Máx h / día
+            {t('workforce:employees.workingTimePolicy.maxHoursPerDay')}
           </div>
           <div className="text-2xl font-bold text-foreground">
             {data.effective.maxHoursPerDay}
@@ -70,12 +68,14 @@ export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
             className={`text-[10px] uppercase tracking-widest ${sourceTone[data.source.maxHoursPerDay]}`}
             data-testid="src-day"
           >
-            Origen: {sourceLabel[data.source.maxHoursPerDay]}
+            {t('workforce:employees.workingTimePolicy.source', {
+              level: sourceLabel(data.source.maxHoursPerDay),
+            })}
           </div>
         </div>
         <div className="rounded-md border border-white/5 bg-surface-low/60 p-3">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Máx h / semana
+            {t('workforce:employees.workingTimePolicy.maxHoursPerWeek')}
           </div>
           <div className="text-2xl font-bold text-foreground">
             {data.effective.maxHoursPerWeek}
@@ -84,26 +84,36 @@ export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
             className={`text-[10px] uppercase tracking-widest ${sourceTone[data.source.maxHoursPerWeek]}`}
             data-testid="src-week"
           >
-            Origen: {sourceLabel[data.source.maxHoursPerWeek]}
+            {t('workforce:employees.workingTimePolicy.source', {
+              level: sourceLabel(data.source.maxHoursPerWeek),
+            })}
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Overrides por nivel
+          {t('workforce:employees.workingTimePolicy.overridesTitle')}
         </h4>
         <table className="w-full text-xs">
           <thead className="text-[10px] uppercase tracking-widest text-muted-foreground">
             <tr>
-              <th className="text-left py-1 font-medium">Nivel</th>
-              <th className="text-right py-1 font-medium">h/día</th>
-              <th className="text-right py-1 font-medium">h/semana</th>
+              <th className="text-left py-1 font-medium">
+                {t('workforce:employees.workingTimePolicy.level')}
+              </th>
+              <th className="text-right py-1 font-medium">
+                {t('workforce:employees.workingTimePolicy.perDay')}
+              </th>
+              <th className="text-right py-1 font-medium">
+                {t('workforce:employees.workingTimePolicy.perWeek')}
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-t border-white/5">
-              <td className="py-1 text-foreground">Empleado</td>
+              <td className="py-1 text-foreground">
+                {t('workforce:employees.workingTimePolicy.levels.employee')}
+              </td>
               <td className="text-right text-foreground">
                 {data.overrides.employee.maxHoursPerDay ?? '—'}
               </td>
@@ -112,7 +122,9 @@ export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
               </td>
             </tr>
             <tr className="border-t border-white/5">
-              <td className="py-1 text-muted-foreground">Departamento</td>
+              <td className="py-1 text-muted-foreground">
+                {t('workforce:employees.workingTimePolicy.levels.department')}
+              </td>
               <td className="text-right text-muted-foreground">
                 {data.overrides.department?.maxHoursPerDay ?? '—'}
               </td>
@@ -121,7 +133,9 @@ export const WorkingTimePolicyCard = ({ employeeId }: Props) => {
               </td>
             </tr>
             <tr className="border-t border-white/5">
-              <td className="py-1 text-muted-foreground">Empresa</td>
+              <td className="py-1 text-muted-foreground">
+                {t('workforce:employees.workingTimePolicy.levels.company')}
+              </td>
               <td className="text-right text-muted-foreground">
                 {data.overrides.company.maxHoursPerDay ?? '—'}
               </td>

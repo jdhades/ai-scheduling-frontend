@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -19,10 +20,6 @@ import {
   type TemplateFormValues,
 } from './TemplateFormDialog';
 
-const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
-const dayLabel = (d: number | null) => (d === null ? 'Todos' : DAY_LABELS[d]);
-
 const fmtTime = (t: string) => t.slice(0, 5);
 
 /**
@@ -31,6 +28,9 @@ const fmtTime = (t: string) => t.slice(0, 5);
  * skill requerida).
  */
 export const TemplatesPage = () => {
+  const { t } = useTranslation();
+  const dayLabel = (d: number | null): string =>
+    d === null ? t('templates:values.allDays') : t(`templates:days.${d}`);
   const templates = useShiftTemplatesQuery();
   const skills = useCompanySkillsQuery();
   const departmentsQ = useDepartmentsQuery();
@@ -70,7 +70,7 @@ export const TemplatesPage = () => {
     () => [
       {
         accessorKey: 'name',
-        header: 'Nombre',
+        header: t('templates:table.name'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="font-medium">{row.original.name}</span>
@@ -78,7 +78,7 @@ export const TemplatesPage = () => {
       },
       {
         accessorKey: 'dayOfWeek',
-        header: 'Día',
+        header: t('templates:table.day'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             {dayLabel(row.original.dayOfWeek)}
@@ -87,7 +87,7 @@ export const TemplatesPage = () => {
       },
       {
         accessorKey: 'startTime',
-        header: 'Horario',
+        header: t('templates:table.schedule'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             {fmtTime(row.original.startTime)}–{fmtTime(row.original.endTime)}
@@ -96,11 +96,11 @@ export const TemplatesPage = () => {
       },
       {
         id: 'skill',
-        header: 'Skill',
+        header: t('templates:table.skill'),
         // accessorFn → search/sort por nombre resuelto, no por UUID.
-        accessorFn: (t) =>
-          t.requiredSkillId
-            ? skillById.get(t.requiredSkillId) ?? t.requiredSkillId
+        accessorFn: (template) =>
+          template.requiredSkillId
+            ? skillById.get(template.requiredSkillId) ?? template.requiredSkillId
             : '',
         enableGlobalFilter: true,
         cell: ({ row }) =>
@@ -117,9 +117,11 @@ export const TemplatesPage = () => {
         ? ([
             {
               id: 'department',
-              header: 'Departamento',
-              accessorFn: (t) =>
-                t.departmentId ? departmentNameById.get(t.departmentId) ?? '' : '',
+              header: t('templates:table.department'),
+              accessorFn: (template) =>
+                template.departmentId
+                  ? departmentNameById.get(template.departmentId) ?? ''
+                  : '',
               cell: ({ row }) => {
                 const id = row.original.departmentId;
                 return id ? (
@@ -127,7 +129,9 @@ export const TemplatesPage = () => {
                     {departmentNameById.get(id) ?? id.slice(0, 8)}
                   </span>
                 ) : (
-                  <span className="text-xs italic text-muted-foreground">—</span>
+                  <span className="text-xs italic text-muted-foreground">
+                    {t('templates:values.departmentNone')}
+                  </span>
                 );
               },
             },
@@ -135,10 +139,12 @@ export const TemplatesPage = () => {
         : []),
       {
         accessorKey: 'requiredEmployees',
-        header: 'required_employees',
+        header: t('templates:table.requiredEmployees'),
         cell: ({ row }) =>
           row.original.requiredEmployees === null ? (
-            <span className="text-secondary">elastic</span>
+            <span className="text-secondary">
+              {t('templates:values.elastic')}
+            </span>
           ) : (
             <span className="text-muted-foreground">
               {row.original.requiredEmployees}
@@ -147,31 +153,39 @@ export const TemplatesPage = () => {
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">{t('templates:table.actions')}</span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
-          const t = row.original;
+          const template = row.original;
           return (
             <div className="flex justify-end gap-1">
               <Button
                 variant="ghost"
                 size="icon"
-                title="Editar"
-                data-testid={`edit-${t.id}`}
-                onClick={() => setEditOf(t)}
+                title={t('templates:rowActions.edit')}
+                data-testid={`edit-${template.id}`}
+                onClick={() => setEditOf(template)}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                title="Eliminar"
-                data-testid={`delete-${t.id}`}
+                title={t('templates:rowActions.delete')}
+                data-testid={`delete-${template.id}`}
                 disabled={deleteMut.isPending}
                 onClick={() => {
-                  if (window.confirm(`¿Eliminar el template "${t.name}"?`)) {
-                    deleteMut.mutate(t.id);
+                  if (
+                    window.confirm(
+                      t('templates:rowActions.deleteConfirm', {
+                        name: template.name,
+                      }),
+                    )
+                  ) {
+                    deleteMut.mutate(template.id);
                   }
                 }}
               >
@@ -183,37 +197,39 @@ export const TemplatesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [skillById, departmentNameById, showDeptColumn, deleteMut],
+    [t, dayLabel, skillById, departmentNameById, showDeptColumn, deleteMut],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Shift Templates</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('templates:page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {templates.isLoading
-              ? 'Cargando…'
-              : `${rows.length} template${rows.length === 1 ? '' : 's'}`}
+              ? t('templates:page.summaryLoading')
+              : t('templates:page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="new-template-btn">
-          <Plus className="h-4 w-4" /> Nuevo
+          <Plus className="h-4 w-4" /> {t('templates:page.newButton')}
         </Button>
       </header>
 
       <DataTable
         data={rows}
         columns={columns}
-        getRowId={(t) => t.id}
+        getRowId={(template) => template.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar template o skill…"
+        searchPlaceholder={t('templates:page.searchPlaceholder')}
         isLoading={templates.isLoading}
         errorMessage={
-          templates.isError ? 'Error cargando templates.' : undefined
+          templates.isError ? t('templates:page.loadError') : undefined
         }
-        emptyMessage="No hay templates todavía."
+        emptyMessage={t('templates:page.empty')}
       />
 
       <TemplateFormDialog

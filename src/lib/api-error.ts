@@ -23,25 +23,25 @@ export function describeApiError(err: unknown): string {
     const data = (err.response?.data ?? {}) as BackendErrorBody;
 
     if (data.errorCode) {
-      const key = `errors.${data.errorCode}`;
+      const key = `errors:${data.errorCode}`;
       const params = {
         field: data.field ?? '',
         constraint: data.constraint ?? '',
       };
       const translated = i18n.t(key, params);
       // i18next devuelve la key tal cual cuando no hay traducción.
-      if (translated !== key) return translated;
+      if (translated !== key && translated !== data.errorCode) return translated;
     }
 
     if (Array.isArray(data.message)) return data.message.join(' · ');
     if (data.message) return data.message;
 
     if (err.response?.status) {
-      return i18n.t('errors.GENERIC_HTTP', { status: err.response.status });
+      return i18n.t('errors:GENERIC_HTTP', { status: err.response.status });
     }
   }
 
   if (err instanceof Error && err.message) return err.message;
 
-  return i18n.t('errors.UNKNOWN');
+  return i18n.t('errors:UNKNOWN');
 }

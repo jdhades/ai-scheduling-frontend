@@ -1,0 +1,65 @@
+{
+  "templatesPanel": {
+    "title": "Plantillas de turno",
+    "subtitle": "Define una vez, genera semanas en 1 clic",
+    "openCreate": "+ Nueva plantilla",
+    "closeCreate": "✕ Cerrar",
+    "loading": "Cargando plantillas…",
+    "empty": "No hay plantillas aún. Crea una para empezar.",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "ej. Apertura cocina",
+      "day": "Día",
+      "start": "Inicio",
+      "end": "Fin",
+      "demand": "Demanda (1–5)"
+    },
+    "actions": {
+      "submit": "💾 Guardar plantilla",
+      "submitting": "Guardando…",
+      "cancel": "Cancelar",
+      "delete": "Eliminar plantilla"
+    },
+    "values": {
+      "allDays": "Todos"
+    }
+  },
+  "schedulePage": {
+    "title": "Horario semanal",
+    "subtitle": "Vista interactiva del horario del tenant. Cambiar la semana o el departamento refresca la grilla.",
+    "weekLabel": "Semana (lunes)",
+    "departmentLabel": "Departamento",
+    "departmentAll": "Todos"
+  },
+  "generatePage": {
+    "title": "Generar horario",
+    "subtitle": "Dispara la generación LLM-autoritativa para una semana puntual. Si elegís departamento o turno, solo se regeneran sus asignaciones — el resto de la semana queda intacto.",
+    "weekLabel": "Semana (lunes)",
+    "weekHint": "El backend resuelve cualquier fecha al lunes de su semana ISO.",
+    "branchLabel": "Sucursal",
+    "branchPick": "Elegí…",
+    "departmentLabel": "Departamento",
+    "departmentPick": "Elegí…",
+    "templateLabel": "Turno (opcional)",
+    "templateAll": "Todos los turnos",
+    "templateHint": "Dejá \"Todos\" para regenerar el departamento entero.",
+    "generate": "Generar",
+    "generating": "Generando…",
+    "errorPrefix": "Error: {{message}}",
+    "result": {
+      "completed": "Generación completada para la semana del {{weekStart}}.",
+      "stats": {
+        "assignments": "Asignaciones",
+        "underfilled": "Underfilled",
+        "llmAccepted": "LLM aceptado"
+      },
+      "llmCostTitle": "Costo LLM",
+      "llmCalls_one": "{{count}} call",
+      "llmCalls_other": "{{count}} calls",
+      "llmPrompt": "prompt {{tokens}}",
+      "llmCompletion": "completion {{tokens}}",
+      "llmTotal": "total {{tokens}}",
+      "warningsTitle": "Warnings"
+    }
+  }
+}

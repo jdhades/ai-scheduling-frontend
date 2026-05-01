@@ -1,0 +1,117 @@
+{
+  "page": {
+    "title": "Reglas semánticas",
+    "summaryLoading": "Cargando…",
+    "summaryCount_one": "{{count}} regla",
+    "summaryCount_other": "{{count}} reglas",
+    "newButton": "Nueva",
+    "searchPlaceholder": "Buscar por texto o tipo…",
+    "loadError": "Error cargando reglas.",
+    "empty": "No hay reglas todavía."
+  },
+  "table": {
+    "text": "Texto",
+    "priority": "Prioridad",
+    "ai": "IA",
+    "type": "Tipo",
+    "active": "Activa",
+    "expires": "Vence",
+    "actions": "Acciones"
+  },
+  "priority": {
+    "1": "Legal",
+    "2": "Hard",
+    "3": "Soft"
+  },
+  "ai": {
+    "noStructure": "Sin estructura",
+    "noStructureTooltip": "El LLM no pudo extraer estructura. El scheduler ignora esta regla hasta que se reformule.",
+    "noEmbedding": "Sin embedding",
+    "noEmbeddingTooltip": "No tiene embedding — no es buscable semánticamente. Editá el texto para reintentar.",
+    "ok": "OK",
+    "okTooltip": "Embedding + estructura OK. El scheduler la aplica."
+  },
+  "rowActions": {
+    "editMetadata": "Editar metadata",
+    "editText": "Editar texto (re-procesa con IA)",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar esta regla?"
+  },
+  "yesShort": "sí",
+  "noShort": "no",
+  "create": {
+    "titleNew": "Nueva regla semántica",
+    "titleSuggestions": "Sugerencias de reformulación",
+    "titleResult": "Resultado de la creación",
+    "descriptionNew": "Escribí la regla en lenguaje natural. La IA genera embedding, busca duplicados y extrae estructura para el scheduler.",
+    "descriptionSuggestions": "El sistema no pudo aplicar tu regla tal cual (texto ambiguo o sin sujeto). La IA propuso estas alternativas. Elegí una para crearla, o volvé al texto libre.",
+    "descriptionResult": "La IA procesó la regla. Revisá el resultado antes de cerrar.",
+    "fields": {
+      "text": "Texto",
+      "textPlaceholder": "ej. Pablo no trabaja los lunes",
+      "textCounter": "{{count}} / mín 10",
+      "priority": "Prioridad",
+      "priorityLegal": "1 — Legal",
+      "priorityHard": "2 — Hard",
+      "prioritySoft": "3 — Soft (preferencia)",
+      "type": "Tipo"
+    },
+    "errors": {
+      "minLength": "La regla debe tener al menos 10 caracteres."
+    },
+    "result": {
+      "duplicateTitle": "Regla duplicada — no se creó",
+      "duplicateBody": "La IA detectó una regla ya existente semánticamente equivalente (distancia coseno < 0.12). Si querés modificarla, abrí la existente y editala.",
+      "duplicateExistingId": "ID existente: {{id}}",
+      "saved": "Regla guardada.",
+      "noStructureTitle": "Sin estructura.",
+      "noStructureBody": "El LLM no pudo parsear la regla a un formato aplicable. El scheduler la <strong>ignora</strong> hasta que la reformules con un texto más claro.",
+      "noEmbeddingTitle": "Sin embedding.",
+      "noEmbeddingBody": "La regla no es buscable semánticamente. Editá el texto para reintentar la generación."
+    },
+    "intentLabel": "intent: {{intent}}",
+    "actions": {
+      "submit": "Crear",
+      "submitting": "Guardando…",
+      "cancel": "Cancelar",
+      "back": "Volver al texto libre",
+      "close": "Cerrar"
+    }
+  },
+  "editMetadata": {
+    "title": "Editar metadata",
+    "description": "Cambios baratos: prioridad, activa, vencimiento. NO toca el texto ni regenera embeddings.",
+    "fields": {
+      "priority": "Prioridad",
+      "priorityLegal": "1 — Legal",
+      "priorityHard": "2 — Hard",
+      "prioritySoft": "3 — Soft",
+      "active": "Activa",
+      "expires": "Vence (vacío = sin vencimiento)"
+    },
+    "actions": {
+      "submit": "Guardar",
+      "submitting": "Guardando…",
+      "cancel": "Cancelar"
+    }
+  },
+  "editText": {
+    "title": "Editar texto de la regla",
+    "description": "Operación CARA: el backend regenera el embedding y vuelve a extraer la estructura con IA (≈ 2 llamadas LLM).",
+    "warning": "Este cambio invalida el vector y la estructura actuales. La regla puede dejar de aplicarse a horarios que ya estaban alineados con el texto previo.",
+    "fields": {
+      "text": "Nuevo texto",
+      "confirm": "Entiendo que se va a re-procesar con IA."
+    },
+    "errors": {
+      "minLength": "La regla debe tener al menos 10 caracteres.",
+      "identical": "El texto es idéntico al actual.",
+      "generic": "Error al actualizar texto."
+    },
+    "actions": {
+      "submit": "Reemplazar texto",
+      "submitting": "Re-procesando…",
+      "cancel": "Cancelar"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Users,
@@ -29,77 +30,84 @@ import {
 import { cn } from '../../lib/utils';
 import { useDashboardStore } from '../../store/dashboardStore';
 
-type NavItem = { to: string; label: string; icon: typeof Zap };
-type NavGroup = { label: string; icon: typeof Zap; items: NavItem[] };
+type NavItem = { to: string; labelKey: string; icon: typeof Zap };
+type NavGroup = { id: string; labelKey: string; icon: typeof Zap; items: NavItem[] };
 
 const groups: NavGroup[] = [
   {
-    label: 'General',
+    id: 'general',
+    labelKey: 'nav:groups.general',
     icon: LayoutDashboard,
-    items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ to: '/', labelKey: 'nav:items.dashboard', icon: LayoutDashboard }],
   },
   {
-    label: 'Workforce',
+    id: 'workforce',
+    labelKey: 'nav:groups.workforce',
     icon: Users,
     items: [
-      { to: '/workforce/employees', label: 'Empleados', icon: User },
-      { to: '/workforce/memberships', label: 'Memberships', icon: Link2 },
-      { to: '/workforce/skills', label: 'Skills', icon: Award },
+      { to: '/workforce/employees', labelKey: 'nav:items.employees', icon: User },
+      { to: '/workforce/memberships', labelKey: 'nav:items.memberships', icon: Link2 },
+      { to: '/workforce/skills', labelKey: 'nav:items.skills', icon: Award },
     ],
   },
   {
-    label: 'Scheduling',
+    id: 'scheduling',
+    labelKey: 'nav:groups.scheduling',
     icon: Calendar,
     items: [
-      { to: '/scheduling/templates', label: 'Templates', icon: Layers },
-      { to: '/scheduling/grid', label: 'Horario', icon: Grid3x3 },
-      { to: '/scheduling/generate', label: 'Generar', icon: Wand2 },
+      { to: '/scheduling/templates', labelKey: 'nav:items.templates', icon: Layers },
+      { to: '/scheduling/grid', labelKey: 'nav:items.schedule', icon: Grid3x3 },
+      { to: '/scheduling/generate', labelKey: 'nav:items.generate', icon: Wand2 },
     ],
   },
   {
-    label: 'Rules',
+    id: 'policies',
+    labelKey: 'nav:groups.policies',
     icon: ScrollText,
     items: [
-      { to: '/rules', label: 'Reglas semánticas', icon: ScrollText },
-      { to: '/policies', label: 'Políticas', icon: Shield },
+      { to: '/rules', labelKey: 'nav:items.rules', icon: ScrollText },
+      { to: '/policies', labelKey: 'nav:items.policies', icon: Shield },
     ],
   },
   {
-    label: 'Approvals',
+    id: 'approvals',
+    labelKey: 'nav:groups.approvals',
     icon: ClipboardCheck,
     items: [
-      { to: '/approvals/incidents', label: 'Incidents', icon: AlertCircle },
-      { to: '/approvals/swaps', label: 'Swap requests', icon: ArrowLeftRight },
-      { to: '/approvals/absences', label: 'Ausencias', icon: UserX },
-      { to: '/approvals/day-offs', label: 'Días libres', icon: CalendarOff },
+      { to: '/approvals/incidents', labelKey: 'nav:items.incidents', icon: AlertCircle },
+      { to: '/approvals/swaps', labelKey: 'nav:items.swaps', icon: ArrowLeftRight },
+      { to: '/approvals/absences', labelKey: 'nav:items.absences', icon: UserX },
+      { to: '/approvals/day-offs', labelKey: 'nav:items.dayOffs', icon: CalendarOff },
     ],
   },
   {
-    label: 'Insights',
+    id: 'insights',
+    labelKey: 'nav:groups.insights',
     icon: BarChart3,
     items: [
-      { to: '/insights/fairness', label: 'Fairness', icon: Scale },
-      { to: '/insights/coverage', label: 'Coverage', icon: Map },
-      { to: '/insights/demand', label: 'Demand', icon: TrendingUp },
+      { to: '/insights/fairness', labelKey: 'nav:items.fairness', icon: Scale },
+      { to: '/insights/coverage', labelKey: 'nav:items.coverage', icon: Map },
+      { to: '/insights/demand', labelKey: 'nav:items.demand', icon: TrendingUp },
     ],
   },
 ];
 
 export const AppSidebar = () => {
+  const { t } = useTranslation();
   const { sidebarCollapsed, toggleSidebar } = useDashboardStore();
   const { pathname } = useLocation();
 
   // Grupo abierto por defecto: el que contiene la ruta activa.
   const initialOpen = groups
     .filter((g) => g.items.some((i) => pathname.startsWith(i.to) && i.to !== '/'))
-    .map((g) => g.label);
+    .map((g) => g.id);
   const [openGroups, setOpenGroups] = useState<string[]>(
-    initialOpen.length > 0 ? initialOpen : ['Workforce'],
+    initialOpen.length > 0 ? initialOpen : ['workforce'],
   );
 
-  const toggleGroup = (label: string) =>
+  const toggleGroup = (id: string) =>
     setOpenGroups((curr) =>
-      curr.includes(label) ? curr.filter((l) => l !== label) : [...curr, label],
+      curr.includes(id) ? curr.filter((l) => l !== id) : [...curr, id],
     );
 
   return (
@@ -111,7 +119,11 @@ export const AppSidebar = () => {
     >
       <button
         onClick={toggleSidebar}
-        aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+        aria-label={
+          sidebarCollapsed
+            ? t('nav:actions.expand')
+            : t('nav:actions.collapse')
+        }
         className="absolute -right-3 top-20 w-6 h-6 bg-surface-highest border border-white/10 rounded-full flex items-center justify-center text-muted-foreground hover:text-white transition-colors z-50 shadow-xl"
       >
         {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -123,9 +135,11 @@ export const AppSidebar = () => {
         </div>
         {!sidebarCollapsed && (
           <div className="leading-tight">
-            <h1 className="text-sm font-bold text-white">AI Scheduling</h1>
+            <h1 className="text-sm font-bold text-white">
+              {t('nav:brand.title')}
+            </h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              Manager
+              {t('nav:brand.subtitle')}
             </p>
           </div>
         )}
@@ -133,11 +147,11 @@ export const AppSidebar = () => {
 
       <nav className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-6">
         {groups.map((g) => {
-          const isOpen = openGroups.includes(g.label);
+          const isOpen = openGroups.includes(g.id);
           // Modo colapsado: mostramos solo iconos (todo aplanado, sin grupos).
           if (sidebarCollapsed) {
             return (
-              <div key={g.label} className="space-y-1 mb-2">
+              <div key={g.id} className="space-y-1 mb-2">
                 {g.items.map((item) => (
                   <NavLink
                     key={item.to}
@@ -151,7 +165,7 @@ export const AppSidebar = () => {
                           : 'text-muted-foreground hover:bg-white/5 hover:text-white',
                       )
                     }
-                    title={item.label}
+                    title={t(item.labelKey)}
                   >
                     <item.icon className="w-4 h-4" />
                   </NavLink>
@@ -160,14 +174,14 @@ export const AppSidebar = () => {
             );
           }
           return (
-            <div key={g.label} className="mb-1">
+            <div key={g.id} className="mb-1">
               <button
-                onClick={() => toggleGroup(g.label)}
+                onClick={() => toggleGroup(g.id)}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-white transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <g.icon className="w-3.5 h-3.5" />
-                  {g.label}
+                  {t(g.labelKey)}
                 </span>
                 <ChevronDown
                   className={cn(
@@ -193,7 +207,7 @@ export const AppSidebar = () => {
                       }
                     >
                       <item.icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{t(item.labelKey)}</span>
                     </NavLink>
                   ))}
                 </div>

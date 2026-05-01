@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -17,8 +18,6 @@ import type {
   ShiftTemplate,
   UpdateShiftTemplatePayload,
 } from '../../api/shift-templates.api';
-
-const DAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export interface TemplateFormValues {
   name: string;
@@ -67,6 +66,7 @@ export const TemplateFormDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const skills = useCompanySkillsQuery();
   const departmentsQ = useDepartmentsQuery();
   const departments = departmentsQ.data ?? [];
@@ -100,7 +100,7 @@ export const TemplateFormDialog = ({
     e.preventDefault();
     setError(null);
     if (!values.name.trim() || !values.startTime || !values.endTime) {
-      setError('Nombre, hora inicio y hora fin son obligatorios.');
+      setError(t('templates:dialog.errors.required'));
       return;
     }
     try {
@@ -109,7 +109,7 @@ export const TemplateFormDialog = ({
         name: values.name.trim(),
       });
     } catch (err) {
-      setError((err as Error).message ?? 'Error al guardar template.');
+      setError((err as Error).message ?? t('templates:dialog.errors.generic'));
     }
   };
 
@@ -117,23 +117,27 @@ export const TemplateFormDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar template' : 'Nuevo template'}</DialogTitle>
+          <DialogTitle>
+            {isEdit
+              ? t('templates:dialog.titleEdit')
+              : t('templates:dialog.titleNew')}
+          </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Modificá los campos del template. La skill puede limpiarse seleccionando "Ninguna".'
-              : 'Define un turno recurrente. Si dejás "required_employees" vacío, el slot es ELASTIC y absorbe sobrante.'}
+              ? t('templates:dialog.descriptionEdit')
+              : t('templates:dialog.descriptionNew')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="t-name">Nombre</Label>
+            <Label htmlFor="t-name">{t('templates:dialog.fields.name')}</Label>
             <Input
               id="t-name"
               value={values.name}
               onChange={(e) =>
                 setValues((v) => ({ ...v, name: e.target.value }))
               }
-              placeholder="ej. Turno Diurno"
+              placeholder={t('templates:dialog.fields.namePlaceholder')}
               data-testid="t-name-input"
               disabled={submitting}
               required
@@ -141,7 +145,7 @@ export const TemplateFormDialog = ({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="t-day">Día (vacío = todos)</Label>
+            <Label htmlFor="t-day">{t('templates:dialog.fields.day')}</Label>
             <select
               id="t-day"
               data-testid="t-day-select"
@@ -156,17 +160,19 @@ export const TemplateFormDialog = ({
               disabled={submitting}
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Todos</option>
-              {DAY_LABELS.map((d, i) => (
+              <option value="">{t('templates:dialog.fields.dayAll')}</option>
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                 <option key={i} value={i}>
-                  {d}
+                  {t(`templates:days.${i}`)}
                 </option>
               ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="t-start">Inicio</Label>
+              <Label htmlFor="t-start">
+                {t('templates:dialog.fields.start')}
+              </Label>
               <Input
                 id="t-start"
                 type="time"
@@ -180,7 +186,9 @@ export const TemplateFormDialog = ({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="t-end">Fin</Label>
+              <Label htmlFor="t-end">
+                {t('templates:dialog.fields.end')}
+              </Label>
               <Input
                 id="t-end"
                 type="time"
@@ -196,8 +204,10 @@ export const TemplateFormDialog = ({
           </div>
           <div className="space-y-1">
             <Label htmlFor="t-required">
-              required_employees{' '}
-              <span className="text-muted-foreground">(vacío = elastic)</span>
+              {t('templates:dialog.fields.requiredEmployees')}{' '}
+              <span className="text-muted-foreground">
+                {t('templates:dialog.fields.requiredEmployeesHint')}
+              </span>
             </Label>
             <Input
               id="t-required"
@@ -218,8 +228,10 @@ export const TemplateFormDialog = ({
           {showDeptSelect && (
             <div className="space-y-1">
               <Label htmlFor="t-department">
-                Departamento{' '}
-                <span className="text-muted-foreground">(opcional)</span>
+                {t('templates:dialog.fields.department')}{' '}
+                <span className="text-muted-foreground">
+                  {t('templates:dialog.fields.departmentOptional')}
+                </span>
               </Label>
               <select
                 id="t-department"
@@ -235,7 +247,9 @@ export const TemplateFormDialog = ({
                 disabled={submitting || departmentsQ.isLoading}
                 className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
               >
-                <option value="">Toda la empresa</option>
+                <option value="">
+                  {t('templates:dialog.fields.departmentAll')}
+                </option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -246,8 +260,10 @@ export const TemplateFormDialog = ({
           )}
           <div className="space-y-1">
             <Label htmlFor="t-skill">
-              Skill requerida{' '}
-              <span className="text-muted-foreground">(opcional)</span>
+              {t('templates:dialog.fields.skill')}{' '}
+              <span className="text-muted-foreground">
+                {t('templates:dialog.fields.skillOptional')}
+              </span>
             </Label>
             <select
               id="t-skill"
@@ -262,7 +278,7 @@ export const TemplateFormDialog = ({
               disabled={submitting || skills.isLoading}
               className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
             >
-              <option value="">Ninguna</option>
+              <option value="">{t('templates:dialog.fields.skillNone')}</option>
               {(skills.data ?? []).map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -282,14 +298,18 @@ export const TemplateFormDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancelar
+              {t('templates:dialog.actions.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={submitting}
               data-testid="t-submit"
             >
-              {submitting ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
+              {submitting
+                ? t('templates:dialog.actions.submitting')
+                : isEdit
+                  ? t('templates:dialog.actions.submitEdit')
+                  : t('templates:dialog.actions.submitCreate')}
             </Button>
           </DialogFooter>
         </form>

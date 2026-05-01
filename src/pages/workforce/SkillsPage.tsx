@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -27,6 +28,7 @@ import {
  * lo bloquea).
  */
 export const SkillsPage = () => {
+  const { t } = useTranslation();
   const skills = useCompanySkillsQuery();
   const createMut = useCreateCompanySkillMutation();
   const deleteMut = useDeleteCompanySkillMutation();
@@ -40,7 +42,7 @@ export const SkillsPage = () => {
     e.preventDefault();
     setError(null);
     if (!name.trim()) {
-      setError('El nombre no puede estar vacío.');
+      setError(t('workforce:skills.dialog.errors.required'));
       return;
     }
     try {
@@ -56,7 +58,7 @@ export const SkillsPage = () => {
     () => [
       {
         accessorKey: 'name',
-        header: 'Nombre',
+        header: t('workforce:skills.table.name'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="font-medium">{row.original.name}</span>
@@ -64,7 +66,9 @@ export const SkillsPage = () => {
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">{t('workforce:skills.table.actions')}</span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -73,11 +77,17 @@ export const SkillsPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              title="Eliminar"
+              title={t('workforce:skills.rowActions.delete')}
               data-testid={`delete-${s.id}`}
               disabled={deleteMut.isPending}
               onClick={() => {
-                if (window.confirm(`¿Eliminar la skill "${s.name}"?`)) {
+                if (
+                  window.confirm(
+                    t('workforce:skills.rowActions.deleteConfirm', {
+                      name: s.name,
+                    }),
+                  )
+                ) {
                   deleteMut.mutate(s.id);
                 }
               }}
@@ -89,22 +99,24 @@ export const SkillsPage = () => {
         meta: { headerClassName: 'w-20', cellClassName: 'text-right' },
       },
     ],
-    [deleteMut],
+    [t, deleteMut],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Catálogo de skills</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('workforce:skills.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {skills.isLoading
-              ? 'Cargando…'
-              : `${rows.length} skill${rows.length === 1 ? '' : 's'}`}
+              ? t('workforce:skills.page.summaryLoading')
+              : t('workforce:skills.page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button onClick={() => setOpen(true)} data-testid="new-skill-btn">
-          <Plus className="h-4 w-4" /> Nueva
+          <Plus className="h-4 w-4" /> {t('workforce:skills.page.newButton')}
         </Button>
       </header>
 
@@ -114,10 +126,12 @@ export const SkillsPage = () => {
         getRowId={(s) => s.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar skill…"
+        searchPlaceholder={t('workforce:skills.page.searchPlaceholder')}
         isLoading={skills.isLoading}
-        errorMessage={skills.isError ? 'Error cargando skills.' : undefined}
-        emptyMessage="No hay skills todavía."
+        errorMessage={
+          skills.isError ? t('workforce:skills.page.loadError') : undefined
+        }
+        emptyMessage={t('workforce:skills.page.empty')}
       />
 
       <Dialog
@@ -132,20 +146,21 @@ export const SkillsPage = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nueva skill</DialogTitle>
+            <DialogTitle>{t('workforce:skills.dialog.title')}</DialogTitle>
             <DialogDescription>
-              Agrega una skill al catálogo del tenant. Si el nombre ya
-              existe en el catálogo global, se reutiliza.
+              {t('workforce:skills.dialog.description')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="skill-name">Nombre</Label>
+              <Label htmlFor="skill-name">
+                {t('workforce:skills.dialog.fields.name')}
+              </Label>
               <Input
                 id="skill-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="ej. barista"
+                placeholder={t('workforce:skills.dialog.fields.namePlaceholder')}
                 data-testid="skill-name-input"
                 disabled={createMut.isPending}
                 required
@@ -163,14 +178,16 @@ export const SkillsPage = () => {
                 onClick={() => setOpen(false)}
                 disabled={createMut.isPending}
               >
-                Cancelar
+                {t('workforce:skills.dialog.actions.cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={createMut.isPending}
                 data-testid="skill-submit"
               >
-                {createMut.isPending ? 'Guardando…' : 'Crear'}
+                {createMut.isPending
+                  ? t('workforce:skills.dialog.actions.submitting')
+                  : t('workforce:skills.dialog.actions.submit')}
               </Button>
             </DialogFooter>
           </form>

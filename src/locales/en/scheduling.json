@@ -1,0 +1,65 @@
+{
+  "templatesPanel": {
+    "title": "Shift templates",
+    "subtitle": "Define once, generate weeks in one click",
+    "openCreate": "+ New template",
+    "closeCreate": "✕ Close",
+    "loading": "Loading templates…",
+    "empty": "No templates yet. Create one to get started.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Kitchen opening",
+      "day": "Day",
+      "start": "Start",
+      "end": "End",
+      "demand": "Demand (1–5)"
+    },
+    "actions": {
+      "submit": "💾 Save template",
+      "submitting": "Saving…",
+      "cancel": "Cancel",
+      "delete": "Delete template"
+    },
+    "values": {
+      "allDays": "All"
+    }
+  },
+  "schedulePage": {
+    "title": "Weekly schedule",
+    "subtitle": "Interactive view of the tenant schedule. Changing the week or department refreshes the grid.",
+    "weekLabel": "Week (Monday)",
+    "departmentLabel": "Department",
+    "departmentAll": "All"
+  },
+  "generatePage": {
+    "title": "Generate schedule",
+    "subtitle": "Triggers an LLM-authoritative generation for a specific week. If you pick a department or shift, only those assignments are regenerated — the rest of the week stays intact.",
+    "weekLabel": "Week (Monday)",
+    "weekHint": "The backend resolves any date to the Monday of its ISO week.",
+    "branchLabel": "Branch",
+    "branchPick": "Pick…",
+    "departmentLabel": "Department",
+    "departmentPick": "Pick…",
+    "templateLabel": "Shift (optional)",
+    "templateAll": "All shifts",
+    "templateHint": "Leave \"All\" to regenerate the whole department.",
+    "generate": "Generate",
+    "generating": "Generating…",
+    "errorPrefix": "Error: {{message}}",
+    "result": {
+      "completed": "Generation completed for the week of {{weekStart}}.",
+      "stats": {
+        "assignments": "Assignments",
+        "underfilled": "Underfilled",
+        "llmAccepted": "LLM accepted"
+      },
+      "llmCostTitle": "LLM cost",
+      "llmCalls_one": "{{count}} call",
+      "llmCalls_other": "{{count}} calls",
+      "llmPrompt": "prompt {{tokens}}",
+      "llmCompletion": "completion {{tokens}}",
+      "llmTotal": "total {{tokens}}",
+      "warningsTitle": "Warnings"
+    }
+  }
+}

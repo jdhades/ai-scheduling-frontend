@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Pencil, FileEdit, AlertTriangle, Sparkles } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -10,7 +11,6 @@ import {
 } from '../../api/semantic-rules.api';
 import type {
   SemanticRuleListItem,
-  RulePriority,
 } from '../../types/semantic-rule';
 import { Button } from '../../components/ui/button';
 import { DataTable } from '../../components/ui/data-table';
@@ -18,12 +18,6 @@ import { Badge } from '../../components/ui/Badge';
 import { CreateRuleDialog } from './CreateRuleDialog';
 import { EditRuleMetadataDialog } from './EditRuleMetadataDialog';
 import { EditRuleTextDialog } from './EditRuleTextDialog';
-
-const PRIORITY_LABEL: Record<RulePriority, string> = {
-  1: 'Legal',
-  2: 'Hard',
-  3: 'Soft',
-};
 
 /**
  * RulesPage — listado de reglas semánticas del tenant.
@@ -34,6 +28,7 @@ const PRIORITY_LABEL: Record<RulePriority, string> = {
  *  - DELETE → soft delete
  */
 export const RulesPage = () => {
+  const { t } = useTranslation();
   const list = useSemanticRulesQuery();
   const createMut = useCreateSemanticRuleMutation();
   const updateMetaMut = useUpdateSemanticRuleMetadataMutation();
@@ -50,7 +45,7 @@ export const RulesPage = () => {
     () => [
       {
         accessorKey: 'ruleText',
-        header: 'Texto',
+        header: t('rules:table.text'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span
@@ -63,15 +58,14 @@ export const RulesPage = () => {
       },
       {
         accessorKey: 'priorityLevel',
-        header: 'Prioridad',
-        // Sort numérico (1/2/3); mostramos label.
+        header: t('rules:table.priority'),
         cell: ({ row }) => (
-          <Badge>{PRIORITY_LABEL[row.original.priorityLevel]}</Badge>
+          <Badge>{t(`rules:priority.${row.original.priorityLevel}`)}</Badge>
         ),
       },
       {
         id: 'ai',
-        header: 'IA',
+        header: t('rules:table.ai'),
         enableSorting: false,
         cell: ({ row }) => {
           const r = row.original;
@@ -79,10 +73,10 @@ export const RulesPage = () => {
             return (
               <span
                 className="inline-flex items-center gap-1 text-error"
-                title="El LLM no pudo extraer estructura. El scheduler ignora esta regla hasta que se reformule."
+                title={t('rules:ai.noStructureTooltip')}
               >
                 <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-xs">Sin estructura</span>
+                <span className="text-xs">{t('rules:ai.noStructure')}</span>
               </span>
             );
           }
@@ -90,27 +84,27 @@ export const RulesPage = () => {
             return (
               <span
                 className="inline-flex items-center gap-1 text-muted-foreground"
-                title="No tiene embedding — no es buscable semánticamente. Editá el texto para reintentar."
+                title={t('rules:ai.noEmbeddingTooltip')}
               >
                 <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-xs">Sin embedding</span>
+                <span className="text-xs">{t('rules:ai.noEmbedding')}</span>
               </span>
             );
           }
           return (
             <span
               className="inline-flex items-center gap-1 text-primary"
-              title="Embedding + estructura OK. El scheduler la aplica."
+              title={t('rules:ai.okTooltip')}
             >
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="text-xs">OK</span>
+              <span className="text-xs">{t('rules:ai.ok')}</span>
             </span>
           );
         },
       },
       {
         accessorKey: 'ruleType',
-        header: 'Tipo',
+        header: t('rules:table.type'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.ruleType}</span>
@@ -118,16 +112,16 @@ export const RulesPage = () => {
       },
       {
         accessorKey: 'isActive',
-        header: 'Activa',
+        header: t('rules:table.active'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
-            {row.original.isActive ? 'sí' : 'no'}
+            {row.original.isActive ? t('rules:yesShort') : t('rules:noShort')}
           </span>
         ),
       },
       {
         accessorKey: 'expiresAt',
-        header: 'Vence',
+        header: t('rules:table.expires'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             {row.original.expiresAt ? row.original.expiresAt.slice(0, 10) : '—'}
@@ -136,7 +130,7 @@ export const RulesPage = () => {
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => <span className="sr-only">{t('rules:table.actions')}</span>,
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -146,7 +140,7 @@ export const RulesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Editar metadata"
+                title={t('rules:rowActions.editMetadata')}
                 data-testid={`edit-meta-${r.id}`}
                 onClick={() => setEditMetaOf(r)}
               >
@@ -155,7 +149,7 @@ export const RulesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Editar texto (re-procesa con IA)"
+                title={t('rules:rowActions.editText')}
                 data-testid={`edit-text-${r.id}`}
                 onClick={() => setEditTextOf(r)}
               >
@@ -164,11 +158,11 @@ export const RulesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Eliminar"
+                title={t('rules:rowActions.delete')}
                 data-testid={`delete-${r.id}`}
                 disabled={deleteMut.isPending}
                 onClick={() => {
-                  if (window.confirm('¿Eliminar esta regla?')) {
+                  if (window.confirm(t('rules:rowActions.deleteConfirm'))) {
                     deleteMut.mutate(r.id);
                   }
                 }}
@@ -181,22 +175,24 @@ export const RulesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [deleteMut],
+    [t, deleteMut],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Reglas semánticas</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('rules:page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {list.isLoading
-              ? 'Cargando…'
-              : `${rows.length} regla${rows.length === 1 ? '' : 's'}`}
+              ? t('rules:page.summaryLoading')
+              : t('rules:page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="new-rule-btn">
-          <Plus className="h-4 w-4" /> Nueva
+          <Plus className="h-4 w-4" /> {t('rules:page.newButton')}
         </Button>
       </header>
 
@@ -206,10 +202,10 @@ export const RulesPage = () => {
         getRowId={(r) => r.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por texto o tipo…"
+        searchPlaceholder={t('rules:page.searchPlaceholder')}
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando reglas.' : undefined}
-        emptyMessage="No hay reglas todavía."
+        errorMessage={list.isError ? t('rules:page.loadError') : undefined}
+        emptyMessage={t('rules:page.empty')}
       />
 
       <CreateRuleDialog

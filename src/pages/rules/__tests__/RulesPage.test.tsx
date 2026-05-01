@@ -67,7 +67,7 @@ describe('RulesPage', () => {
     renderWithProviders(<RulesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay reglas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No rules yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-rule-btn'));
     await user.type(
@@ -173,7 +173,7 @@ describe('RulesPage', () => {
     renderWithProviders(<RulesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay reglas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No rules yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-rule-btn'));
     await user.type(
@@ -205,7 +205,7 @@ describe('RulesPage', () => {
     await waitFor(() =>
       expect(screen.getByText('Texto raro')).toBeInTheDocument(),
     );
-    expect(screen.getByText('Sin estructura')).toBeInTheDocument();
+    expect(screen.getByText('No structure')).toBeInTheDocument();
   });
 
   it('intent=complex con suggestions: el dialog muestra picker y al elegir re-submitea con el texto sugerido', async () => {
@@ -254,7 +254,7 @@ describe('RulesPage', () => {
     renderWithProviders(<RulesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay reglas todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No rules yet.')).toBeInTheDocument(),
     );
     await user.click(screen.getByTestId('new-rule-btn'));
     await user.type(

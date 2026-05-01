@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "AI Scheduler",
+    "scenario": "Scenario 6 Overview",
+    "managerView": "Manager View"
+  },
+  "languageSwitcher": {
+    "toggleTo": "Switch to {{lang}}"
+  },
+  "actions": {
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "saving": "Saving…",
+    "close": "Close",
+    "back": "Back",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "retry": "Retry",
+    "loading": "Loading…",
+    "understood": "Got it",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "states": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "loading": "Loading…",
+    "empty": "No items yet.",
+    "error": "Something went wrong.",
+    "none": "—"
+  },
+  "table": {
+    "rowsPerPage": "Rows per page",
+    "page": "Page {{current}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "noResults": "No results."
+  }
+}

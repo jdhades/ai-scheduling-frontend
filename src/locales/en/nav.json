@@ -1,0 +1,48 @@
+{
+  "brand": {
+    "title": "AI Scheduling",
+    "subtitle": "Manager"
+  },
+  "groups": {
+    "general": "General",
+    "workforce": "Workforce",
+    "scheduling": "Scheduling",
+    "policies": "Rules",
+    "approvals": "Approvals",
+    "insights": "Insights"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "employees": "Employees",
+    "memberships": "Memberships",
+    "skills": "Skills",
+    "templates": "Templates",
+    "schedule": "Schedule",
+    "generate": "Generate",
+    "rules": "Semantic rules",
+    "policies": "Policies",
+    "incidents": "Incidents",
+    "swaps": "Swap requests",
+    "absences": "Absences",
+    "dayOffs": "Day offs",
+    "fairness": "Fairness",
+    "coverage": "Coverage",
+    "demand": "Demand"
+  },
+  "actions": {
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar"
+  },
+  "header": {
+    "appName": "Orchestrator AI",
+    "searchPlaceholder": "Search system node…",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "settings": "Settings",
+  "logout": "Log out",
+  "dashboard": "Dashboard",
+  "schedule": "Schedule",
+  "staff": "Staff",
+  "incidents": "Incidents"
+}

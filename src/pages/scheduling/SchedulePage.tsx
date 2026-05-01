@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScheduleGrid } from '../../components/schedule/ScheduleGrid';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -22,6 +23,7 @@ const upcomingMondayISO = (): string => {
  * `useScheduleQuery`.
  */
 export const SchedulePage = () => {
+  const { t } = useTranslation();
   const [weekStart, setWeekStart] = useState<string>(upcomingMondayISO());
   const [departmentId, setDepartmentId] = useState<string>('');
 
@@ -34,16 +36,17 @@ export const SchedulePage = () => {
     <div className="space-y-4 h-full">
       <header className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Horario semanal</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('scheduling:schedulePage.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Vista interactiva del horario del tenant. Cambiar la semana o
-            el departamento refresca la grilla.
+            {t('scheduling:schedulePage.subtitle')}
           </p>
         </div>
         <div className="flex gap-3 items-end">
           <div className="space-y-1">
             <Label htmlFor="sched-week" className="text-xs">
-              Semana (lunes)
+              {t('scheduling:schedulePage.weekLabel')}
             </Label>
             <Input
               id="sched-week"
@@ -57,7 +60,7 @@ export const SchedulePage = () => {
           {showDeptSelector && (
             <div className="space-y-1">
               <Label htmlFor="sched-dept" className="text-xs">
-                Departamento
+                {t('scheduling:schedulePage.departmentLabel')}
               </Label>
               <select
                 id="sched-dept"
@@ -66,7 +69,9 @@ export const SchedulePage = () => {
                 data-testid="sched-dept-select"
                 className="flex h-9 w-44 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
               >
-                <option value="">Todos</option>
+                <option value="">
+                  {t('scheduling:schedulePage.departmentAll')}
+                </option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}

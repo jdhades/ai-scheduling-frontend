@@ -54,7 +54,7 @@ describe('EmployeeDetailPage', () => {
       ),
     );
     expect(screen.getByText('manager · +5491155')).toBeInTheDocument();
-    expect(screen.getByText('24 meses de experiencia')).toBeInTheDocument();
+    expect(screen.getByText('24 months of experience')).toBeInTheDocument();
     // El WTP card carga después.
     await waitFor(() =>
       expect(screen.getByTestId('wtp-card')).toBeInTheDocument(),
@@ -72,7 +72,7 @@ describe('EmployeeDetailPage', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('Empleado no encontrado o sin acceso.'),
+        screen.getByText('Employee not found or no access.'),
       ).toBeInTheDocument(),
     );
   });

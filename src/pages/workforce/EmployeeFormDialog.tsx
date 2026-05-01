@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { describeApiError } from '../../lib/api-error';
 import {
   Dialog,
@@ -44,6 +45,7 @@ export const EmployeeFormDialog = ({
   onSubmit,
   submitting,
 }: Props) => {
+  const { t } = useTranslation();
   const isEdit = !!initial;
   const [values, setValues] = useState<EmployeeFormValues>(EMPTY);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export const EmployeeFormDialog = ({
     e.preventDefault();
     setError(null);
     if (!values.name.trim() || !values.phone.trim() || Number.isNaN(values.experienceMonths)) {
-      setError('Nombre, teléfono y experiencia son obligatorios.');
+      setError(t('workforce:employees.dialog.errors.required'));
       return;
     }
     try {
@@ -86,21 +88,27 @@ export const EmployeeFormDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar empleado' : 'Nuevo empleado'}</DialogTitle>
+          <DialogTitle>
+            {isEdit
+              ? t('workforce:employees.dialog.titleEdit')
+              : t('workforce:employees.dialog.titleNew')}
+          </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Cambia los datos visibles. El identificador interno no se modifica.'
-              : 'Crea un empleado en el tenant actual. El identificador interno lo asigna el sistema.'}
+              ? t('workforce:employees.dialog.descriptionEdit')
+              : t('workforce:employees.dialog.descriptionNew')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="employee-name">Nombre</Label>
+            <Label htmlFor="employee-name">
+              {t('workforce:employees.dialog.fields.name')}
+            </Label>
             <Input
               id="employee-name"
               value={values.name}
               onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
-              placeholder="ej. Sofía López"
+              placeholder={t('workforce:employees.dialog.fields.namePlaceholder')}
               data-testid="employee-name-input"
               disabled={submitting}
               maxLength={120}
@@ -108,26 +116,27 @@ export const EmployeeFormDialog = ({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="employee-phone">Teléfono (E.164)</Label>
+            <Label htmlFor="employee-phone">
+              {t('workforce:employees.dialog.fields.phone')}
+            </Label>
             <Input
               id="employee-phone"
               value={values.phone}
               onChange={(e) => setValues((v) => ({ ...v, phone: e.target.value }))}
-              placeholder="+5491123456789"
+              placeholder={t('workforce:employees.dialog.fields.phonePlaceholder')}
               data-testid="employee-phone-input"
               disabled={submitting}
               required
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="employee-exp">Meses de experiencia</Label>
+            <Label htmlFor="employee-exp">
+              {t('workforce:employees.dialog.fields.experience')}
+            </Label>
             <Input
               id="employee-exp"
               type="number"
               min={0}
-              // value=0 → input vacío para evitar el "043" cuando el manager
-              // tipea sobre el placeholder. Al editar un empleado con
-              // experiencia >0, el valor se muestra normalmente.
               value={values.experienceMonths === 0 ? '' : values.experienceMonths}
               onChange={(e) =>
                 setValues((v) => ({
@@ -136,20 +145,23 @@ export const EmployeeFormDialog = ({
                     e.target.value === '' ? 0 : Number.parseInt(e.target.value, 10) || 0,
                 }))
               }
-              placeholder="0"
+              placeholder={t('workforce:employees.dialog.fields.experiencePlaceholder')}
               data-testid="employee-exp-input"
               disabled={submitting}
             />
           </div>
           <div className="space-y-1">
             <Label htmlFor="employee-external-id">
-              ID externo <span className="text-muted-foreground">(opcional · legajo / nómina)</span>
+              {t('workforce:employees.dialog.fields.externalId')}{' '}
+              <span className="text-muted-foreground">
+                {t('workforce:employees.dialog.fields.externalIdHint')}
+              </span>
             </Label>
             <Input
               id="employee-external-id"
               value={values.externalId ?? ''}
               onChange={(e) => setValues((v) => ({ ...v, externalId: e.target.value }))}
-              placeholder="ej. legajo-001"
+              placeholder={t('workforce:employees.dialog.fields.externalIdPlaceholder')}
               data-testid="employee-external-id-input"
               disabled={submitting}
               maxLength={64}
@@ -167,10 +179,14 @@ export const EmployeeFormDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              Cancelar
+              {t('workforce:employees.dialog.actions.cancel')}
             </Button>
             <Button type="submit" disabled={submitting} data-testid="employee-submit">
-              {submitting ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
+              {submitting
+                ? t('workforce:employees.dialog.actions.submitting')
+                : isEdit
+                  ? t('workforce:employees.dialog.actions.submitEdit')
+                  : t('workforce:employees.dialog.actions.submitCreate')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,0 +1,91 @@
+{
+  "page": {
+    "title": "Políticas de la empresa",
+    "summaryLoading": "Cargando…",
+    "summaryCount_one": "{{count}} política",
+    "summaryCount_other": "{{count}} políticas",
+    "newButton": "Nueva",
+    "info": "Las políticas son <strong>tenant-wide</strong> — aplican a todos los empleados (ej. 11h descanso entre turnos). Para excepciones por persona o fecha, usá <strong>Reglas semánticas</strong>. La IA detecta automáticamente patrones conocidos; si no, propone reformulaciones que sí se puedan aplicar.",
+    "searchPlaceholder": "Buscar política…",
+    "loadError": "Error cargando políticas.",
+    "empty": "No hay políticas todavía."
+  },
+  "table": {
+    "policy": "Política",
+    "severity": "Severidad",
+    "scope": "Aplica a",
+    "enforcement": "Aplicación",
+    "params": "Parámetros",
+    "active": "Activa",
+    "actions": "Acciones"
+  },
+  "severity": {
+    "hard": "HARD",
+    "soft": "SOFT"
+  },
+  "scope": {
+    "company": "Toda la empresa",
+    "branch": "Sucursal",
+    "department": "Departamento",
+    "employee": "Empleado"
+  },
+  "enforcement": {
+    "deterministic": "Determinística",
+    "deterministicTooltip": "Interpreter: {{interpreterId}}. El solver la aplica deterministicamente.",
+    "llmRuntime": "LLM-runtime",
+    "llmRuntimeTooltip": "LLM-runtime: el solver invoca al LLM en cada evaluación para chequear esta policy. Enforcement probabilístico (no determinístico).",
+    "llmOnly": "LLM-only",
+    "llmOnlyTooltip": "Sin interpreter — solo se pasa al prompt del LLM como referencia, sin enforcement en runtime."
+  },
+  "rowActions": {
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar la política \"{{text}}…\"?"
+  },
+  "yesShort": "sí",
+  "noShort": "no",
+  "dialog": {
+    "titleNew": "Nueva política",
+    "titleSuggestions": "Sugerencias de reformulación",
+    "titleCreated": "Política creada",
+    "descriptionNew": "Política aplicable a toda la empresa, una sucursal, un departamento o un empleado puntual. Para reglas de caso particular en lenguaje natural, usá Reglas semánticas.",
+    "descriptionSuggestions": "El sistema no encontró un patrón aplicable a tu texto. La IA propuso estas alternativas (cada una verificada). Elegí una para crearla, o cerrá y reformulá libre.",
+    "descriptionCreated": "La política quedó guardada. Te indicamos abajo cómo se va a aplicar al generar horarios.",
+    "fields": {
+      "text": "Texto",
+      "textPlaceholder": "ej. Cada empleado descansa al menos 2 días por semana, sin contar feriados.",
+      "textCounter": "{{count}} / mín 10",
+      "severity": "Severidad",
+      "severityHard": "hard — el solver no puede violarla",
+      "severitySoft": "soft — preferencia, puede ceder",
+      "scopeType": "Aplica a",
+      "scopeCompany": "Toda la empresa",
+      "scopeBranch": "Sucursal",
+      "scopeDepartment": "Departamento",
+      "scopeEmployee": "Empleado",
+      "scopePick": "Elegí…"
+    },
+    "errors": {
+      "minLength": "El texto debe tener al menos 10 caracteres.",
+      "scopeMissingBranch": "Seleccioná la sucursal a la que aplica.",
+      "scopeMissingDepartment": "Seleccioná el departamento al que aplica.",
+      "scopeMissingEmployee": "Seleccioná el empleado al que aplica."
+    },
+    "actions": {
+      "submit": "Crear",
+      "submitting": "Analizando con IA…",
+      "cancel": "Cancelar",
+      "back": "Volver al texto libre",
+      "keepOriginal": "Guardar mi texto original",
+      "keepOriginalTooltip": "Guarda tu redacción tal cual; el sistema la enforza vía LLM en cada generación.",
+      "understood": "Entendido"
+    },
+    "loadingOverlay": "La IA está analizando tu texto…",
+    "createdInfo": {
+      "llmOnly": "Guardada como <strong>LLM-only</strong>. El solver no la aplica deterministicamente; solo la incluye como contexto al LLM al generar el horario. Sin garantía dura.",
+      "llmRuntime": "Aplicación <strong>LLM-runtime</strong>: el solver invoca al LLM en cada evaluación para chequear esta policy. Garantía probabilística — en cada intento del verify-loop el LLM decide si hay violación. Tiene costo extra en tokens.",
+      "deterministic": "Aplicación <strong>determinística</strong> con el interpreter <code>{{interpreterId}}</code>. El solver chequea matemáticamente cada propuesta contra los parámetros extraídos."
+    }
+  }
+}

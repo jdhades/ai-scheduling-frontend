@@ -1,0 +1,169 @@
+{
+  "employees": {
+    "page": {
+      "title": "Empleados",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} empleado",
+      "summaryCount_other": "{{count}} empleados",
+      "newButton": "Nuevo",
+      "searchPlaceholder": "Buscar por nombre, ID o teléfono…",
+      "loadError": "Error cargando empleados.",
+      "empty": "No hay empleados todavía."
+    },
+    "table": {
+      "name": "Nombre",
+      "externalId": "ID externo",
+      "role": "Rol",
+      "department": "Departamento",
+      "phone": "Teléfono",
+      "actions": "Acciones",
+      "departmentNone": "— sin depto",
+      "departmentNoneTooltip": "Empleado sin departamento — NO se incluye en la generación de horarios.",
+      "deleteConfirm": "¿Eliminar a {{name}}? La acción es reversible (soft delete)."
+    },
+    "filters": {
+      "allRoles": "Todos los roles",
+      "allDepartments": "Todos los departamentos",
+      "noDepartment": "— sin depto",
+      "filterByRole": "Filtrar por rol",
+      "filterByDepartment": "Filtrar por departamento"
+    },
+    "rowActions": {
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "dialog": {
+      "titleNew": "Nuevo empleado",
+      "titleEdit": "Editar empleado",
+      "descriptionNew": "Crea un empleado en el tenant actual. El identificador interno lo asigna el sistema.",
+      "descriptionEdit": "Cambia los datos visibles. El identificador interno no se modifica.",
+      "fields": {
+        "name": "Nombre",
+        "namePlaceholder": "ej. Sofía López",
+        "phone": "Teléfono (E.164)",
+        "phonePlaceholder": "+5491123456789",
+        "experience": "Meses de experiencia",
+        "experiencePlaceholder": "0",
+        "externalId": "ID externo",
+        "externalIdHint": "(opcional · legajo / nómina)",
+        "externalIdPlaceholder": "ej. legajo-001"
+      },
+      "errors": {
+        "required": "Nombre, teléfono y experiencia son obligatorios."
+      },
+      "actions": {
+        "submitCreate": "Crear",
+        "submitEdit": "Guardar",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    },
+    "detail": {
+      "back": "Volver",
+      "loading": "Cargando…",
+      "notFound": "Empleado no encontrado o sin acceso.",
+      "experience": "{{count}} meses de experiencia"
+    },
+    "workingTimePolicy": {
+      "loading": "Cargando política de tiempo…",
+      "loadError": "Error cargando política de tiempo.",
+      "title": "Política de tiempo (efectiva)",
+      "subtitle": "Resuelta por jerarquía: empleado → depto → empresa → fallback.",
+      "maxHoursPerDay": "Máx h / día",
+      "maxHoursPerWeek": "Máx h / semana",
+      "source": "Origen: {{level}}",
+      "overridesTitle": "Overrides por nivel",
+      "level": "Nivel",
+      "perDay": "h/día",
+      "perWeek": "h/semana",
+      "levels": {
+        "employee": "Empleado",
+        "department": "Depto",
+        "company": "Empresa",
+        "system-fallback": "Sistema"
+      }
+    }
+  },
+  "memberships": {
+    "page": {
+      "title": "Vínculos",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} vínculo",
+      "summaryCount_other": "{{count}} vínculos",
+      "newButton": "Nuevo",
+      "info": "Un empleado puede pertenecer a varios shift templates al mismo tiempo — define a qué turnos está habilitado. El scheduler decide cada día a cuál asignarlo según cobertura, fairness y conflictos de horario.",
+      "searchPlaceholder": "Buscar por empleado o template…",
+      "loadError": "Error cargando vínculos.",
+      "empty": "No hay vínculos todavía."
+    },
+    "table": {
+      "employee": "Empleado",
+      "template": "Shift Template",
+      "from": "Desde",
+      "until": "Hasta",
+      "untilOpen": "abierto",
+      "actions": "Acciones"
+    },
+    "rowActions": {
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar este vínculo?"
+    },
+    "dialog": {
+      "title": "Nuevo vínculo",
+      "description": "Vincula un empleado a un shift template. Para cambiar luego: eliminar y crear de nuevo (mantiene el histórico limpio).",
+      "fields": {
+        "employee": "Empleado",
+        "employeePick": "Elegí un empleado…",
+        "template": "Template",
+        "templatePick": "Elegí un template…",
+        "from": "Desde",
+        "until": "Hasta (opcional)"
+      },
+      "errors": {
+        "required": "Empleado, template y fecha \"desde\" son obligatorios.",
+        "untilBeforeFrom": "\"Hasta\" debe ser igual o posterior a \"Desde\"."
+      },
+      "actions": {
+        "submit": "Crear",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  },
+  "skills": {
+    "page": {
+      "title": "Catálogo de skills",
+      "summaryLoading": "Cargando…",
+      "summaryCount_one": "{{count}} skill",
+      "summaryCount_other": "{{count}} skills",
+      "newButton": "Nueva",
+      "searchPlaceholder": "Buscar skill…",
+      "loadError": "Error cargando skills.",
+      "empty": "No hay skills todavía."
+    },
+    "table": {
+      "name": "Nombre",
+      "actions": "Acciones"
+    },
+    "rowActions": {
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar la skill \"{{name}}\"?"
+    },
+    "dialog": {
+      "title": "Nueva skill",
+      "description": "Agrega una skill al catálogo del tenant. Si el nombre ya existe en el catálogo global, se reutiliza.",
+      "fields": {
+        "name": "Nombre",
+        "namePlaceholder": "ej. barista"
+      },
+      "errors": {
+        "required": "El nombre no puede estar vacío."
+      },
+      "actions": {
+        "submit": "Crear",
+        "submitting": "Guardando…",
+        "cancel": "Cancelar"
+      }
+    }
+  }
+}

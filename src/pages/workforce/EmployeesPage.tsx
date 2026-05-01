@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -23,6 +24,7 @@ import {
  * vía `ColumnDef`; el resto lo maneja `<DataTable>`.
  */
 export const EmployeesPage = () => {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useEmployeesQuery();
   const createMut = useCreateEmployeeMutation();
   const updateMut = useUpdateEmployeeMutation();
@@ -86,7 +88,7 @@ export const EmployeesPage = () => {
     () => [
       {
         accessorKey: 'name',
-        header: 'Nombre',
+        header: t('workforce:employees.table.name'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <Link
@@ -101,7 +103,7 @@ export const EmployeesPage = () => {
       },
       {
         accessorKey: 'externalId',
-        header: 'ID externo',
+        header: t('workforce:employees.table.externalId'),
         enableGlobalFilter: true,
         cell: ({ row }) => row.original.externalId ?? '—',
         meta: {
@@ -112,14 +114,14 @@ export const EmployeesPage = () => {
       },
       {
         accessorKey: 'role',
-        header: 'Rol',
+        header: t('workforce:employees.table.role'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.role}</span>
         ),
       },
       {
         id: 'department',
-        header: 'Departamento',
+        header: t('workforce:employees.table.department'),
         accessorFn: (e) => e.departmentId ?? '',
         cell: ({ row }) => {
           const id = row.original.departmentId;
@@ -127,9 +129,9 @@ export const EmployeesPage = () => {
             return (
               <span
                 className="text-xs italic text-muted-foreground"
-                title="Empleado sin departamento — NO se incluye en la generación de horarios."
+                title={t('workforce:employees.table.departmentNoneTooltip')}
               >
-                — sin depto
+                {t('workforce:employees.table.departmentNone')}
               </span>
             );
           }
@@ -142,7 +144,7 @@ export const EmployeesPage = () => {
       },
       {
         accessorKey: 'phone',
-        header: 'Teléfono',
+        header: t('workforce:employees.table.phone'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.phone ?? '—'}</span>
@@ -154,7 +156,11 @@ export const EmployeesPage = () => {
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">
+            {t('workforce:employees.table.actions')}
+          </span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -164,7 +170,7 @@ export const EmployeesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Editar"
+                title={t('workforce:employees.rowActions.edit')}
                 data-testid={`edit-${emp.id}`}
                 onClick={() => setEditOf(emp)}
               >
@@ -173,13 +179,15 @@ export const EmployeesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Eliminar"
+                title={t('workforce:employees.rowActions.delete')}
                 data-testid={`delete-${emp.id}`}
                 disabled={deleteMut.isPending}
                 onClick={() => {
                   if (
                     window.confirm(
-                      `¿Eliminar a ${emp.name}? La acción es reversible (soft delete).`,
+                      t('workforce:employees.table.deleteConfirm', {
+                        name: emp.name,
+                      }),
                     )
                   ) {
                     deleteMut.mutate(emp.id);
@@ -194,22 +202,26 @@ export const EmployeesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [deleteMut, departmentNameById],
+    [t, deleteMut, departmentNameById],
   );
 
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Empleados</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t('workforce:employees.page.title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {isLoading
-              ? 'Cargando…'
-              : `${employees.length} empleado${employees.length === 1 ? '' : 's'}`}
+              ? t('workforce:employees.page.summaryLoading')
+              : t('workforce:employees.page.summaryCount', {
+                  count: employees.length,
+                })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="new-employee-btn">
-          <Plus className="h-4 w-4" /> Nuevo
+          <Plus className="h-4 w-4" /> {t('workforce:employees.page.newButton')}
         </Button>
       </header>
 
@@ -219,18 +231,20 @@ export const EmployeesPage = () => {
         getRowId={(e) => e.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar por nombre, ID o teléfono…"
+        searchPlaceholder={t('workforce:employees.page.searchPlaceholder')}
         toolbar={
           <div className="flex flex-wrap gap-2">
             {roleOptions.length > 0 && (
               <select
                 data-testid="role-filter"
-                aria-label="Filtrar por rol"
+                aria-label={t('workforce:employees.filters.filterByRole')}
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="flex h-9 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
               >
-                <option value="">Todos los roles</option>
+                <option value="">
+                  {t('workforce:employees.filters.allRoles')}
+                </option>
                 {roleOptions.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -241,13 +255,17 @@ export const EmployeesPage = () => {
             {showDeptFilter && (
               <select
                 data-testid="department-filter"
-                aria-label="Filtrar por departamento"
+                aria-label={t('workforce:employees.filters.filterByDepartment')}
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 className="flex h-9 rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
               >
-                <option value="">Todos los departamentos</option>
-                <option value="__none__">— sin depto</option>
+                <option value="">
+                  {t('workforce:employees.filters.allDepartments')}
+                </option>
+                <option value="__none__">
+                  {t('workforce:employees.filters.noDepartment')}
+                </option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -258,8 +276,8 @@ export const EmployeesPage = () => {
           </div>
         }
         isLoading={isLoading}
-        errorMessage={isError ? 'Error cargando empleados.' : undefined}
-        emptyMessage="No hay empleados todavía."
+        errorMessage={isError ? t('workforce:employees.page.loadError') : undefined}
+        emptyMessage={t('workforce:employees.page.empty')}
       />
 
       <EmployeeFormDialog

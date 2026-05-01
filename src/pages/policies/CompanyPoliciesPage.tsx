@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Plus, Trash2, Power, AlertTriangle, Sparkles, Info, Bot } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -28,6 +29,7 @@ import { CompanyPolicyFormDialog } from './CompanyPolicyFormDialog';
  * de schedule generation).
  */
 export const CompanyPoliciesPage = () => {
+  const { t } = useTranslation();
   const list = useCompanyPoliciesQuery();
   const createMut = useCreateCompanyPolicyMutation();
   const updateMut = useUpdateCompanyPolicyMutation();
@@ -53,7 +55,7 @@ export const CompanyPoliciesPage = () => {
     () => [
       {
         accessorKey: 'text',
-        header: 'Política',
+        header: t('policies:table.policy'),
         enableGlobalFilter: true,
         cell: ({ row }) => (
           <span
@@ -66,28 +68,29 @@ export const CompanyPoliciesPage = () => {
       },
       {
         accessorKey: 'severity',
-        header: 'Severidad',
+        header: t('policies:table.severity'),
         cell: ({ row }) => (
           <Badge>
-            {row.original.severity === 'hard' ? 'HARD' : 'SOFT'}
+            {row.original.severity === 'hard'
+              ? t('policies:severity.hard')
+              : t('policies:severity.soft')}
           </Badge>
         ),
       },
       {
         id: 'scope',
-        header: 'Aplica a',
+        header: t('policies:table.scope'),
         accessorFn: (p) => `${p.scope.type}:${p.scope.id ?? ''}`,
         cell: ({ row }) => {
           const s = row.original.scope;
           if (s.type === 'company') {
-            return <span className="text-xs text-muted-foreground">Toda la empresa</span>;
+            return (
+              <span className="text-xs text-muted-foreground">
+                {t('policies:scope.company')}
+              </span>
+            );
           }
-          const label =
-            s.type === 'branch'
-              ? 'Sucursal'
-              : s.type === 'department'
-                ? 'Departamento'
-                : 'Empleado';
+          const label = t(`policies:scope.${s.type}`);
           const name = s.id ? (scopeNameById.get(s.id) ?? s.id.slice(0, 8)) : '?';
           return (
             <span className="text-xs">
@@ -99,17 +102,19 @@ export const CompanyPoliciesPage = () => {
       },
       {
         accessorKey: 'hasInterpreter',
-        header: 'Aplicación',
+        header: t('policies:table.enforcement'),
         cell: ({ row }) => {
           const p = row.original;
           if (!p.hasInterpreter) {
             return (
               <span
                 className="inline-flex items-center gap-1 text-muted-foreground"
-                title="Sin interpreter — solo se pasa al prompt del LLM como referencia, sin enforcement runtime."
+                title={t('policies:enforcement.llmOnlyTooltip')}
               >
                 <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-xs">LLM-only</span>
+                <span className="text-xs">
+                  {t('policies:enforcement.llmOnly')}
+                </span>
               </span>
             );
           }
@@ -117,27 +122,33 @@ export const CompanyPoliciesPage = () => {
             return (
               <span
                 className="inline-flex items-center gap-1 text-secondary"
-                title="LLM-runtime: el solver invoca al LLM en cada evaluación para chequear esta policy. Enforcement probabilístico (no determinístico)."
+                title={t('policies:enforcement.llmRuntimeTooltip')}
               >
                 <Bot className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-xs">LLM-runtime</span>
+                <span className="text-xs">
+                  {t('policies:enforcement.llmRuntime')}
+                </span>
               </span>
             );
           }
           return (
             <span
               className="inline-flex items-center gap-1 text-primary"
-              title={`Interpreter: ${p.interpreterId}. El solver la aplica deterministicamente.`}
+              title={t('policies:enforcement.deterministicTooltip', {
+                interpreterId: p.interpreterId,
+              })}
             >
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="text-xs">Determinística</span>
+              <span className="text-xs">
+                {t('policies:enforcement.deterministic')}
+              </span>
             </span>
           );
         },
       },
       {
         id: 'params',
-        header: 'Parámetros',
+        header: t('policies:table.params'),
         enableSorting: false,
         cell: ({ row }) => {
           // Para llm_runtime los "params" son originalText/englishText
@@ -166,16 +177,20 @@ export const CompanyPoliciesPage = () => {
       },
       {
         accessorKey: 'isActive',
-        header: 'Activa',
+        header: t('policies:table.active'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
-            {row.original.isActive ? 'sí' : 'no'}
+            {row.original.isActive
+              ? t('policies:yesShort')
+              : t('policies:noShort')}
           </span>
         ),
       },
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
+        header: () => (
+          <span className="sr-only">{t('policies:table.actions')}</span>
+        ),
         enableSorting: false,
         enableGlobalFilter: false,
         cell: ({ row }) => {
@@ -185,7 +200,11 @@ export const CompanyPoliciesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title={p.isActive ? 'Desactivar' : 'Activar'}
+                title={
+                  p.isActive
+                    ? t('policies:rowActions.deactivate')
+                    : t('policies:rowActions.activate')
+                }
                 data-testid={`toggle-${p.id}`}
                 disabled={updateMut.isPending}
                 onClick={() =>
@@ -200,11 +219,17 @@ export const CompanyPoliciesPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                title="Eliminar"
+                title={t('policies:rowActions.delete')}
                 data-testid={`delete-${p.id}`}
                 disabled={deleteMut.isPending}
                 onClick={() => {
-                  if (window.confirm(`¿Eliminar la política "${p.text.slice(0, 60)}…"?`)) {
+                  if (
+                    window.confirm(
+                      t('policies:rowActions.deleteConfirm', {
+                        text: p.text.slice(0, 60),
+                      }),
+                    )
+                  ) {
                     deleteMut.mutate(p.id);
                   }
                 }}
@@ -217,7 +242,7 @@ export const CompanyPoliciesPage = () => {
         meta: { headerClassName: 'w-32', cellClassName: 'text-right' },
       },
     ],
-    [updateMut, deleteMut, scopeNameById],
+    [t, updateMut, deleteMut, scopeNameById],
   );
 
   return (
@@ -225,16 +250,16 @@ export const CompanyPoliciesPage = () => {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">
-            Políticas de la empresa
+            {t('policies:page.title')}
           </h1>
           <p className="text-sm text-muted-foreground">
             {list.isLoading
-              ? 'Cargando…'
-              : `${rows.length} política${rows.length === 1 ? '' : 's'}`}
+              ? t('policies:page.summaryLoading')
+              : t('policies:page.summaryCount', { count: rows.length })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="new-policy-btn">
-          <Plus className="h-4 w-4" /> Nueva
+          <Plus className="h-4 w-4" /> {t('policies:page.newButton')}
         </Button>
       </header>
 
@@ -244,11 +269,10 @@ export const CompanyPoliciesPage = () => {
           aria-hidden="true"
         />
         <p>
-          Las políticas son <span className="font-medium">tenant-wide</span> —
-          aplican a todos los empleados (ej. 11h descanso entre turnos). Para
-          excepciones por persona o fecha, usá <span className="font-medium">Reglas semánticas</span>.
-          La IA detecta automáticamente patrones conocidos; si no, propone
-          reformulaciones que sí se puedan aplicar.
+          <Trans
+            i18nKey="policies:page.info"
+            components={{ strong: <span className="font-medium" /> }}
+          />
         </p>
       </div>
 
@@ -258,10 +282,10 @@ export const CompanyPoliciesPage = () => {
         getRowId={(p) => p.id}
         pageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
-        searchPlaceholder="Buscar política…"
+        searchPlaceholder={t('policies:page.searchPlaceholder')}
         isLoading={list.isLoading}
-        errorMessage={list.isError ? 'Error cargando políticas.' : undefined}
-        emptyMessage="No hay políticas todavía."
+        errorMessage={list.isError ? t('policies:page.loadError') : undefined}
+        emptyMessage={t('policies:page.empty')}
       />
 
       <CompanyPolicyFormDialog

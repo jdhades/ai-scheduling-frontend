@@ -1,0 +1,14 @@
+{
+  "EMPLOYEE_PHONE_DUPLICATE": "Ya existe un empleado con ese número de teléfono.",
+  "EMPLOYEE_EXTERNAL_ID_DUPLICATE": "Ya existe un empleado con ese ID externo.",
+  "MEMBERSHIP_DUPLICATE": "Ya existe un vínculo para ese empleado, template y fecha de inicio.",
+  "SKILL_DUPLICATE": "Esa skill ya está en el catálogo del tenant.",
+  "POLICY_INTERPRETER_DUPLICATE": "Ya existe una política activa para ese patrón. Editá o desactivá la existente primero.",
+  "UNIQUE_VIOLATION": "Ya existe un registro con esos datos.",
+  "NOT_NULL_VIOLATION": "El campo \"{{field}}\" es obligatorio.",
+  "FOREIGN_KEY_VIOLATION": "La operación referencia un registro que ya no existe.",
+  "CHECK_VIOLATION": "Los datos enviados no cumplen una regla de validación.",
+  "INTERNAL_ERROR": "Ocurrió un error inesperado. Probá de nuevo o contactá al soporte.",
+  "GENERIC_HTTP": "Error del servidor ({{status}}). Probá de nuevo.",
+  "UNKNOWN": "Algo salió mal."
+}

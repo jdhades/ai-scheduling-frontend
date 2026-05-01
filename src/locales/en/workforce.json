@@ -1,0 +1,169 @@
+{
+  "employees": {
+    "page": {
+      "title": "Employees",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} employee",
+      "summaryCount_other": "{{count}} employees",
+      "newButton": "New",
+      "searchPlaceholder": "Search by name, ID or phone…",
+      "loadError": "Failed to load employees.",
+      "empty": "No employees yet."
+    },
+    "table": {
+      "name": "Name",
+      "externalId": "External ID",
+      "role": "Role",
+      "department": "Department",
+      "phone": "Phone",
+      "actions": "Actions",
+      "departmentNone": "— no dept.",
+      "departmentNoneTooltip": "Employee has no department — they are NOT included in schedule generation.",
+      "deleteConfirm": "Delete {{name}}? The action is reversible (soft delete)."
+    },
+    "filters": {
+      "allRoles": "All roles",
+      "allDepartments": "All departments",
+      "noDepartment": "— no dept.",
+      "filterByRole": "Filter by role",
+      "filterByDepartment": "Filter by department"
+    },
+    "rowActions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "titleNew": "New employee",
+      "titleEdit": "Edit employee",
+      "descriptionNew": "Create an employee in the current tenant. The system assigns the internal identifier.",
+      "descriptionEdit": "Change the visible fields. The internal identifier is not modified.",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "e.g. Sofía López",
+        "phone": "Phone (E.164)",
+        "phonePlaceholder": "+15551234567",
+        "experience": "Months of experience",
+        "experiencePlaceholder": "0",
+        "externalId": "External ID",
+        "externalIdHint": "(optional · payroll ID)",
+        "externalIdPlaceholder": "e.g. payroll-001"
+      },
+      "errors": {
+        "required": "Name, phone and experience are required."
+      },
+      "actions": {
+        "submitCreate": "Create",
+        "submitEdit": "Save",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    },
+    "detail": {
+      "back": "Back",
+      "loading": "Loading…",
+      "notFound": "Employee not found or no access.",
+      "experience": "{{count}} months of experience"
+    },
+    "workingTimePolicy": {
+      "loading": "Loading working-time policy…",
+      "loadError": "Error loading working-time policy.",
+      "title": "Working-time policy (effective)",
+      "subtitle": "Resolved by hierarchy: employee → department → company → fallback.",
+      "maxHoursPerDay": "Max h / day",
+      "maxHoursPerWeek": "Max h / week",
+      "source": "Source: {{level}}",
+      "overridesTitle": "Overrides by level",
+      "level": "Level",
+      "perDay": "h/day",
+      "perWeek": "h/week",
+      "levels": {
+        "employee": "Employee",
+        "department": "Department",
+        "company": "Company",
+        "system-fallback": "System"
+      }
+    }
+  },
+  "memberships": {
+    "page": {
+      "title": "Memberships",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} membership",
+      "summaryCount_other": "{{count}} memberships",
+      "newButton": "New",
+      "info": "An employee can belong to several shift templates at once — it defines which shifts they are eligible for. The scheduler decides each day which one to assign based on coverage, fairness and time conflicts.",
+      "searchPlaceholder": "Search by employee or template…",
+      "loadError": "Failed to load memberships.",
+      "empty": "No memberships yet."
+    },
+    "table": {
+      "employee": "Employee",
+      "template": "Shift template",
+      "from": "From",
+      "until": "Until",
+      "untilOpen": "open",
+      "actions": "Actions"
+    },
+    "rowActions": {
+      "delete": "Delete",
+      "deleteConfirm": "Delete this membership?"
+    },
+    "dialog": {
+      "title": "New membership",
+      "description": "Link an employee to a shift template. To change later: delete and create again (keeps history clean).",
+      "fields": {
+        "employee": "Employee",
+        "employeePick": "Pick an employee…",
+        "template": "Template",
+        "templatePick": "Pick a template…",
+        "from": "From",
+        "until": "Until (optional)"
+      },
+      "errors": {
+        "required": "Employee, template and \"From\" date are required.",
+        "untilBeforeFrom": "\"Until\" must be equal to or later than \"From\"."
+      },
+      "actions": {
+        "submit": "Create",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "skills": {
+    "page": {
+      "title": "Skills catalog",
+      "summaryLoading": "Loading…",
+      "summaryCount_one": "{{count}} skill",
+      "summaryCount_other": "{{count}} skills",
+      "newButton": "New",
+      "searchPlaceholder": "Search skill…",
+      "loadError": "Failed to load skills.",
+      "empty": "No skills yet."
+    },
+    "table": {
+      "name": "Name",
+      "actions": "Actions"
+    },
+    "rowActions": {
+      "delete": "Delete",
+      "deleteConfirm": "Delete the skill \"{{name}}\"?"
+    },
+    "dialog": {
+      "title": "New skill",
+      "description": "Add a skill to the tenant catalog. If the name already exists in the global catalog, it is reused.",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "e.g. barista"
+      },
+      "errors": {
+        "required": "Name cannot be empty."
+      },
+      "actions": {
+        "submit": "Create",
+        "submitting": "Saving…",
+        "cancel": "Cancel"
+      }
+    }
+  }
+}

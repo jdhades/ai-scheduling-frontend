@@ -22,7 +22,7 @@ describe('EmployeesPage', () => {
 
     await waitFor(() => expect(screen.getByText('Ana')).toBeInTheDocument());
     expect(screen.getByText('Bruno')).toBeInTheDocument();
-    expect(screen.getByText('2 empleados')).toBeInTheDocument();
+    expect(screen.getByText('2 employees')).toBeInTheDocument();
   });
 
   it('estado vacío cuando no hay empleados', async () => {
@@ -33,7 +33,7 @@ describe('EmployeesPage', () => {
     renderWithProviders(<EmployeesPage />);
 
     await waitFor(() =>
-      expect(screen.getByText('No hay empleados todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No employees yet.')).toBeInTheDocument(),
     );
   });
 
@@ -59,7 +59,7 @@ describe('EmployeesPage', () => {
 
     // Espera estado vacío inicial.
     await waitFor(() =>
-      expect(screen.getByText('No hay empleados todavía.')).toBeInTheDocument(),
+      expect(screen.getByText('No employees yet.')).toBeInTheDocument(),
     );
 
     await user.click(screen.getByTestId('new-employee-btn'));

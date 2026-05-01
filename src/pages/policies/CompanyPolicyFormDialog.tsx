@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { AlertTriangle, Bot, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import {
   Dialog,
@@ -69,6 +70,7 @@ export const CompanyPolicyFormDialog = ({
   departments = [],
   employees = [],
 }: Props) => {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [severity, setSeverity] = useState<PolicySeverity>('hard');
   const [scopeType, setScopeType] = useState<PolicyScopeType>('company');
@@ -85,10 +87,10 @@ export const CompanyPolicyFormDialog = ({
     setStage({ kind: 'form' });
   };
 
-  const targetsForScope = (t: PolicyScopeType): ScopeTarget[] => {
-    if (t === 'branch') return branches;
-    if (t === 'department') return departments;
-    if (t === 'employee') return employees;
+  const targetsForScope = (type: PolicyScopeType): ScopeTarget[] => {
+    if (type === 'branch') return branches;
+    if (type === 'department') return departments;
+    if (type === 'employee') return employees;
     return [];
   };
 
@@ -98,11 +100,17 @@ export const CompanyPolicyFormDialog = ({
   ) => {
     setError(null);
     if (textToSubmit.trim().length < 10) {
-      setError('El texto debe tener al menos 10 caracteres.');
+      setError(t('policies:dialog.errors.minLength'));
       return;
     }
     if (scopeType !== 'company' && !scopeId) {
-      setError(`Seleccioná el ${scopeType === 'branch' ? 'sucursal' : scopeType === 'department' ? 'departamento' : 'empleado'} al que aplica.`);
+      const key =
+        scopeType === 'branch'
+          ? 'policies:dialog.errors.scopeMissingBranch'
+          : scopeType === 'department'
+            ? 'policies:dialog.errors.scopeMissingDepartment'
+            : 'policies:dialog.errors.scopeMissingEmployee';
+      setError(t(key));
       return;
     }
     try {
@@ -139,11 +147,18 @@ export const CompanyPolicyFormDialog = ({
     await submitWithText(suggestion.suggestedText);
   };
 
-  /** "Guardar sin reformular": preserva el texto original del manager. */
+  /** "Save without rephrasing": preserves the manager's original text. */
   const keepOriginal = async () => {
     setStage({ kind: 'form' });
     await submitWithText(text, { skipSuggestions: true });
   };
+
+  const scopeFieldLabel =
+    scopeType === 'branch'
+      ? t('policies:dialog.fields.scopeBranch')
+      : scopeType === 'department'
+        ? t('policies:dialog.fields.scopeDepartment')
+        : t('policies:dialog.fields.scopeEmployee');
 
   return (
     <Dialog
@@ -157,17 +172,17 @@ export const CompanyPolicyFormDialog = ({
         <DialogHeader>
           <DialogTitle>
             {stage.kind === 'suggestions'
-              ? 'Sugerencias de reformulación'
+              ? t('policies:dialog.titleSuggestions')
               : stage.kind === 'created-info'
-                ? 'Política creada'
-                : 'Nueva política'}
+                ? t('policies:dialog.titleCreated')
+                : t('policies:dialog.titleNew')}
           </DialogTitle>
           <DialogDescription>
             {stage.kind === 'suggestions'
-              ? 'El sistema no encontró un patrón aplicable a tu texto. La IA propuso estas alternativas (cada una verificada). Elegí una para crearla, o cerrá y reformulá libre.'
+              ? t('policies:dialog.descriptionSuggestions')
               : stage.kind === 'created-info'
-                ? 'La política quedó guardada. Te indicamos abajo cómo se va a aplicar al generar horarios.'
-                : 'Política aplicable a toda la empresa, una sucursal, un departamento o un empleado puntual. Para reglas de caso particular en lenguaje natural, usá Reglas semánticas.'}
+                ? t('policies:dialog.descriptionCreated')
+                : t('policies:dialog.descriptionNew')}
           </DialogDescription>
         </DialogHeader>
 
@@ -206,16 +221,16 @@ export const CompanyPolicyFormDialog = ({
                 disabled={submitting}
                 data-testid="suggestions-back"
               >
-                Volver al texto libre
+                {t('policies:dialog.actions.back')}
               </Button>
               <Button
                 type="button"
                 onClick={keepOriginal}
                 disabled={submitting}
                 data-testid="suggestions-keep-original"
-                title="Guarda tu redacción tal cual; el sistema la enforza vía LLM en cada generación."
+                title={t('policies:dialog.actions.keepOriginalTooltip')}
               >
-                Guardar mi texto original
+                {t('policies:dialog.actions.keepOriginal')}
               </Button>
             </DialogFooter>
             {submitting && <SubmittingOverlay />}
@@ -227,7 +242,6 @@ export const CompanyPolicyFormDialog = ({
             {(() => {
               const p = stage.policy;
               if (!p.hasInterpreter) {
-                // LLM-only puro: solo viaja al prompt como contexto.
                 return (
                   <div className="rounded-md border border-secondary/40 bg-secondary/10 p-3 text-sm">
                     <div className="flex items-start gap-2">
@@ -236,18 +250,16 @@ export const CompanyPolicyFormDialog = ({
                         aria-hidden="true"
                       />
                       <p className="text-foreground">
-                        Guardada como{' '}
-                        <span className="font-medium">LLM-only</span>. El
-                        solver no la aplica deterministicamente; solo la
-                        incluye como contexto al LLM al generar el horario.
-                        Sin garantía dura.
+                        <Trans
+                          i18nKey="policies:dialog.createdInfo.llmOnly"
+                          components={{ strong: <span className="font-medium" /> }}
+                        />
                       </p>
                     </div>
                   </div>
                 );
               }
               if (p.interpreterId === 'llm_runtime') {
-                // Catch-all: el LLM la evalúa en cada propuesta del solver.
                 return (
                   <div className="rounded-md border border-secondary/40 bg-secondary/10 p-3 text-sm">
                     <div className="flex items-start gap-2">
@@ -256,18 +268,15 @@ export const CompanyPolicyFormDialog = ({
                         aria-hidden="true"
                       />
                       <p className="text-foreground">
-                        Aplicación{' '}
-                        <span className="font-medium">LLM-runtime</span>: el
-                        solver invoca al LLM en cada evaluación para chequear
-                        esta policy. Garantía probabilística — en cada intento
-                        del verify-loop el LLM decide si hay violación. Tiene
-                        costo extra en tokens.
+                        <Trans
+                          i18nKey="policies:dialog.createdInfo.llmRuntime"
+                          components={{ strong: <span className="font-medium" /> }}
+                        />
                       </p>
                     </div>
                   </div>
                 );
               }
-              // Determinística (interpreter estructurado).
               return (
                 <div className="rounded-md border border-primary/40 bg-primary/10 p-3 text-sm">
                   <div className="flex items-start gap-2">
@@ -276,14 +285,14 @@ export const CompanyPolicyFormDialog = ({
                       aria-hidden="true"
                     />
                     <p className="text-foreground">
-                      Aplicación{' '}
-                      <span className="font-medium">determinística</span> con
-                      el interpreter{' '}
-                      <span className="font-mono text-xs">
-                        {p.interpreterId}
-                      </span>
-                      . El solver chequea matemáticamente cada propuesta
-                      contra los parámetros extraídos.
+                      <Trans
+                        i18nKey="policies:dialog.createdInfo.deterministic"
+                        values={{ interpreterId: p.interpreterId }}
+                        components={{
+                          strong: <span className="font-medium" />,
+                          code: <span className="font-mono text-xs" />,
+                        }}
+                      />
                     </p>
                   </div>
                 </div>
@@ -299,7 +308,7 @@ export const CompanyPolicyFormDialog = ({
                 data-testid="created-info-close"
               >
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                Entendido
+                {t('policies:dialog.actions.understood')}
               </Button>
             </DialogFooter>
           </div>
@@ -308,22 +317,26 @@ export const CompanyPolicyFormDialog = ({
         {stage.kind === 'form' && (
           <form onSubmit={handleSubmit} className="relative space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="cp-text">Texto</Label>
+              <Label htmlFor="cp-text">{t('policies:dialog.fields.text')}</Label>
               <Textarea
                 id="cp-text"
                 rows={3}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="ej. Cada empleado descansa al menos 2 días por semana, sin contar feriados."
+                placeholder={t('policies:dialog.fields.textPlaceholder')}
                 data-testid="policy-text-input"
                 disabled={submitting}
               />
               <p className="text-xs text-muted-foreground">
-                {text.trim().length} / mín 10
+                {t('policies:dialog.fields.textCounter', {
+                  count: text.trim().length,
+                })}
               </p>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="cp-severity">Severidad</Label>
+              <Label htmlFor="cp-severity">
+                {t('policies:dialog.fields.severity')}
+              </Label>
               <select
                 id="cp-severity"
                 data-testid="policy-severity-select"
@@ -333,17 +346,19 @@ export const CompanyPolicyFormDialog = ({
                 className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
               >
                 <option value="hard">
-                  hard — el solver no puede violarla
+                  {t('policies:dialog.fields.severityHard')}
                 </option>
                 <option value="soft">
-                  soft — preferencia, puede ceder
+                  {t('policies:dialog.fields.severitySoft')}
                 </option>
               </select>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label htmlFor="cp-scope-type">Aplica a</Label>
+                <Label htmlFor="cp-scope-type">
+                  {t('policies:dialog.fields.scopeType')}
+                </Label>
                 <select
                   id="cp-scope-type"
                   data-testid="policy-scope-type-select"
@@ -355,21 +370,23 @@ export const CompanyPolicyFormDialog = ({
                   disabled={submitting}
                   className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
                 >
-                  <option value="company">Toda la empresa</option>
-                  <option value="branch">Sucursal</option>
-                  <option value="department">Departamento</option>
-                  <option value="employee">Empleado</option>
+                  <option value="company">
+                    {t('policies:dialog.fields.scopeCompany')}
+                  </option>
+                  <option value="branch">
+                    {t('policies:dialog.fields.scopeBranch')}
+                  </option>
+                  <option value="department">
+                    {t('policies:dialog.fields.scopeDepartment')}
+                  </option>
+                  <option value="employee">
+                    {t('policies:dialog.fields.scopeEmployee')}
+                  </option>
                 </select>
               </div>
               {scopeType !== 'company' && (
                 <div className="space-y-1">
-                  <Label htmlFor="cp-scope-id">
-                    {scopeType === 'branch'
-                      ? 'Sucursal'
-                      : scopeType === 'department'
-                        ? 'Departamento'
-                        : 'Empleado'}
-                  </Label>
+                  <Label htmlFor="cp-scope-id">{scopeFieldLabel}</Label>
                   <select
                     id="cp-scope-id"
                     data-testid="policy-scope-id-select"
@@ -378,10 +395,12 @@ export const CompanyPolicyFormDialog = ({
                     disabled={submitting}
                     className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
                   >
-                    <option value="">Elegí…</option>
-                    {targetsForScope(scopeType).map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
+                    <option value="">
+                      {t('policies:dialog.fields.scopePick')}
+                    </option>
+                    {targetsForScope(scopeType).map((target) => (
+                      <option key={target.id} value={target.id}>
+                        {target.name}
                       </option>
                     ))}
                   </select>
@@ -403,7 +422,7 @@ export const CompanyPolicyFormDialog = ({
                 onClick={() => onOpenChange(false)}
                 disabled={submitting}
               >
-                Cancelar
+                {t('policies:dialog.actions.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -416,10 +435,10 @@ export const CompanyPolicyFormDialog = ({
                       className="mr-2 h-4 w-4 animate-spin"
                       aria-hidden="true"
                     />
-                    Analizando con IA…
+                    {t('policies:dialog.actions.submitting')}
                   </>
                 ) : (
-                  'Crear'
+                  t('policies:dialog.actions.submit')
                 )}
               </Button>
             </DialogFooter>
@@ -437,19 +456,22 @@ export const CompanyPolicyFormDialog = ({
  * En el peor caso son varios LLM-calls — sin feedback visual el manager
  * cree que la app se colgó.
  */
-const SubmittingOverlay = () => (
-  <div
-    className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm"
-    data-testid="policy-submitting-overlay"
-    role="status"
-    aria-live="polite"
-  >
-    <div className="flex items-center gap-2 text-sm text-foreground">
-      <Loader2
-        className="h-4 w-4 animate-spin text-primary"
-        aria-hidden="true"
-      />
-      <span>La IA está analizando tu texto…</span>
+const SubmittingOverlay = () => {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm"
+      data-testid="policy-submitting-overlay"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-center gap-2 text-sm text-foreground">
+        <Loader2
+          className="h-4 w-4 animate-spin text-primary"
+          aria-hidden="true"
+        />
+        <span>{t('policies:dialog.loadingOverlay')}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
