@@ -1,152 +1,157 @@
 # AI Scheduling — Frontend
 
-Manager-facing SPA del producto **AI Scheduling Orchestrator**: panel para gestionar empleados, turnos, políticas, reglas semánticas, ausencias e incidencias, y generar/aprobar schedules con asistencia de IA.
+Manager-facing SPA for the **AI Scheduling Orchestrator** product: a panel to manage employees, shifts, policies, semantic rules, absences and incidents, and to generate / approve schedules with AI assistance.
 
 > **Stack:** Vite 7 · React 19 · TypeScript 5.9 · TailwindCSS 4 · Shadcn UI · TanStack Query · TanStack Table · i18next (EN/ES) · Recharts · React Router 7
 
-> **NOT Next.js**. Es una SPA pura servida por Vite. Si abrís este repo desde otro asistente y leés "Next.js" en algún lado, está stale.
+> **NOT Next.js**. It is a pure SPA served by Vite. If you open this repo from another assistant and read "Next.js" anywhere, that's stale.
 
 ---
 
-## ¿Qué resuelve?
+## What it solves
 
-El backend (`ai-scheduling-orchestrator`, NestJS + Supabase + Twilio + LLM provider configurable) implementa el dominio: empleados, templates de turno, motor de scheduling con LLM autoritario + verify-loop, reglas semánticas con pgvector, políticas de empresa con interpreter accelerators, incidencias con OCR, swap de turnos vía WhatsApp.
+The backend (`ai-scheduling-orchestrator`, NestJS + Supabase + Twilio + a configurable LLM provider) implements the domain: employees, shift templates, an LLM-authoritative scheduling engine with verify-loop, semantic rules with pgvector, company policies with interpreter accelerators, OCR-powered incident reports, and shift swaps over WhatsApp.
 
-Este frontend es la cara visible para managers:
+This frontend is the manager-facing surface:
 
-- **Workforce** — empleados (con working-time policy individual), skills, memberships, asignación de skill a templates.
-- **Scheduling** — templates, generación de schedules, vista de fairness, aprobación.
-- **Rules** — reglas semánticas en lenguaje natural (RAG por turno).
-- **Policies** — políticas de empresa con severity (`hard`/`soft`); soporta el flujo *suggestion-loop* cuando el sistema no puede estructurar el texto.
-- **Operations** — absences, incidents, swaps, day-offs (todos con `<DataTable>` + filtros + paginación).
-- **Insights** — placeholders para heatmaps de cobertura/demanda.
+- **Workforce** — employees (with per-person working-time policy), skills, memberships, skill assignment to templates.
+- **Scheduling** — templates, schedule generation, fairness view, approval.
+- **Rules** — semantic rules in natural language (per-shift RAG).
+- **Policies** — company policies with severity (`hard`/`soft`); supports the *suggestion-loop* flow when the system can't structure the text.
+- **Operations** — absences, incidents, swaps, day-offs (all rendered with `<DataTable>` + filters + pagination).
+- **Insights** — placeholders for coverage / demand heatmaps.
 
 ---
 
-## Cómo correr local
+## Run locally
 
 ```bash
 npm install
 npm run dev          # Vite dev server (HMR)
 npm run build        # tsc -b && vite build
-npm run preview      # preview de build
+npm run preview      # preview the build
 npm run lint         # eslint
 ```
 
-El dev server por defecto usa el puerto de Vite (5173). El backend espera `X-Company-Id` por header (deuda HIGH conocida — ver `ai-scheduling-orchestrator/.agents/SECURITY-ARCHITECTURE.md`).
+The dev server defaults to Vite's port (5173). The backend expects an `X-Company-Id` header (a known HIGH-priority debt — see `ai-scheduling-orchestrator/.agents/SECURITY-ARCHITECTURE.md`).
 
-### Variables relevantes
+### Relevant variables
 
-Crear `.env.local` (ignorado por git) en la raíz:
+Create `.env.local` (gitignored) at the root:
 
 ```
 VITE_API_BASE_URL=http://localhost:3000
-VITE_DEFAULT_COMPANY_ID=<uuid-de-tu-tenant-de-dev>
+VITE_DEFAULT_COMPANY_ID=<your-dev-tenant-uuid>
 ```
 
-`.env.example` (en el repo) tiene la lista completa con valores vacíos.
+`.env.example` (in the repo) lists every variable with empty values.
 
 ---
 
-## Convenciones del proyecto
+## Project conventions
 
-### Tablas y listados
-**Estándar único: `<DataTable>` (TanStack Table).** Search, sortable headers, filtros (rol/estado), paginación con page-size selector (5/10/15/20, default 10). Aplicado a Skills, Memberships, Rules, Templates, Fairness, Absences, Incidents, Swaps, DayOffs, Employees.
+### Tables and lists
+**Single standard: `<DataTable>` (TanStack Table).** Search, sortable headers, filters (role / state), pagination with a page-size selector (5/10/15/20, default 10). Applied to Skills, Memberships, Rules, Templates, Fairness, Absences, Incidents, Swaps, Day-offs, Employees.
 
-Excepción documentada: la **grilla de horarios** (no es una lista, es un grid 2D de slots).
+Documented exception: the **schedule grid** (it isn't a list — it's a 2D grid of slots).
 
-### Diseño
-Antes de tocar UI: leer [docs/design-system.md](docs/design-system.md) — tokens, layout, estados obligatorios (loading/empty/error), touch targets, accesibilidad, anti-patterns.
+### Design
+Before touching UI: read [docs/design-system.md](docs/design-system.md) — tokens, layout, mandatory states (loading / empty / error), touch targets, accessibility, anti-patterns.
 
-Antes de declarar una tarea de UI terminada: correr [/preflight-ui](.claude/commands/preflight-ui.md). Si el checklist tiene TODOs, la tarea no está cerrada.
+Before declaring a UI task done: run [/preflight-ui](.claude/commands/preflight-ui.md). If the checklist still has TODOs, the task isn't closed.
 
-Si una regla del design-system se queda corta para un caso real, actualizar el doc en el mismo PR. Sin improvisación silenciosa.
+If a design-system rule falls short for a real case, update the doc in the same PR. No silent improvisation.
 
-### Mensajes de error
-Nunca mostrar texto crudo de Postgres ni `Internal Server Error`. El backend devuelve `errorCode` estable (vía `PostgresExceptionFilter`); el frontend lo resuelve con `describeApiError(...)` y i18n (EN/ES).
+### Error messages
+Never display raw Postgres text or `Internal Server Error`. The backend returns a stable `errorCode` (via `PostgresExceptionFilter`); the frontend resolves it through `describeApiError(...)` and i18n (EN/ES).
 
-Códigos soportados hoy: `unique_violation`, `foreign_key_violation`, `not_null_violation`, `invalid_input`, `value_too_long`. Agregar uno nuevo es cambio coordinado: backend mappea + frontend agrega traducción.
+Codes supported today: `unique_violation`, `foreign_key_violation`, `not_null_violation`, `invalid_input`, `value_too_long`. Adding a new one is a coordinated change: backend maps it + frontend adds the translation.
 
 ### i18n
-EN + ES via `i18next` + `react-i18next`. `<LanguageSwitcher>` en el header global. Las claves son flat y topic-scoped (`errors.unique_violation`, `policies.severity.hard`, …).
+EN + ES via `i18next` + `react-i18next`. `<LanguageSwitcher>` lives in the global header.
+
+- **Default language is English.** The detector intentionally OMITS `navigator`, so the app does not flip to Spanish just because the browser locale happens to be `es-AR`. Users land on EN and stay there until they toggle, which persists their choice in localStorage.
+- **Per-namespace JSON.** Resources live in [`src/locales/{en,es}/<namespace>.json`](src/locales). Namespaces in use: `common`, `errors`, `nav`, `legacy`, `policies`, `templates`, `workforce`, `scheduling`, `rules`, `dashboard`.
+- **Key syntax:** `t('namespace:path.to.key')`. Use `<Trans i18nKey="…">` for inline markup.
 
 ### State management
 - **Server state**: TanStack Query (lists, mutations, invalidation).
-- **Client state**: estado de componente o, si cruza rutas, Zustand. No usar Zustand "por las dudas".
-- **WebSockets** (planeado): bridge directo a la cache de TanStack Query para `ScheduleGenerated`, `IncidentCreated`, etc.
+- **Client state**: component state, or Zustand if it crosses routes. Don't reach for Zustand "just in case".
+- **WebSockets** (planned): a direct bridge into the TanStack Query cache for `ScheduleGenerated`, `IncidentCreated`, etc.
 
-### No hardcodear (regla del proyecto)
-No introducir keywords, magic numbers, patterns de texto específicos del dominio o data del negocio sin aprobación explícita. Si no hay alternativa viable, marcar el lugar con:
+### No hardcoding (project rule)
+Don't introduce keywords, magic numbers, domain-specific text patterns or business data without explicit approval. If there's no viable alternative, mark the spot with:
 
 ```ts
-// TODO(hardcode): <qué se hardcodea> — <por qué> — <cómo sacarlo después>
+// TODO(hardcode): <what is hardcoded> — <why> — <how to remove it later>
 ```
 
-Buscables con `grep -r "TODO(hardcode)"`.
+Greppable with `grep -r "TODO(hardcode)"`.
 
 ---
 
-## Estructura
+## Layout
 
 ```
 src/
-  api/           — clientes axios + tipos compartidos con backend
-  components/    — shadcn primitives + componentes reusables (DataTable, LanguageSwitcher, …)
+  api/           — axios clients + types shared with the backend
+  components/    — shadcn primitives + reusable components (DataTable, LanguageSwitcher, …)
   layout/        — chrome (sidebar, header)
-  layouts/       — layouts por sección
-  lib/           — utilidades (describeApiError, formatters, …)
+  layouts/       — section layouts
+  lib/           — utilities (describeApiError, formatters, …)
+  locales/       — i18n resources, per-namespace JSON files (en/, es/)
   pages/
-    approvals/   — aprobar schedules
+    approvals/   — schedule approvals
     insights/    — heatmaps (placeholders)
     policies/    — CompanyPoliciesPage + CompanyPolicyFormDialog
-    rules/       — reglas semánticas (CRUD)
-    scheduling/  — templates, generación, vista de schedule
-    workforce/   — empleados, skills, memberships, working-time policy
+    rules/       — semantic rules (CRUD)
+    scheduling/  — templates, generation, schedule view
+    workforce/   — employees, skills, memberships, working-time policy
   store/         — Zustand
-  test/          — setup de testing-library + msw
-  types/         — tipos compartidos
+  test/          — testing-library + msw setup
+  types/         — shared types
   router.tsx     — React Router 7
   main.tsx       — entry
 ```
 
 ---
 
-## Contexto cruzado (leer también)
+## Cross-repo context (also worth reading)
 
-Si vas a tocar features que tienen contraparte en backend, leé los docs del orchestrator:
+If you're touching features that have a backend counterpart, read the orchestrator docs:
 
-- `ai-scheduling-orchestrator/.agents/SYSTEM-MAP.md` — mapa global (frontend + backend).
-- `ai-scheduling-orchestrator/.agents/EVENT-FLOWS.md` — FLOW 6 (creación web de policies con suggestion-loop), FLOW 7/8 (creación vía WhatsApp).
-- `ai-scheduling-orchestrator/.agents/COMPANY-POLICIES.md` — subsistema open + interpreter accelerators (multi-tenant, NO closed enum).
-- `ai-scheduling-orchestrator/.agents/SECURITY-ARCHITECTURE.md` — DEV_AUTH_BYPASS, CORS, ValidationPipe, error mapping, deuda abierta.
+- `ai-scheduling-orchestrator/.agents/SYSTEM-MAP.md` — global map (frontend + backend).
+- `ai-scheduling-orchestrator/.agents/EVENT-FLOWS.md` — FLOW 6 (web policy creation with suggestion-loop), FLOW 7/8 (creation via WhatsApp).
+- `ai-scheduling-orchestrator/.agents/COMPANY-POLICIES.md` — open + interpreter-accelerators subsystem (multi-tenant, NOT a closed enum).
+- `ai-scheduling-orchestrator/.agents/SECURITY-ARCHITECTURE.md` — DEV_AUTH_BYPASS, CORS, ValidationPipe, error mapping, open debt.
 
 ---
 
 ## Testing
 
-- Vitest + Testing Library + MSW para mocks de API.
-- `npm run test` (cuando esté en `package.json` — actualmente se corre vía `vitest` directamente).
-- Cada pantalla con DataTable tiene specs de búsqueda, sort, filtro y paginación.
+- Vitest + Testing Library + MSW for API mocks.
+- `npm run test` (when wired up in `package.json` — currently invoked directly via `vitest`).
+- Each DataTable-backed screen has specs for search, sort, filter and pagination.
 
 ---
 
-## Deuda conocida (no tocar sin coordinar)
+## Known debt (do not touch without coordinating)
 
-- **`X-Company-Id` por header** sin JWT — alineado con `DEV_AUTH_BYPASS` del backend. Migrar a JWT es un ítem propio, no se mezcla con feature work.
-- **Heatmaps** todavía son placeholders en `insights/`.
-- **WebSockets** aún no conectados; las listas se invalidan vía polling/mutation.
+- **`X-Company-Id` via header** without JWT — aligned with the backend's `DEV_AUTH_BYPASS`. Migrating to JWT is its own item; it doesn't ride along with feature work.
+- **Heatmaps** are still placeholders under `insights/`.
+- **WebSockets** are not connected yet; lists invalidate via polling/mutation.
 
 ---
 
-## Comandos útiles
+## Useful commands
 
 ```bash
-# levantar dev server
+# start the dev server
 npm run dev
 
-# correr preflight de UI antes de cerrar una tarea
-# (definido en .claude/commands/preflight-ui.md)
+# run the UI preflight before closing a task
+# (defined in .claude/commands/preflight-ui.md)
 
-# typechecking sin emit
+# typecheck without emit
 npx tsc -b --noEmit
 ```
