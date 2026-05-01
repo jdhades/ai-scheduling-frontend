@@ -36,6 +36,7 @@ export interface CreateShiftTemplatePayload {
   demandScore?: number;
   undesirableWeight?: number;
   requiredEmployees?: number | null;
+  departmentId?: string | null;
 }
 
 export interface UpdateShiftTemplatePayload {
@@ -48,6 +49,7 @@ export interface UpdateShiftTemplatePayload {
   undesirableWeight?: number;
   isActive?: boolean;
   requiredEmployees?: number | null;
+  departmentId?: string | null;
 }
 
 const KEYS = {

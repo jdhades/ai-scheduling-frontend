@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { useCompanySkillsQuery } from '../../api/company-skills.api';
+import { useDepartmentsQuery } from '../../api/scope-targets.api';
 import type {
   CreateShiftTemplatePayload,
   ShiftTemplate,
@@ -26,6 +27,7 @@ export interface TemplateFormValues {
   endTime: string;
   requiredEmployees: number | null;
   requiredSkillId: string | null;
+  departmentId: string | null;
 }
 
 const EMPTY: TemplateFormValues = {
@@ -35,6 +37,7 @@ const EMPTY: TemplateFormValues = {
   endTime: '16:00',
   requiredEmployees: null,
   requiredSkillId: null,
+  departmentId: null,
 };
 
 interface Props {
@@ -65,6 +68,12 @@ export const TemplateFormDialog = ({
   submitting,
 }: Props) => {
   const skills = useCompanySkillsQuery();
+  const departmentsQ = useDepartmentsQuery();
+  const departments = departmentsQ.data ?? [];
+  // Smart-skip: si la empresa tiene 0 ó 1 departamentos, ocultamos el
+  // selector — un solo departamento implica que todos los templates
+  // pertenecen a él, y 0 implica modelo legacy sin estructura.
+  const showDeptSelect = departments.length > 1;
   const isEdit = !!initial;
   const [values, setValues] = useState<TemplateFormValues>(EMPTY);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +89,7 @@ export const TemplateFormDialog = ({
             endTime: fmtHHMM(initial.endTime),
             requiredEmployees: initial.requiredEmployees,
             requiredSkillId: initial.requiredSkillId,
+            departmentId: initial.departmentId ?? null,
           }
         : EMPTY,
     );
@@ -205,6 +215,35 @@ export const TemplateFormDialog = ({
               disabled={submitting}
             />
           </div>
+          {showDeptSelect && (
+            <div className="space-y-1">
+              <Label htmlFor="t-department">
+                Departamento{' '}
+                <span className="text-muted-foreground">(opcional)</span>
+              </Label>
+              <select
+                id="t-department"
+                data-testid="t-department-select"
+                value={values.departmentId ?? ''}
+                onChange={(e) =>
+                  setValues((v) => ({
+                    ...v,
+                    departmentId:
+                      e.target.value === '' ? null : e.target.value,
+                  }))
+                }
+                disabled={submitting || departmentsQ.isLoading}
+                className="flex h-9 w-full rounded-md border border-white/10 bg-surface-low px-3 py-1 text-sm text-foreground"
+              >
+                <option value="">Toda la empresa</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-1">
             <Label htmlFor="t-skill">
               Skill requerida{' '}
@@ -269,6 +308,7 @@ export const toCreatePayload = (
   endTime: v.endTime,
   requiredEmployees: v.requiredEmployees,
   requiredSkillId: v.requiredSkillId,
+  departmentId: v.departmentId,
 });
 
 /** Helper de mapeo: TemplateFormValues → UpdateShiftTemplatePayload. */
@@ -281,4 +321,5 @@ export const toUpdatePayload = (
   endTime: v.endTime,
   requiredEmployees: v.requiredEmployees,
   requiredSkillId: v.requiredSkillId,
+  departmentId: v.departmentId,
 });
