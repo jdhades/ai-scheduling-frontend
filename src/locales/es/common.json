@@ -60,5 +60,11 @@
     "multi_one": "{{count}} generación de horario en curso",
     "multi_other": "{{count}} generaciones de horario en curso",
     "viewLink": "Ver →"
+  },
+  "scheduleToast": {
+    "successTitle": "Horario generado",
+    "successBody": "La semana del {{weekStart}} está lista. La grilla se actualizó.",
+    "failTitle": "No pudimos generar el horario",
+    "failBody": "Falló la generación para la semana del {{weekStart}}. Revisá las reglas y volvé a intentarlo."
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -48,10 +49,36 @@ const upcomingMondayISO = (): string => {
  */
 export const GeneratePage = () => {
   const { t } = useTranslation();
+  // Persistencia en URL params: al volver a la página después de
+  // navegar, los selectores no se resetean. Las claves son cortas
+  // (`b`/`d`/`t`) para que la URL no quede ruidosa.
+  const [searchParams, setSearchParams] = useSearchParams();
   const [weekStart, setWeekStart] = useState<string>(upcomingMondayISO());
-  const [branchId, setBranchId] = useState<string>('');
-  const [departmentId, setDepartmentId] = useState<string>('');
-  const [templateId, setTemplateId] = useState<string>(''); // '' = todos
+  const [branchId, setBranchId] = useState<string>(
+    () => searchParams.get('b') ?? '',
+  );
+  const [departmentId, setDepartmentId] = useState<string>(
+    () => searchParams.get('d') ?? '',
+  );
+  const [templateId, setTemplateId] = useState<string>(
+    () => searchParams.get('t') ?? '',
+  );
+
+  // Sync selectores → URL. `replace: true` evita llenar el history
+  // con cada cambio (back button no hace zigzag).
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    const setOrDel = (key: string, value: string) => {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    };
+    setOrDel('b', branchId);
+    setOrDel('d', departmentId);
+    setOrDel('t', templateId);
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [branchId, departmentId, templateId, searchParams, setSearchParams]);
 
   const generate = useGenerateHybridForWeekMutation();
   const branchesQ = useBranchesQuery();

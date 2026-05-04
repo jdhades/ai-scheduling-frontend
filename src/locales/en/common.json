@@ -60,5 +60,11 @@
     "multi_one": "{{count}} schedule generation in progress",
     "multi_other": "{{count}} schedule generations in progress",
     "viewLink": "View →"
+  },
+  "scheduleToast": {
+    "successTitle": "Schedule generated",
+    "successBody": "The week of {{weekStart}} is ready. The grid has been refreshed.",
+    "failTitle": "We couldn't generate the schedule",
+    "failBody": "Generation failed for the week of {{weekStart}}. Review your rules and try again."
   }
 }
