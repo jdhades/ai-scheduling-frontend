@@ -53,5 +53,12 @@
     "label": "Manager scope",
     "all": "All managers",
     "valueScopedSuffix": "(their departments + unassigned)"
+  },
+  "scheduleJobBanner": {
+    "queued": "📅 Schedule generation queued for the week of {{weekStart}}",
+    "active": "⚙️ Generating schedule for the week of {{weekStart}}",
+    "multi_one": "{{count}} schedule generation in progress",
+    "multi_other": "{{count}} schedule generations in progress",
+    "viewLink": "View →"
   }
 }

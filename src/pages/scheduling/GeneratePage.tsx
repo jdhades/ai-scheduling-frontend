@@ -1,9 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Wand2, AlertTriangle, CheckCircle2, Cpu } from 'lucide-react';
+import {
+  Wand2,
+  AlertTriangle,
+  CheckCircle2,
+  Cpu,
+  Loader2,
+  XCircle,
+  Ban,
+  Clock,
+} from 'lucide-react';
+import { isAxiosError } from 'axios';
 import {
   useGenerateHybridForWeekMutation,
+  useJobQuery,
+  useCancelJobMutation,
+  useActiveScheduleJobQuery,
+  isTerminalJobState,
   type GenerateScheduleResult,
+  type JobStateDTO,
 } from '../../api/schedule.api';
 import { useBranchesQuery, useDepartmentsQuery } from '../../api/scope-targets.api';
 import { useShiftTemplatesQuery } from '../../api/shift-templates.api';
@@ -42,6 +58,55 @@ export const GeneratePage = () => {
   const departmentsQ = useDepartmentsQuery();
   const templatesQ = useShiftTemplatesQuery();
 
+  // Tracking de un job en vuelo. Dos fuentes:
+  //   1. La mutation devuelve kind='async' con el jobId — feedback
+  //      inmediato al disparar.
+  //   2. /jobs/active (polling 3s) — sobrevive a navegaciones; al volver
+  //      a la página, si hay un job corriendo lo recoge automáticamente.
+  // Una vez que tenemos un jobId, useJobQuery hace polling fino (2s) y
+  // sigue observando aún después de que el job sale del set "in-flight"
+  // (para mostrar el panel terminal completed/failed/cancelled).
+  const activeJobsQ = useActiveScheduleJobQuery();
+  const backendActiveJobId = activeJobsQ.data?.[0]?.id ?? null;
+
+  const [trackedJobId, setTrackedJobId] = useState<string | null>(null);
+  const jobQ = useJobQuery(trackedJobId);
+  const cancelJob = useCancelJobMutation();
+  const queryClient = useQueryClient();
+
+  // Recoger un job activo del backend al montar / al volver a la página.
+  useEffect(() => {
+    if (backendActiveJobId && backendActiveJobId !== trackedJobId) {
+      setTrackedJobId(backendActiveJobId);
+    }
+  }, [backendActiveJobId, trackedJobId]);
+
+  // Inmediato: si la mutation devolvió un jobId async, trackear.
+  useEffect(() => {
+    if (generate.data?.kind === 'async') {
+      setTrackedJobId(generate.data.jobId);
+    }
+  }, [generate.data]);
+
+  // Cuando el polling ve el job en `completed`, invalidamos la grilla
+  // — el weekStart vive en el payload del job, no en el estado de la
+  // página. Se ejecuta una sola vez por transición a 'completed' (la
+  // dep es state, que solo cambia al transicionar).
+  const jobState = jobQ.data?.state;
+  const jobWeekStart = jobQ.data?.payload.weekStart;
+  useEffect(() => {
+    if (jobState === 'completed' && jobWeekStart) {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({
+        queryKey: ['schedules', jobWeekStart],
+      });
+    }
+  }, [jobState, jobWeekStart, queryClient]);
+
+  // Cuando el job termina (completed/failed/cancelled), liberamos el
+  // botón "Generar" para que el manager pueda volver a disparar.
+  const isJobInFlight = !!trackedJobId && !isTerminalJobState(jobQ.data?.state);
+
   const branches = branchesQ.data ?? [];
   const allDepartments = departmentsQ.data ?? [];
   const allTemplates = templatesQ.data ?? [];
@@ -69,10 +134,12 @@ export const GeneratePage = () => {
   const canSubmit =
     !!weekStart &&
     !generate.isPending &&
+    !isJobInFlight &&
     (!showBranchSelector || branchId !== '') &&
     (!showDepartmentSelector || departmentId !== '');
 
   const onSubmit = () => {
+    setTrackedJobId(null); // limpia panel de job anterior
     generate.mutate({
       weekStart,
       departmentId: effectiveDepartmentId || undefined,
@@ -80,8 +147,21 @@ export const GeneratePage = () => {
     });
   };
 
-  const result: GenerateScheduleResult | null =
-    generate.data?.result ?? null;
+  // Resultado sync — solo cuando el backend está en path Fase 0.
+  const syncResult: GenerateScheduleResult | null =
+    generate.data?.kind === 'sync' ? generate.data.result : null;
+
+  // Detect 409 (generation_in_progress) del mutation error.
+  const conflictPayload = useMemo(() => {
+    const err = generate.error;
+    if (!err || !isAxiosError(err)) return null;
+    if (err.response?.status !== 409) return null;
+    const body = err.response.data as
+      | { error?: string; weekStart?: string; since?: string }
+      | undefined;
+    if (body?.error !== 'generation_in_progress') return null;
+    return body;
+  }, [generate.error]);
 
   return (
     <div className="space-y-4 max-w-2xl">
@@ -200,7 +280,7 @@ export const GeneratePage = () => {
           disabled={!canSubmit}
           data-testid="g-submit"
         >
-          {generate.isPending ? (
+          {generate.isPending || isJobInFlight ? (
             t('scheduling:generatePage.generating')
           ) : (
             <>
@@ -211,7 +291,20 @@ export const GeneratePage = () => {
         </Button>
       </Card>
 
-      {generate.isError && (
+      {/* 409 — ya hay una generación en curso para esta semana. */}
+      {conflictPayload && (
+        <Card className="p-4 border-yellow-500/40 bg-yellow-500/10">
+          <div className="flex items-center gap-2 text-sm text-yellow-200">
+            <Clock className="w-4 h-4" />
+            {t('scheduling:generatePage.conflictInProgress', {
+              weekStart: conflictPayload.weekStart ?? weekStart,
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Otros errores (no 409). */}
+      {generate.isError && !conflictPayload && (
         <Card className="p-4 border-error/40 bg-error/10">
           <div className="flex items-center gap-2 text-sm text-error">
             <AlertTriangle className="w-4 h-4" />
@@ -222,7 +315,16 @@ export const GeneratePage = () => {
         </Card>
       )}
 
-      {result && (
+      {/* Async path: panel de progreso con polling al job. */}
+      {trackedJobId && jobQ.data && (
+        <JobProgressCard
+          job={jobQ.data}
+          onCancel={() => cancelJob.mutate(trackedJobId)}
+          cancelDisabled={cancelJob.isPending}
+        />
+      )}
+
+      {syncResult && (
         <Card className="p-4 space-y-3" data-testid="g-result">
           <div className="flex items-center gap-2 text-sm text-foreground">
             <CheckCircle2 className="w-4 h-4 text-secondary" />
@@ -234,23 +336,23 @@ export const GeneratePage = () => {
           <div className="grid grid-cols-3 gap-3">
             <Stat
               label={t('scheduling:generatePage.result.stats.assignments')}
-              value={result.assignmentsCount}
+              value={syncResult.assignmentsCount}
             />
             <Stat
               label={t('scheduling:generatePage.result.stats.underfilled')}
-              value={result.unfilledShiftsCount}
+              value={syncResult.unfilledShiftsCount}
             />
             <Stat
               label={t('scheduling:generatePage.result.stats.llmAccepted')}
-              value={result.llmAccepted}
+              value={syncResult.llmAccepted}
             />
           </div>
 
           <p className="text-sm text-foreground/80 whitespace-pre-line">
-            {result.explanation}
+            {syncResult.explanation}
           </p>
 
-          {result.llmUsage && result.llmUsage.calls > 0 && (
+          {syncResult.llmUsage && syncResult.llmUsage.calls > 0 && (
             <div className="rounded-md border border-white/10 bg-surface-low/60 p-3 text-xs">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
@@ -261,35 +363,35 @@ export const GeneratePage = () => {
               <div className="mt-1 grid grid-cols-4 gap-2 font-mono text-foreground">
                 <span>
                   {t('scheduling:generatePage.result.llmCalls', {
-                    count: result.llmUsage.calls,
+                    count: syncResult.llmUsage.calls,
                   })}
                 </span>
                 <span>
                   {t('scheduling:generatePage.result.llmPrompt', {
-                    tokens: result.llmUsage.prompt.toLocaleString(),
+                    tokens: syncResult.llmUsage.prompt.toLocaleString(),
                   })}
                 </span>
                 <span>
                   {t('scheduling:generatePage.result.llmCompletion', {
-                    tokens: result.llmUsage.completion.toLocaleString(),
+                    tokens: syncResult.llmUsage.completion.toLocaleString(),
                   })}
                 </span>
                 <span className="font-semibold">
                   {t('scheduling:generatePage.result.llmTotal', {
-                    tokens: result.llmUsage.total.toLocaleString(),
+                    tokens: syncResult.llmUsage.total.toLocaleString(),
                   })}
                 </span>
               </div>
             </div>
           )}
 
-          {result.warnings.length > 0 && (
+          {syncResult.warnings.length > 0 && (
             <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 space-y-1">
               <div className="text-xs font-semibold uppercase tracking-wider text-yellow-300/80">
                 {t('scheduling:generatePage.result.warningsTitle')}
               </div>
               <ul className="text-sm text-yellow-200 list-disc pl-5">
-                {result.warnings.map((w, i) => (
+                {syncResult.warnings.map((w, i) => (
                   <li key={i}>{w}</li>
                 ))}
               </ul>
@@ -309,3 +411,95 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
     <div className="text-2xl font-bold text-foreground">{value}</div>
   </div>
 );
+
+interface JobProgressCardProps {
+  job: JobStateDTO;
+  onCancel: () => void;
+  cancelDisabled: boolean;
+}
+
+/**
+ * JobProgressCard — render del estado del job durante el path async.
+ * Polling lo maneja `useJobQuery`; este componente solo dibuja.
+ *
+ * - created/retry → queued, cancel disponible
+ * - active → corriendo (spinner). Cancel avanzado va a Fase 3.
+ * - completed → éxito (la grilla ya se invalidó vía useJobQuery)
+ * - failed → fallo terminal, sugerir reintentar manualmente
+ * - cancelled → cancelado por el usuario
+ */
+const JobProgressCard = ({ job, onCancel, cancelDisabled }: JobProgressCardProps) => {
+  const { t } = useTranslation();
+  const { state, payload, retryCount, retryLimit } = job;
+
+  if (state === 'completed') {
+    return (
+      <Card className="p-4 border-secondary/40 bg-secondary/10" data-testid="g-job-completed">
+        <div className="flex items-center gap-2 text-sm text-foreground">
+          <CheckCircle2 className="w-4 h-4 text-secondary" />
+          {t('scheduling:generatePage.async.completed', {
+            weekStart: payload.weekStart,
+          })}
+        </div>
+      </Card>
+    );
+  }
+
+  if (state === 'failed') {
+    return (
+      <Card className="p-4 border-error/40 bg-error/10" data-testid="g-job-failed">
+        <div className="flex items-center gap-2 text-sm text-error">
+          <XCircle className="w-4 h-4" />
+          {t('scheduling:generatePage.async.failed', {
+            weekStart: payload.weekStart,
+            attempts: retryCount + 1,
+            max: retryLimit + 1,
+          })}
+        </div>
+      </Card>
+    );
+  }
+
+  if (state === 'cancelled') {
+    return (
+      <Card className="p-4 border-yellow-500/30 bg-yellow-500/10" data-testid="g-job-cancelled">
+        <div className="flex items-center gap-2 text-sm text-yellow-200">
+          <Ban className="w-4 h-4" />
+          {t('scheduling:generatePage.async.cancelled', {
+            weekStart: payload.weekStart,
+          })}
+        </div>
+      </Card>
+    );
+  }
+
+  // pending (created/retry) o active
+  const isActive = state === 'active';
+  const messageKey = isActive
+    ? 'scheduling:generatePage.async.active'
+    : 'scheduling:generatePage.async.queued';
+
+  return (
+    <Card className="p-4 border-blue-400/30 bg-blue-500/5" data-testid="g-job-pending">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm text-foreground">
+          <Loader2 className="w-4 h-4 animate-spin text-blue-300" />
+          <span>
+            {t(messageKey, { weekStart: payload.weekStart })}
+          </span>
+        </div>
+        {!isActive && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            disabled={cancelDisabled}
+            data-testid="g-job-cancel"
+          >
+            {t('scheduling:generatePage.async.cancel')}
+          </Button>
+        )}
+      </div>
+    </Card>
+  );
+};

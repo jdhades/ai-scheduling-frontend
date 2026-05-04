@@ -46,6 +46,15 @@
     "generate": "Generate",
     "generating": "Generating…",
     "errorPrefix": "Error: {{message}}",
+    "conflictInProgress": "A generation is already in progress for the week of {{weekStart}}. Wait for it to finish before triggering another.",
+    "async": {
+      "queued": "📅 Queued for the week of {{weekStart}}. Waiting for worker…",
+      "active": "⚙️ Generating schedule for the week of {{weekStart}}…",
+      "completed": "✅ Generation completed for the week of {{weekStart}}.",
+      "failed": "❌ Generation failed for the week of {{weekStart}} ({{attempts}}/{{max}} attempts). Review your rules and try again.",
+      "cancelled": "🚫 Generation cancelled for the week of {{weekStart}}.",
+      "cancel": "Cancel"
+    },
     "result": {
       "completed": "Generation completed for the week of {{weekStart}}.",
       "stats": {

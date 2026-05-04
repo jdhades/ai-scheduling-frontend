@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { AppSidebar } from '../components/layout/AppSidebar';
 import { DashboardHeader } from '../components/layout/DashboardHeader';
+import { ScheduleJobBanner } from '../components/layout/ScheduleJobBanner';
 
 /**
  * Layout principal: sidebar + header + outlet para las rutas hijas.
@@ -15,6 +16,7 @@ export const AppLayout = () => (
       <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
 
       <DashboardHeader />
+      <ScheduleJobBanner />
 
       <main className="flex-1 overflow-y-auto custom-scrollbar relative px-6 py-6">
         <Outlet />

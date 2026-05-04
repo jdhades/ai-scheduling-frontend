@@ -46,6 +46,15 @@
     "generate": "Generar",
     "generating": "Generando…",
     "errorPrefix": "Error: {{message}}",
+    "conflictInProgress": "Ya hay una generación en curso para la semana del {{weekStart}}. Esperá a que termine antes de disparar otra.",
+    "async": {
+      "queued": "📅 En cola para la semana del {{weekStart}}. Esperando worker…",
+      "active": "⚙️ Generando horario para la semana del {{weekStart}}…",
+      "completed": "✅ Generación completada para la semana del {{weekStart}}.",
+      "failed": "❌ La generación falló para la semana del {{weekStart}} ({{attempts}}/{{max}} intentos). Revisá las reglas y volvé a disparar.",
+      "cancelled": "🚫 Generación cancelada para la semana del {{weekStart}}.",
+      "cancel": "Cancelar"
+    },
     "result": {
       "completed": "Generación completada para la semana del {{weekStart}}.",
       "stats": {

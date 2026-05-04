@@ -53,5 +53,12 @@
     "label": "Manager",
     "all": "Todos los managers",
     "valueScopedSuffix": "(sus departamentos + sin asignar)"
+  },
+  "scheduleJobBanner": {
+    "queued": "📅 Generación en cola para la semana del {{weekStart}}",
+    "active": "⚙️ Generando horario para la semana del {{weekStart}}",
+    "multi_one": "{{count}} generación de horario en curso",
+    "multi_other": "{{count}} generaciones de horario en curso",
+    "viewLink": "Ver →"
   }
 }
