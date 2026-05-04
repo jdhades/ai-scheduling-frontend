@@ -515,17 +515,18 @@ const JobProgressCard = ({ job, onCancel, cancelDisabled }: JobProgressCardProps
             {t(messageKey, { weekStart: payload.weekStart })}
           </span>
         </div>
-        {!isActive && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onCancel}
-            disabled={cancelDisabled}
-            data-testid="g-job-cancel"
-          >
-            {t('scheduling:generatePage.async.cancel')}
-          </Button>
-        )}
+        {/* Fase 3 — cancel disponible también en active. El backend
+            propaga AbortSignal al LLM; puede tardar unos segundos en
+            efectivizarse según dónde esté el worker en el pipeline. */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          disabled={cancelDisabled}
+          data-testid="g-job-cancel"
+        >
+          {t('scheduling:generatePage.async.cancel')}
+        </Button>
       </div>
     </Card>
   );
